@@ -638,7 +638,7 @@ const ITEMS=[['🥫','Llauna de refresc','groc'],['🧴','Ampolla de plàstic','
 const canvas=$('#c');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.outputColorSpace=THREE.SRGBColorSpace;
-const scene=new THREE.Scene(); scene.background=new THREE.Color(0x061224); setTimeout(()=>{ Vis.backdrop(THREE,scene,'map',{radius:600}); Vis.dust(THREE,scene,200,[160,40,120],{size:4,color:0x9fe7ff,y:0}); },0);
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x061224); setTimeout(()=>{ Vis.backdrop(THREE,scene,'map',{radius:600}); window.__dust=Vis.dust(THREE,scene,200,[160,40,120],{size:4,color:0x9fe7ff,y:0}); if(Vis.bd) Vis.bd.visible=mode!=='inst'; if(__dust) __dust.visible=mode!=='inst'; },0);
 const camera=new THREE.PerspectiveCamera(40,1,0.1,1000);
 const controls=new OrbitControls(camera,canvas); controls.enableDamping=true; controls.dampingFactor=.1; controls.rotateSpeed=.5; controls.zoomSpeed=.8; controls.maxPolarAngle=1.3; controls.minDistance=10; controls.maxDistance=400; controls.screenSpacePanning=false;
 function resize(){renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;
@@ -691,7 +691,7 @@ function lowTree(x,z,s=1){ const g=new THREE.Group(); const t=new THREE.Mesh(new
 function person(c){ const g=new THREE.Group(); const b=new THREE.Mesh(new THREE.CapsuleGeometry(.32,.9,4,8),fm(c)); b.position.y=.95; g.add(b); const h=new THREE.Mesh(new THREE.SphereGeometry(.3,10,8),fm(0xf2c7a5)); h.position.y=1.85; g.add(h); g.traverse(o=>{ if(o.isMesh) o.castShadow=true; }); return g; }
 const walkers=[];
 { const LAND=EcoLand(THREE,{scene,groundY:()=>0}); const gt=LAND.groundTex(256,6,0x7fb055,0x5a8a3c); gt.repeat.set(30,30); const ground=new THREE.Mesh(new THREE.CircleGeometry(95,64),new THREE.MeshStandardMaterial({map:gt,roughness:1})); ground.rotation.x=-Math.PI/2; ground.position.y=-.02; ground.receiveShadow=true; TOWN.add(ground);
-  const skyD=LAND.sky(TOWN,{skyTop:0x3f8fe0,skyHor:0xd6ecff,radius:700}); let sd=5; const R=()=>{sd=(sd*16807)%2147483647; return sd/2147483647;}; LAND.grass(TOWN,R,{n:5000,rMin:0,rMax:92,h:1.2,color:0x8cc455,skip:(x,z)=>Math.abs(z-14)<3.5||[-46,0,46].some(cx=>Math.hypot(x-cx,z+6)<19.5)}); TOWN.userData.land=LAND;
+  const skyD=LAND.sky(TOWN,{skyTop:0x3f8fe0,skyHor:0xd6ecff,radius:300}); { const hl=LAND.hills(TOWN,{hillLo:0x5f8f3f,hillHi:0x8aa85a,hillFar:0xa9c0cf}); hl.scale.set(5.2,1.7,5.2); hl.position.y=-1.5; } let sd=5; const R=()=>{sd=(sd*16807)%2147483647; return sd/2147483647;}; LAND.grass(TOWN,R,{n:5000,rMin:0,rMax:92,h:1.2,color:0x8cc455,skip:(x,z)=>Math.abs(z-14)<3.5||[-46,0,46].some(cx=>Math.hypot(x-cx,z+6)<19.5)}); TOWN.userData.land=LAND;
   const road=new THREE.Mesh(new THREE.PlaneGeometry(150,6),fm(0x4a4f57,{roughness:.9})); road.rotation.x=-Math.PI/2; road.position.set(0,0,14); road.receiveShadow=true; TOWN.add(road);
   for(let i=0;i<24;i++){ const l=new THREE.Mesh(new THREE.PlaneGeometry(2.4,.25),fm(0xffffff)); l.rotation.x=-Math.PI/2; l.position.set(-72+i*6.2,.02,14); TOWN.add(l); }
   for(const [k,Z] of Object.entries(ZONES)){ const plaza=new THREE.Mesh(new THREE.CylinderGeometry(19,19,.3,48),fm(0xbfb8a8,{roughness:.95})); plaza.position.set(Z.x,.15,-6); plaza.receiveShadow=true; TOWN.add(plaza);
@@ -721,7 +721,7 @@ $('#tHome').onclick=()=>{ if(mode==='inst') townHome(); else home(); };
 const townBoxes=[]; TOWN.updateMatrixWorld(true); townPins.filter(p=>p.k).forEach(p=>{ const b=new THREE.Box3().setFromObject(p.obj); b.expandByScalar(.6); townBoxes.push(b); });
 function walkStart(){ if(mode!=='inst') setMode('inst'); fl=null; Walk.start(THREE,{camera,controls,canvas,start:[0,42],yaw:Math.PI,speed:5,eye:1.65,ground:(x,z)=>{ for(const Z of Object.values(ZONES)) if(Math.hypot(x-Z.x,z+6)<19) return .3; return 0; }, radius:88, center:[0,0],
   blocked:(x,z)=>{ for(const b of townBoxes){ if(x>b.min.x&&x<b.max.x&&z>b.min.z&&z<b.max.z) return true; } for(const Z of Object.values(ZONES)) if(Math.hypot(x-Z.x,z+6)<3.1) return true; return false; }, onStop:()=>townHome()}); }
-Walk.button($('#tools'),walkStart); window.__c={dl,renderer,scene,THREE,TOWN};
+Walk.button($('#tools'),walkStart); window.__c={dl,renderer,scene,THREE,TOWN,camera,controls};
 
 /* ================= ESCENARIS 2D ================= */
 const ST=$('#stage>div');
@@ -791,7 +791,7 @@ const repte=Kit.Repte(RP,{
 
 /* ================= MODES ================= */
 function applyMode(){ $('#card').classList.remove('show'); const map=['ue','idh'].includes(mode), inst=mode==='inst';
- canvas.style.visibility=map||inst?'visible':'hidden'; $('#stage').classList.toggle('show',['ods','consum'].includes(mode)); TOWN.visible=inst; $('#ctl').style.display=inst?'':'none'; sea.visible=!inst; countries.forEach(c=>c.mesh.visible=!inst); if(inst){ townHome(); townHighlight([]); } $('#panel').style.display=mode==='repte'?'none':''; RP.style.display=mode==='repte'?'block':'none'; $('#tools').style.display=map||inst?'':'none'; const wb=$('#tWalk'); if(wb) wb.style.display=inst?'':'none'; if(Walk.on&&!inst) Walk.stop();
+ canvas.style.visibility=map||inst?'visible':'hidden'; $('#stage').classList.toggle('show',['ods','consum'].includes(mode)); TOWN.visible=inst; if(Vis.bd) Vis.bd.visible=!inst; if(window.__dust) __dust.visible=!inst; scene.background.setHex(inst?0x9fd0f5:0x061224); $('#ctl').style.display=inst?'':'none'; sea.visible=!inst; countries.forEach(c=>c.mesh.visible=!inst); if(inst){ townHome(); townHighlight([]); } $('#panel').style.display=mode==='repte'?'none':''; RP.style.display=mode==='repte'?'block':'none'; $('#tools').style.display=map||inst?'':'none'; const wb=$('#tWalk'); if(wb) wb.style.display=inst?'':'none'; if(Walk.on&&!inst) Walk.stop();
  clearPins(); if(map){ setView(mode==='ue'?'eu':'world'); if(mode==='ue'){ colorUE(); countries.filter(c=>EUJOIN[c.n]).forEach(c=>addPin(c,nm(c.n),'#00e5ff')); } else { colorIDH(); ['Norway','Spain','United States of America','Brazil','China','India','Niger','Chad','Australia','Japan','Mexico','Nigeria','Russia','South Africa','Ethiopia'].forEach(n=>{const c=countries.find(x=>x.n===n); if(c) addPin(c,nm(n),IDHC[idhOf(n)][1]);}); } home(); }
  if(mode==='inst') ctlInst(); if(mode==='ods') stageODS(); if(mode==='consum') stageConsum(); if(mode==='repte') repte.menu(); renderPanel(); }
 function setMode(m){ if(m!==mode) Vis.fade(); mode=m; document.querySelectorAll('#modes button').forEach(b=>b.classList.toggle('on',b.dataset.m===m)); applyMode(); }
