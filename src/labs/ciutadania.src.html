@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Medi·Lab 3D · Ciutadania i món</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/*BASECSS*/
+#stage{position:fixed;top:84px;left:394px;right:76px;bottom:calc(var(--tb) + 10px);z-index:4;display:none;padding:10px}
+#stage.show{display:block}
+#stage>div{width:100%;height:100%;overflow:auto;background:rgba(3,8,20,.88);border:1px solid var(--gb);border-radius:18px;padding:14px}
+.inst{display:grid;grid-template-columns:110px repeat(3,1fr);gap:8px;min-width:560px}
+.inst .hd{font-family:Orbitron;font-size:13px;color:var(--cy);text-align:center;padding:8px;border-radius:12px;background:rgba(0,229,255,.08)}
+.inst .rw{font-size:12px;color:var(--mu);display:flex;align-items:center;justify-content:center;text-align:center;border-radius:12px;padding:6px;font-weight:600}
+.inst button{border:1px solid var(--gb);background:rgba(10,19,36,.9);border-radius:12px;padding:10px 8px;cursor:pointer;color:#e6f1ff;font-size:14px;text-align:center;line-height:1.25}
+.inst button small{display:block;color:var(--mu);font-size:11px;margin-top:3px}
+.inst button.on{border-color:var(--li);background:rgba(182,255,59,.12)}
+.inst button.hl{box-shadow:0 0 0 2px var(--ye)}
+.ods{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.ods button{border:0;border-radius:10px;padding:10px;min-height:96px;color:#fff;text-align:left;cursor:pointer;font-weight:600;font-size:14px;line-height:1.2;display:flex;flex-direction:column;gap:4px}
+.ods button b{font-family:Orbitron;font-size:24px}
+.bins{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:10px}
+.bins button{border:2px solid rgba(255,255,255,.2);border-radius:14px 14px 8px 8px;padding:12px 4px;cursor:pointer;color:#fff;font-weight:600;font-size:13px;min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px}
+.bins button span{font-size:28px}
+.item{display:flex;flex-direction:column;align-items:center;gap:6px;margin:8px auto;font-size:18px}
+.item b{font-size:64px;line-height:1}
+.pf{display:flex;flex-wrap:wrap;gap:6px;font-size:34px;justify-content:center;margin:8px 0}
+.qrow{margin:8px 0}.qrow p{margin:0 0 4px;font-size:14px}
+.qrow .row button{flex:1}
+@media (max-width:860px){#stage{left:8px;right:8px;top:60px;bottom:auto;height:calc(60% - 70px);padding:4px}.bins{grid-template-columns:repeat(3,1fr)}}
+#ctl{position:fixed;left:calc(394px + (100% - 470px)/2);transform:translateX(-50%);bottom:calc(var(--tb) + 10px);width:min(720px,calc(100% - 500px));padding:8px 12px;z-index:5;display:flex;flex-direction:column;gap:6px}
+#ctl .crow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#ctl .val{font-family:Orbitron;font-size:16px;color:#fff;white-space:nowrap}
+#ctl .seg{display:flex;background:rgba(0,0,0,.3);border-radius:10px;padding:2px;flex:none}#ctl .seg button{border:0;background:none;padding:7px 11px;border-radius:8px;cursor:pointer;color:var(--mu);font-size:14px;white-space:nowrap}#ctl .seg button.on{background:rgba(0,229,255,.25);color:#fff}
+@media (max-width:860px){#ctl{left:8px;right:8px;width:auto;transform:none;top:62px;bottom:auto}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="loading"><i></i>CARREGANT…</div>
+<div id="pins"></div>
+<header id="top" class="glass">
+  <div class="logo">MEDI·LAB 3D · CIUTADANIA I MÓN<small>Coneixement del Medi · 6è · Unitats 8 i 9: «Institucions» i «Els reptes de la societat»</small></div>
+  <button id="helpBtn" aria-label="Ajuda i guia">?</button>
+</header>
+<nav id="modes">
+  <button data-m="inst" class="on"><span class="e">🏛️</span>Institucions</button>
+  <button data-m="ue"><span class="e">🇪🇺</span>Unió Europea</button>
+  <button data-m="idh"><span class="e">🌍</span>Riquesa</button>
+  <button data-m="ods"><span class="e">🎯</span>ODS</button>
+  <button data-m="consum"><span class="e">♻️</span>Consum</button>
+  <button data-m="repte"><span class="e">🏆</span>Repte</button>
+</nav>
+<aside id="panel" class="glass"><button id="pmin" class="mini">▾ Amaga el text</button><div class="pbody"></div></aside>
+<aside id="rep" class="glass" style="display:none"></aside>
+<div id="stage"><div></div></div>
+<div id="ctl" class="glass" style="display:none"></div>
+<nav id="tools" class="glass"><button id="tHome" title="Vista inicial" aria-label="Vista inicial">⟲</button></nav>
+<div id="card" class="glass"><button class="x" aria-label="Tancar">×</button><span class="tag"></span><h2></h2><div class="facts"></div><p class="desc"></p><p class="cur"></p></div>
+
+<div id="help" role="dialog" aria-modal="true" aria-label="Ajuda">
+ <div class="hbox glass">
+  <button class="hx" aria-label="Tancar">×</button>
+  <div class="htabs"><button data-t="com" class="on">Com funciona</button><button data-t="guia">Guia del mestre</button><button data-t="res">Resultats</button></div>
+  <div class="hpage" data-p="com">
+   <h2>Ciutadania i món</h2>
+   <p class="hsub">Coneixement del Medi · 6è · Unitats 8 i 9</p>
+   <div class="hcards">
+    <div class="hc"><svg viewBox="0 0 64 64"><circle cx="32" cy="30" r="16"/><path d="M12 30a20 20 0 0 1 20-20M52 30a20 20 0 0 1-20 20" stroke-dasharray="3 4"/><path d="M26 52l6 6 6-6"/></svg><b>Gira i apropa't</b><p>Arrossega per girar, roda o dos dits per fer zoom. Doble toc: t'hi apropes.</p></div>
+    <div class="hc"><svg viewBox="0 0 64 64"><circle cx="30" cy="30" r="14"/><path d="M38 44l12 12M30 20v10l6 4"/><circle cx="30" cy="30" r="22" stroke-dasharray="2 5"/></svg><b>Toca i descobreix</b><p>Cada cosa amb nom té una fitxa. Les que trobis es guarden a la teva col·lecció de dalt a la dreta.</p></div>
+    <div class="hc"><svg viewBox="0 0 64 64"><rect x="8" y="26" width="48" height="8" rx="4"/><circle cx="24" cy="30" r="7" fill="rgba(0,229,255,.3)"/><path d="M24 44l4 6 4-6M24 16l4-6 4 6"/></svg><b>Fes-ho funcionar</b><p>Institucions: toca cada una. Unió Europea i Riquesa: toca els països del mapa. ODS i Consum: tria objectius i recicla.</p></div>
+    <div class="hc"><svg viewBox="0 0 64 64"><path d="M20 54h24M32 44v10M18 10h28v14a14 14 0 0 1-28 0V10zM18 14h-8a8 8 0 0 0 8 10M46 14h8a8 8 0 0 1-8 10"/><path d="M32 18l2 5 5 .5-4 3.5 1 5-4-2.5-4 2.5 1-5-4-3.5 5-.5z"/></svg><b>Posa't a prova</b><p>Al Repte guanyes estrelles. T'equivoques? Tens una segona oportunitat amb pista.</p></div>
+   </div>
+   <div class="row" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="big htour">▶ Fes la guia de 30 segons</button><span style="color:var(--mu);font-size:13px">Dreceres: <b>1-6</b> seccions · <b>espai</b> pausa · <b>P</b> pissarra · <b>D</b> dibuixa · <b>T</b> amaga text · <b>F</b> pantalla completa</span></div>
+   <button class="hgo">Comença!</button>
+  </div>
+  <div class="hpage" data-p="guia" style="display:none">
+   <h2>Guia per a la classe</h2><p class="hsub" style="color:var(--li)">A la pissarra: toca 👩‍🏫 (a dalt) per tenir text gran, pausa, dibuixar a sobre i pantalla completa. A «Resultats» veuràs les notes dels reptes fets en aquest dispositiu.</p>
+   <p class="hsub">Propostes de 10–15 minuts per apartat.</p>
+   <details open><summary>🏛️ Institucions (Unitat 8)</summary><p><b>Objectiu:</b> conèixer les institucions de Catalunya, Espanya i la UE i la divisió de poders.</p><ol><li>Activa «Qui elegeix qui?» i explica el camí des dels ciutadans fins al Govern.</li><li>Completeu la taula de l'activitat 5 amb el laboratori.</li></ol><p class="lib">Llibre: activitats 1 a 5. Les activitats que pregunten pel president o els partits actuals cal consultar-les en fonts actualitzades: el llibre és del 2023.</p></details>
+   <details><summary>🇪🇺 Unió Europea (Unitat 8)</summary><p><b>Objectiu:</b> veure com ha crescut la UE, quins països fan servir l'euro i quines són les seves institucions.</p><p class="lib">Llibre: activitats 6 a 9. Actualització: des de l'1 de gener de 2026 Bulgària fa servir l'euro; la zona euro té 21 països (el llibre en diu 20).</p></details>
+   <details><summary>🌍 Riquesa (Unitat 9)</summary><p><b>Objectiu:</b> interpretar el mapa de l'IDH i entendre la desigualtat dins i fora del país.</p><p class="lib">Llibre: activitats 1 a 3. El mapa és simplificat: la classificació dels països és aproximada.</p></details>
+   <details><summary>🎯 ODS i ♻️ Consum (Unitat 9)</summary><p><b>Objectiu:</b> conèixer els Objectius de Desenvolupament Sostenible i practicar el consum responsable.</p><ol><li>Cada grup tria un ODS i proposa una acció per a l'escola.</li><li>Joc dels contenidors: competiu per parelles.</li><li>Petjada ecològica: comenteu quins hàbits fan baixar el nombre de planetes.</li></ol></details>
+   <details><summary>🏆 Repte</summary><ul><li>Els rècords es guarden a cada tauleta.</li></ul></details>
+  </div>
+  <div class="hpage" data-p="res" style="display:none"></div>
+ </div>
+</div>
+<div id="credit">Contorns: Natural Earth (domini públic). Classificació de l'IDH aproximada.</div>
+
+<script>/*KIT*/</script>
+<script>window.WORLD=/*WORLD*/;</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+const {$,shuf,html,showCard,quiz}=Kit; Kit.setPrefix('medilab_x_');
+/* ================= DADES ================= */
+const CA={'Spain':'Espanya','France':'França','Portugal':'Portugal','Italy':'Itàlia','Germany':'Alemanya','Belgium':'Bèlgica','Netherlands':'Països Baixos','Luxembourg':'Luxemburg','Denmark':'Dinamarca','Ireland':'Irlanda','United Kingdom':'Regne Unit','Greece':'Grècia','Austria':'Àustria','Finland':'Finlàndia','Sweden':'Suècia','Cyprus':'Xipre','Czechia':'Txèquia','Estonia':'Estònia','Hungary':'Hongria','Latvia':'Letònia','Lithuania':'Lituània','Poland':'Polònia','Slovakia':'Eslovàquia','Slovenia':'Eslovènia','Bulgaria':'Bulgària','Romania':'Romania','Croatia':'Croàcia','Norway':'Noruega','Switzerland':'Suïssa','Iceland':'Islàndia','Russia':'Rússia','Ukraine':'Ucraïna','Belarus':'Bielorússia','Turkey':'Turquia','Serbia':'Sèrbia','Albania':'Albània','Moldova':'Moldàvia','Bosnia and Herz.':'Bòsnia i Hercegovina','Macedonia':'Macedònia del Nord','Montenegro':'Montenegro','Kosovo':'Kosovo','Morocco':'Marroc','Algeria':'Algèria','Tunisia':'Tunísia','Libya':'Líbia','Egypt':'Egipte','United States of America':'Estats Units','Canada':'Canadà','Mexico':'Mèxic','Brazil':'Brasil','Argentina':'Argentina','Chile':'Xile','Peru':'Perú','Colombia':'Colòmbia','Venezuela':'Veneçuela','Bolivia':'Bolívia','Ecuador':'Equador','Paraguay':'Paraguai','Uruguay':'Uruguai','Cuba':'Cuba','Haiti':'Haití','China':'Xina','Japan':'Japó','India':'Índia','Pakistan':'Pakistan','Bangladesh':'Bangladesh','Indonesia':'Indonèsia','Australia':'Austràlia','New Zealand':'Nova Zelanda','South Africa':'Sud-àfrica','Nigeria':'Nigèria','Ethiopia':'Etiòpia','Kenya':'Kenya','Niger':'Níger','Chad':'Txad','Mali':'Mali','Somalia':'Somàlia','Sudan':'Sudan','S. Sudan':'Sudan del Sud','Dem. Rep. Congo':'R. D. del Congo','Central African Rep.':'República Centreafricana','Afghanistan':'Afganistan','Yemen':'Iemen','Saudi Arabia':'Aràbia Saudita','Iran':'Iran','Iraq':'Iraq','Syria':'Síria','Israel':'Israel','South Korea':'Corea del Sud','North Korea':'Corea del Nord','Vietnam':'Vietnam','Thailand':'Tailàndia','Philippines':'Filipines','Malaysia':'Malàisia','Kazakhstan':'Kazakhstan','Mongolia':'Mongòlia','Madagascar':'Madagascar','Mozambique':'Moçambic','Angola':'Angola','Ghana':'Ghana','Senegal':'Senegal','Mauritania':'Mauritània','Greenland':'Groenlàndia','Georgia':'Geòrgia','Armenia':'Armènia','Azerbaijan':'Azerbaidjan'};
+const nm=n=>CA[n]||n;
+const EUJOIN={'Belgium':1957,'France':1957,'Germany':1957,'Italy':1957,'Luxembourg':1957,'Netherlands':1957,'Denmark':1973,'Ireland':1973,'United Kingdom':1973,'Greece':1981,'Spain':1986,'Portugal':1986,'Austria':1995,'Finland':1995,'Sweden':1995,'Cyprus':2004,'Czechia':2004,'Estonia':2004,'Hungary':2004,'Latvia':2004,'Lithuania':2004,'Poland':2004,'Slovakia':2004,'Slovenia':2004,'Bulgaria':2007,'Romania':2007,'Croatia':2013};
+const EULEAVE={'United Kingdom':2020};
+const EURO={'Austria':2002,'Belgium':2002,'Finland':2002,'France':2002,'Germany':2002,'Ireland':2002,'Italy':2002,'Luxembourg':2002,'Netherlands':2002,'Portugal':2002,'Spain':2002,'Greece':2002,'Slovenia':2007,'Cyprus':2008,'Slovakia':2009,'Estonia':2011,'Latvia':2014,'Lithuania':2015,'Croatia':2023,'Bulgaria':2026};
+const IDH_VH=['Norway','Switzerland','Iceland','Ireland','Germany','Sweden','Australia','Netherlands','Denmark','Finland','United Kingdom','Belgium','New Zealand','Canada','United States of America','Austria','Israel','Japan','Luxembourg','Slovenia','South Korea','Spain','France','Czechia','Estonia','Italy','United Arab Emirates','Greece','Cyprus','Lithuania','Poland','Latvia','Portugal','Slovakia','Hungary','Saudi Arabia','Chile','Croatia','Qatar','Argentina','Brunei','Montenegro','Romania','Kazakhstan','Russia','Belarus','Turkey','Uruguay','Bulgaria','Panama','Kuwait','Oman','Serbia','Georgia','Costa Rica','Trinidad and Tobago','Malaysia','Taiwan','Bahamas','N. Cyprus','Albania'];
+const IDH_L=['Niger','Chad','Somalia','Central African Rep.','S. Sudan','Mali','Burundi','Burkina Faso','Sierra Leone','Mozambique','Guinea','Yemen','Eritrea','Liberia','Dem. Rep. Congo','Afghanistan','Guinea-Bissau','Ethiopia','Madagascar','Gambia','Malawi','Sudan','Haiti','Senegal','Benin','Uganda','Togo','Nigeria','Lesotho','Rwanda',"Côte d'Ivoire",'Tanzania','Mauritania','Djibouti','Pakistan','Somaliland'];
+const IDH_M=['India','Bangladesh','Nepal','Myanmar','Laos','Cambodia','Kenya','Ghana','Zambia','Zimbabwe','Cameroon','Angola','Congo','Namibia','Morocco','Iraq','Syria','Tajikistan','Honduras','Guatemala','Nicaragua','El Salvador','Bolivia','Venezuela','Timor-Leste','Papua New Guinea','Solomon Is.','Vanuatu','Eq. Guinea','Gabon','eSwatini','Bhutan','North Korea','Kyrgyzstan','Palestine','W. Sahara'];
+const IDHC={vh:['Molt alt','#00e5ff',4.2],h:['Alt','#b6ff3b',3],m:['Mitjà','#ffd23f',1.8],l:['Baix','#ff3b5c',.9],nd:['Sense dades','#5d7391',.3]};
+const idhOf=n=>IDH_VH.includes(n)?'vh':IDH_L.includes(n)?'l':IDH_M.includes(n)?'m':['Antarctica','Greenland','Falkland Is.','Fr. S. Antarctic Lands','New Caledonia','Puerto Rico'].includes(n)?'nd':'h';
+const ODS=[['Fi de la pobresa','#E5243B','Acabar amb la pobresa a tot el món.','Donar roba i joguines que ja no fas servir.'],['Fam zero','#DDA63A','Que ningú passi gana i que l\'agricultura sigui sostenible.','No llençar menjar.'],['Salut i benestar','#4C9F38','Vida sana per a tothom, a totes les edats.','Fer esport, menjar bé i dormir prou.'],['Educació de qualitat','#C5192D','Que tots els infants puguin anar a l\'escola.','Ajudar els companys que ho necessiten.'],['Igualtat de gènere','#FF3A21','Els mateixos drets i oportunitats per a dones i homes.','Repartir les tasques de casa.'],['Aigua neta i sanejament','#26BDE2','Aigua potable i lavabos per a tothom.','Tancar l\'aixeta quan et raspalles les dents.'],['Energia neta i assequible','#FCC30B','Energia renovable i a l\'abast de tothom.','Apagar els llums que no fas servir.'],['Treball digne i creixement econòmic','#A21942','Feines amb bones condicions per a tothom.','Comprar productes de comerç just.'],['Indústria, innovació i infraestructures','#FD6925','Carreteres, internet i fàbriques sostenibles.','Fer servir la tecnologia per aprendre.'],['Reducció de les desigualtats','#DD1367','Menys diferències entre països i entre persones.','Respectar i incloure tothom.'],['Ciutats i comunitats sostenibles','#FD9D24','Ciutats segures, netes i amb transport públic.','Anar a l\'escola a peu o amb bici.'],['Producció i consum responsables','#BF8B2E','Fer servir menys recursos i generar menys residus.','Reduir, reutilitzar i reciclar.'],['Acció climàtica','#3F7E44','Lluitar contra el canvi climàtic.','Plantar arbres i estalviar energia.'],['Vida submarina','#0A97D9','Protegir els mars i els oceans.','No llençar plàstics a la platja.'],['Vida terrestre','#56C02B','Protegir els boscos i la biodiversitat.','Respectar la natura quan surts d\'excursió.'],['Pau, justícia i institucions sòlides','#00689D','Societats pacífiques i justes.','Resoldre els conflictes parlant.'],['Aliança pels objectius','#19486A','Que tots els països col·laborin.','Treballar en equip!']];
+const INST={
+ cat:{n:'Catalunya',leg:{n:'Parlament de Catalunya',t:"Representa la voluntat del poble català. Elabora les lleis, escull el president o la presidenta, aprova els pressupostos i controla el Govern.",f:{'Qui el tria':'la ciutadania, a les eleccions al Parlament','Poder':'legislatiu'}},cap:{n:'Presidència de la Generalitat',t:"És la màxima representació de la Generalitat. Forma i dirigeix el Govern i convoca les eleccions al Parlament.",f:{'Qui la tria':'el Parlament'}},exe:{n:'Govern de la Generalitat',t:"El formen el president o la presidenta i els consellers i conselleres. Desenvolupa les lleis del Parlament. La seu és el Palau de la Generalitat.",f:{'Qui el forma':'el president o la presidenta','Poder':'executiu'}},jud:{n:'Tribunal Superior de Justícia de Catalunya',t:"És el tribunal més alt a Catalunya. A més, hi ha el Síndic de Greuges, que defensa els drets de la ciutadania, i el Consell de Garanties Estatutàries.",f:{'Poder':'judicial'}}},
+ esp:{n:'Espanya',leg:{n:'Corts Generals',t:"Formades pel Congrés dels Diputats i el Senat. Fan les lleis i trien el president o la presidenta del Govern.",f:{'Qui les tria':'la ciutadania major de 18 anys, a les eleccions generals','Poder':'legislatiu'}},cap:{n:'Cap de l\'Estat: el rei o la reina',t:"Espanya és una monarquia parlamentària: el rei no governa. Representa l'Estat i sanciona les lleis. El càrrec passa de pares a fills.",f:{'Com s\'hi arriba':'per herència'}},exe:{n:"Govern d'Espanya",t:"El formen el president o la presidenta i els ministres. Desenvolupa les lleis i dirigeix la política del país.",f:{'Qui tria el president':'el Congrés dels Diputats','Poder':'executiu'}},jud:{n:'Tribunals de justícia',t:"Fan complir les lleis i jutgen qui les incompleix. El tribunal més important és el Tribunal Suprem.",f:{'Poder':'judicial'}}},
+ ue:{n:'Unió Europea',leg:{n:'Parlament Europeu i Consell de la UE',t:"El Parlament Europeu, elegit per la ciutadania dels països membres, elabora i aprova les lleis amb el Consell de la UE (els ministres de cada país), que també vota el pressupost.",f:{'Qui tria el Parlament':'la ciutadania europea','Poder':'legislatiu'}},cap:{n:'Consell Europeu',t:"El formen els líders dels estats membres. Defineix els objectius de la UE.",f:{'Membres':'caps d\'Estat o de Govern'}},exe:{n:'Comissió Europea',t:"Proposa les lleis i vetlla perquè els països membres les compleixin. Té la seu a Brussel·les.",f:{'Poder':'executiu'}},jud:{n:'Tribunal de Justícia de la UE',t:"Fa que les lleis europees s'apliquin igual a tots els països. El Banc Central Europeu (Frankfurt) gestiona l'euro.",f:{'Poder':'judicial'}}}};
+const ROWS=[['cap','Cap / representació'],['leg','Poder legislatiu'],['exe','Poder executiu'],['jud','Poder judicial']];
+const BINS=[['groc','Envasos','#f3c613','🟨'],['blau','Paper i cartró','#1e6bd6','🟦'],['verd','Vidre','#2e9e44','🟩'],['marro','Orgànic','#7a4a22','🟫'],['gris','Rebuig','#7d8590','⬜'],['deix','Deixalleria','#c0392b','🏭']];
+const ITEMS=[['🥫','Llauna de refresc','groc'],['🧴','Ampolla de plàstic','groc'],['🥛','Brik de llet','groc'],['🛍️','Bossa de plàstic','groc'],['📦','Caixa de cartró','blau'],['📰','Diari vell','blau'],['🧻','Tub de cartró del paper','blau'],['🍾','Ampolla de vidre','verd'],['🫙','Pot de vidre','verd'],['🍌','Pell de plàtan','marro'],['🍎','Restes de poma','marro'],['🥚','Closques d\'ou','marro'],['☕','Marro de cafè','marro'],['🧽','Esponja de cuina','gris'],['🩹','Tireta','gris'],['🪥','Raspall de dents vell','gris'],['🔋','Piles','deix'],['📱','Mòbil espatllat','deix'],['💡','Bombeta','deix'],['🛢️','Oli de cuina usat','deix']];
+
+/* ================= 3D MAPA ================= */
+const canvas=$('#c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.outputColorSpace=THREE.SRGBColorSpace;
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x061224); setTimeout(()=>{ Vis.backdrop(THREE,scene,'map',{radius:600}); Vis.dust(THREE,scene,200,[160,40,120],{size:4,color:0x9fe7ff,y:0}); },0);
+const camera=new THREE.PerspectiveCamera(40,1,0.1,1000);
+const controls=new OrbitControls(camera,canvas); controls.enableDamping=true; controls.dampingFactor=.1; controls.rotateSpeed=.5; controls.zoomSpeed=.8; controls.maxPolarAngle=1.3; controls.minDistance=10; controls.maxDistance=400; controls.screenSpacePanning=false;
+function resize(){renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;
+ if(innerWidth>860) camera.setViewOffset(innerWidth,innerHeight,-190,0,innerWidth,innerHeight); else camera.setViewOffset(innerWidth,innerHeight,0,innerHeight*.2,innerWidth,innerHeight); camera.updateProjectionMatrix();}
+addEventListener('resize',resize); resize();
+scene.add(new THREE.HemisphereLight(0xffffff,0x334455,1.4)); const dl=new THREE.DirectionalLight(0xffffff,1.6); dl.position.set(-30,80,40); scene.add(dl); Vis.shadows(THREE,renderer,dl,2048,110); dl.shadow.camera.updateProjectionMatrix();
+const sea=new THREE.Mesh(new THREE.PlaneGeometry(800,500),new THREE.MeshStandardMaterial({color:0x0b2b52,roughness:.6})); sea.rotation.x=-Math.PI/2; sea.position.y=-.05; scene.add(sea);
+let proj={k:1,cx:0,cy:0,cos:1};
+const PX=(lon,lat)=>[(lon-proj.cx)*proj.cos*proj.k,-(lat-proj.cy)*proj.k];
+const countries=[];
+function buildCountries(){ for(const c of WORLD){ if(c.n==='Antarctica') continue; const shapes=[]; for(let poly of c.p){ if(poly[0].some((p,i,r)=>i&&Math.abs(p[0]-r[i-1][0])>90)) poly=poly.map(r=>r.map(([x,y])=>[x<0?x+360:x,y])); const outer=poly[0].map(([x,y])=>new THREE.Vector2(x,y)); if(outer.length<3) continue; const sh=new THREE.Shape(outer); for(const h of poly.slice(1)) sh.holes.push(new THREE.Path(h.map(([x,y])=>new THREE.Vector2(x,y)))); shapes.push(sh);} if(!shapes.length) continue;
+  const geo=new THREE.ExtrudeGeometry(shapes,{depth:1,bevelEnabled:false}); geo.rotateX(-Math.PI/2); /* x=lon, y=height, z=-lat */
+  const mat=new THREE.MeshStandardMaterial({color:0x5d7391,roughness:.8}); const mesh=new THREE.Mesh(geo,mat); mesh.userData.c=c; scene.add(mesh);
+  let sx=0,sy=0,n=0; const big=c.p.reduce((a,b)=>b[0].length>a[0].length?b:a); for(const [x,y] of big[0]){sx+=x;sy+=y;n++;} c.center=[sx/n,sy/n]; c.mesh=mesh; c.h=.1; c.ht=.1; countries.push(c);
+  const edges=new THREE.LineSegments(new THREE.EdgesGeometry(geo,30),new THREE.LineBasicMaterial({color:0x0a1626,transparent:true,opacity:.5})); mesh.add(edges); } }
+buildCountries();
+function setView(which){ if(which==='eu'){ proj={k:2.2,cx:15,cy:52,cos:Math.cos(52*Math.PI/180)}; } else { proj={k:.55,cx:10,cy:20,cos:.85}; }
+ for(const c of countries){ const m=c.mesh; m.scale.set(proj.cos*proj.k,1,proj.k); m.position.set(-proj.cx*proj.cos*proj.k,0,proj.cy*proj.k); } }
+/* pins */
+const pins=[]; const tv=new THREE.Vector3();
+function clearPins(){ pins.forEach(p=>p.el.remove()); pins.length=0; }
+function addPin(c,txt,col,cls=''){ const b=document.createElement('button'); b.className='pin '+cls; b.style.setProperty('--c',col); b.innerHTML='<i></i><span></span>'; b.querySelector('span').textContent=txt; b.onclick=e=>{e.stopPropagation();countryClick(c);}; $('#pins').appendChild(b); pins.push({el:b,c}); }
+function addObjPin(p){ const b=document.createElement('button'); b.className='pin'; b.style.setProperty('--c',p.col); b.innerHTML='<i></i><span></span>'; b.querySelector('span').textContent=p.n; b.onclick=e=>{ e.stopPropagation(); if(p.who){ whoStep(0); } else townCard(p.k,p.r); }; $('#pins').appendChild(b); pins.push({el:b,obj:p.obj,y:p.y}); }
+function updatePins(){ for(const p of pins){ if(p.obj){ p.obj.getWorldPosition(tv); tv.y+=p.y||0; tv.project(camera); } else { const [x,z]=PX(p.c.center[0],p.c.center[1]); tv.set(x,p.c.h+.3,z).project(camera); } const far=mode==='inst'&&camera.position.distanceTo(controls.target)>95&&!p.who; const vis=!far&&(['ue','idh'].includes(mode)||(mode==='inst'&&p.obj))&&tv.z<1&&Math.abs(tv.x)<1.05&&Math.abs(tv.y)<1.05; if(vis) p.el.style.transform=`translate(${(tv.x*.5+.5)*innerWidth-5}px,${(-tv.y*.5+.5)*innerHeight-5}px)`; p.el.classList.toggle('hide',!vis); } }
+
+/* ================= ESTAT ================= */
+let mode='inst', euYear=2026, showEuro=false, showWho=false;
+function colorUE(){ for(const c of countries){ const j=EUJOIN[c.n], left=EULEAVE[c.n]; const mem=j&&j<=euYear&&!(left&&left<=euYear); const eu=showEuro&&EURO[c.n]&&EURO[c.n]<=euYear;
+  c.ht=mem?(eu?2.2:1.4):.15; c.mesh.material.color.set(mem?(eu?0xffd23f:0x2f6bff):0x4a5a70); c.mesh.material.emissive=new THREE.Color(mem?(eu?0x332a00:0x081a55):0); } }
+function colorIDH(){ for(const c of countries){ const k=idhOf(c.n); c.ht=IDHC[k][2]; c.mesh.material.color.set(IDHC[k][1]); c.mesh.material.emissive=new THREE.Color(0); } }
+function countryClick(c){ if(mode==='ue'){ const j=EUJOIN[c.n]; showCard({n:nm(c.n),tipus:j?(EULEAVE[c.n]?'Va ser membre de la UE':'País membre de la UE'):'No és membre de la UE',f:j?{'Hi va entrar':String(j),...(EULEAVE[c.n]?{'En va sortir':String(EULEAVE[c.n])}:{}),'Euro':EURO[c.n]?'sí, des del '+EURO[c.n]:'no'}:{},t:j===1957?"És un dels sis països fundadors (Tractat de Roma, 1957).":c.n==='United Kingdom'?"El Regne Unit va sortir de la UE el 2020 (Brexit).":c.n==='Spain'?"Espanya hi va entrar el 1986 i fa servir l'euro des del 2002.":j?'':"No forma part de la Unió Europea."}); }
+ if(mode==='idh'){ const k=idhOf(c.n); showCard({n:nm(c.n),tipus:'IDH '+IDHC[k][0].toLowerCase(),t:k==='vh'?"La gent sol viure molts anys, va a l'escola durant molt de temps i té uns ingressos alts.":k==='l'?"Molta gent viu en la pobresa, amb poca escolarització i una esperança de vida baixa.":k==='nd'?"No hi ha dades.":"Desenvolupament "+IDHC[k][0].toLowerCase()+"."}); } }
+const ray=new THREE.Raycaster(); let down=null;
+canvas.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY};});
+canvas.addEventListener('pointerup',e=>{ if(!down||Math.hypot(e.clientX-down.x,e.clientY-down.y)>6){down=null;return;} down=null; if(mode==='inst'){ ray.setFromCamera(new THREE.Vector2(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1),camera); const h=ray.intersectObjects(townMeshes,false); if(h.length){ const i=h[0].object.userData.inst; townCard(i.k,i.r); } return; } if(!['ue','idh'].includes(mode)) return; ray.setFromCamera(new THREE.Vector2(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1),camera); const h=ray.intersectObjects(countries.map(c=>c.mesh),false); if(h.length) countryClick(h[0].object.userData.c); });
+let fl=null; function flyTo(t,p,d=1){fl={t:0,d,ft:controls.target.clone(),tt:t,fp:camera.position.clone(),tp:p};}
+function home(){ const asp=innerWidth/innerHeight,f=asp<1?1.6:1; if(mode==='ue') flyTo(new THREE.Vector3(0,0,4),new THREE.Vector3(0,62*f,62*f)); else flyTo(new THREE.Vector3(0,0,0),new THREE.Vector3(0,110*f,95*f)); }
+/* ================= PLAÇA DE LES INSTITUCIONS (3D) ================= */
+const TOWN=new THREE.Group(); TOWN.visible=false; scene.add(TOWN); const townMeshes=[]; const townPins=[];
+const fm=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.75,flatShading:true},o));
+const ZONES={cat:{x:-46,c1:0xf6c01b,c2:0xd9262e,n:'Catalunya',stripes:true},esp:{x:0,c1:0xc8102e,c2:0xf6c01b,n:'Espanya',stripes:false},ue:{x:46,c1:0x1e4fa3,c2:0xffd500,n:'Unió Europea',stars:true}};
+function bx(w,h,d,c,x,y,z,o){ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),fm(c,o)); m.position.set(x,y+h/2,z); m.castShadow=m.receiveShadow=true; return m; }
+function building(kind,zone){ const g=new THREE.Group(); const stone=0xe8e0cc, roof=0x8a4b3a, dark=0x6b6560; const cols=(n,w,h,z)=>{ for(let i=0;i<n;i++){ const c=new THREE.Mesh(new THREE.CylinderGeometry(.35,.4,h,8),fm(0xf4efe4)); c.position.set(-w/2+i*(w/(n-1)),h/2,z); g.add(c); } };
+ if(kind==='leg'){ g.add(bx(12,5,8,stone,0,0,0)); g.add(bx(13,.6,9,dark,0,0,0)); cols(6,10,5,4.2); const ped=new THREE.Mesh(new THREE.CylinderGeometry(0,7.5,2.2,3),fm(0xf4efe4)); ped.rotation.y=Math.PI/6; ped.rotation.z=0; ped.scale.set(1,1,.35); ped.position.set(0,6.1,3.5); ped.rotation.x=0; g.add(ped); const dome=new THREE.Mesh(new THREE.SphereGeometry(3,16,10,0,Math.PI*2,0,Math.PI/2),fm(0x3f7f6f,{roughness:.4})); dome.position.set(0,5,-1); g.add(dome); }
+ else if(kind==='cap'){ g.add(bx(9,6,7,0xd9c9a8,0,0,0)); g.add(bx(9.6,.5,7.6,dark,0,0,0)); const r=new THREE.Mesh(new THREE.ConeGeometry(6.2,2.6,4),fm(roof)); r.rotation.y=Math.PI/4; r.position.y=7.3; g.add(r); g.add(bx(2.4,9,2.4,0xd9c9a8,3.2,0,2.6)); const rt=new THREE.Mesh(new THREE.ConeGeometry(1.9,2,4),fm(roof)); rt.rotation.y=Math.PI/4; rt.position.set(3.2,10,2.6); g.add(rt); const pole=new THREE.Mesh(new THREE.CylinderGeometry(.06,.06,4),fm(0xdddddd)); pole.position.set(3.2,13,2.6); g.add(pole); const flag=new THREE.Mesh(new THREE.PlaneGeometry(2.2,1.3),fm(zone.c1,{side:THREE.DoubleSide})); flag.position.set(4.3,14.2,2.6); g.add(flag); g.userData.flag=flag; const f2=new THREE.Mesh(new THREE.PlaneGeometry(2.2,.5),fm(zone.c2,{side:THREE.DoubleSide})); f2.position.set(4.3,14.2,2.61); g.add(f2); for(let i=0;i<3;i++) g.add(bx(1.2,2,.1,0x87c7ff,-2.5+i*2.5,2.5,3.52,{roughness:.2,metalness:.3})); }
+ else if(kind==='exe'){ g.add(bx(10,7,7,0xcfc3b0,0,0,0)); g.add(bx(10.6,.5,7.6,dark,0,0,0)); g.add(bx(10,.6,7,roof,0,7,0)); for(let i=0;i<4;i++) for(let j=0;j<2;j++) g.add(bx(1.2,1.4,.1,0x87c7ff,-3.6+i*2.4,1.3+j*2.8,3.52,{roughness:.2,metalness:.3})); g.add(bx(4,.3,1.6,0xf4efe4,0,3.6,4.2)); g.add(bx(3,2.6,.2,0x7a5a3a,0,0,3.55)); }
+ else { g.add(bx(9,5,7,0xe4ddd0,0,0,0)); g.add(bx(9.6,.5,7.6,dark,0,0,0)); cols(4,6,5,3.8); g.add(bx(9.4,.7,7.4,0xf4efe4,0,5,0)); const bal=new THREE.Group(); const bar=new THREE.Mesh(new THREE.BoxGeometry(3.2,.15,.15),fm(0xffd23f,{metalness:.6,roughness:.3})); bar.position.y=8.4; bal.add(bar); const st=new THREE.Mesh(new THREE.CylinderGeometry(.08,.08,2.4),fm(0xffd23f,{metalness:.6,roughness:.3})); st.position.y=7.2; bal.add(st); for(const s of [-1,1]){ const p=new THREE.Mesh(new THREE.CylinderGeometry(.6,.6,.12,12),fm(0xffd23f,{metalness:.6,roughness:.3})); p.position.set(s*1.5,7.4,0); bal.add(p); } bal.position.set(0,0,0); g.add(bal); }
+ g.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; } }); return g; }
+function lowTree(x,z,s=1){ const g=new THREE.Group(); const t=new THREE.Mesh(new THREE.CylinderGeometry(.25,.35,2,6),fm(0x6b4a2b)); t.position.y=1; g.add(t); const c=new THREE.Mesh(new THREE.IcosahedronGeometry(1.8,1),fm([0x3f8f3f,0x4faa44,0x2f7f3a][Math.floor(Math.random()*3)])); c.position.y=3; c.scale.set(1,1.2,1); g.add(c); g.position.set(x,0,z); g.scale.setScalar(s); g.traverse(o=>{ if(o.isMesh) o.castShadow=true; }); return g; }
+function person(c){ const g=new THREE.Group(); const b=new THREE.Mesh(new THREE.CapsuleGeometry(.32,.9,4,8),fm(c)); b.position.y=.95; g.add(b); const h=new THREE.Mesh(new THREE.SphereGeometry(.3,10,8),fm(0xf2c7a5)); h.position.y=1.85; g.add(h); g.traverse(o=>{ if(o.isMesh) o.castShadow=true; }); return g; }
+const walkers=[];
+{ const ground=new THREE.Mesh(new THREE.CircleGeometry(95,64),fm(0x6a9a4a,{roughness:1})); ground.rotation.x=-Math.PI/2; ground.position.y=-.02; ground.receiveShadow=true; TOWN.add(ground);
+  const road=new THREE.Mesh(new THREE.PlaneGeometry(150,6),fm(0x4a4f57,{roughness:.9})); road.rotation.x=-Math.PI/2; road.position.set(0,0,14); road.receiveShadow=true; TOWN.add(road);
+  for(let i=0;i<24;i++){ const l=new THREE.Mesh(new THREE.PlaneGeometry(2.4,.25),fm(0xffffff)); l.rotation.x=-Math.PI/2; l.position.set(-72+i*6.2,.02,14); TOWN.add(l); }
+  for(const [k,Z] of Object.entries(ZONES)){ const plaza=new THREE.Mesh(new THREE.CylinderGeometry(19,19,.3,48),fm(0xbfb8a8,{roughness:.95})); plaza.position.set(Z.x,.15,-6); plaza.receiveShadow=true; TOWN.add(plaza);
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(19,.35,8,64),fm(Z.c1)); ring.rotation.x=Math.PI/2; ring.position.set(Z.x,.32,-6); TOWN.add(ring); const fb=new THREE.Mesh(new THREE.CylinderGeometry(2.6,2.6,.5,24),fm(0x7a4a22)); fb.position.set(Z.x,.5,-6); TOWN.add(fb); const fw=new THREE.Mesh(new THREE.CylinderGeometry(2.2,2.2,.3,24),fm(0x4fb3e8,{roughness:.1,metalness:.2})); fw.position.set(Z.x,.75,-6); TOWN.add(fw); for(let i=0;i<10;i++){ const fl=new THREE.Mesh(new THREE.SphereGeometry(.22,6,5),fm([0xff5c8a,0xffd23f,0xff8a5c,0xffffff][i%4])); const a=i/10*6.28; fl.position.set(Z.x+Math.cos(a)*2.9,.75,-6+Math.sin(a)*2.9); TOWN.add(fl); }
+    const kinds=['leg','cap','exe','jud'].filter(r=>INST[k][r]); const P={leg:[0,-18],cap:[-12,-4],exe:[12,-4],jud:[0,6]};
+    kinds.forEach(r=>{ const b=building(r,Z); const [px,pz]=P[r]; b.position.set(Z.x+px,.3,-6+pz); if(r==='jud') b.rotation.y=Math.PI; if(r==='cap') b.rotation.y=Math.PI/2*.5; if(r==='exe') b.rotation.y=-Math.PI/2*.5; b.userData.inst={k,r}; b.traverse(o=>{ if(o.isMesh){ o.userData.inst={k,r}; townMeshes.push(o); } }); TOWN.add(b); const I=INST[k][r]; townPins.push({k,r,obj:b,n:I.n,col:{cap:'#ffd23f',leg:'#2f8cff',exe:'#b6ff3b',jud:'#c08bff'}[r],y:r==='cap'?15:r==='leg'?9:r==='exe'?9:9}); });
+    const sign=new THREE.Mesh(new THREE.BoxGeometry(10,2.2,.4),fm(0x0a1628)); sign.position.set(Z.x,2.6,16); TOWN.add(sign); { const cv=document.createElement('canvas'); cv.width=512; cv.height=112; const g=cv.getContext('2d'); g.fillStyle='#0a1628'; g.fillRect(0,0,512,112); g.fillStyle='#'+Z.c1.toString(16).padStart(6,'0'); g.fillRect(0,0,512,14); g.fillRect(0,98,512,14); g.fillStyle='#fff'; g.font='700 52px Space Grotesk, sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(Z.n,256,56); const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; const lab=new THREE.Mesh(new THREE.PlaneGeometry(10,2.2),new THREE.MeshBasicMaterial({map:t})); lab.position.set(Z.x,2.6,16.21); TOWN.add(lab); } const sp=new THREE.Mesh(new THREE.CylinderGeometry(.15,.15,2.2),fm(0x888)); sp.position.set(Z.x,1.1,16); TOWN.add(sp);
+    for(let i=0;i<8;i++){ const a=i/8*Math.PI*2; TOWN.add(lowTree(Z.x+Math.cos(a)*23.5,-6+Math.sin(a)*23.5,.8+Math.random()*.5)); }
+    for(let i=0;i<6;i++){ const p=person([0x3a86ff,0xf15bb5,0xffd23f,0x2ec4b6,0xff6b35,0x8338ec][i]); p.userData={cx:Z.x,cz:-6,r:8+Math.random()*9,a:Math.random()*6.28,v:(.15+Math.random()*.25)*(Math.random()<.5?1:-1)}; TOWN.add(p); walkers.push(p); } }
+  for(let i=0;i<10;i++) TOWN.add(lowTree(-80+i*18,24+Math.random()*6,1+Math.random()*.6)); TOWN.add(lowTree(-80,-30,1.5)); TOWN.add(lowTree(80,-30,1.4));
+  /* ciutadania: grup de persones davant (votants) */
+  const vot=new THREE.Group(); vot.position.set(0,0,30); for(let i=0;i<12;i++){ const p=person([0x3a86ff,0xf15bb5,0xffd23f,0x2ec4b6,0xff6b35,0x8338ec][i%6]); p.position.set(-9+i*1.6+(i%2)*.4,0,(i%3)*1.4); vot.add(p); } TOWN.add(vot); TOWN.userData.vot=vot; const urn=bx(2,1.6,1.4,0xe9e9f2,0,0,3.6); urn.position.set(0,.8,27); TOWN.add(urn); const slot=bx(1,.08,.3,0x222,0,1.62,0); slot.position.set(0,1.62,27); TOWN.add(slot);
+  townPins.push({obj:vot,n:'La ciutadania (vota)',col:'#ffffff',y:3.5,who:true});
+}
+function townUpdate(dt,T){ for(const p of walkers){ const u=p.userData; u.a+=u.v*dt; p.position.set(u.cx+Math.cos(u.a)*u.r,0,u.cz+Math.sin(u.a)*u.r); p.rotation.y=-u.a+(u.v>0?Math.PI:0); p.position.y=Math.abs(Math.sin(T*8+u.a*5))*.08; } TOWN.traverse(o=>{ if(o.userData.flag){} }); }
+let townHL=new Set(); const hlMats=new Map();
+function townHighlight(list){ for(const [m,orig] of hlMats){ m.material.emissive.setHex(0); m.material.emissiveIntensity=0; } hlMats.clear(); for(const o of townMeshes){ if(list.some(([k,r])=>o.userData.inst.k===k&&o.userData.inst.r===r)){ o.material=o.material.clone(); o.material.emissive.setHex(0xffd23f); o.material.emissiveIntensity=.45; hlMats.set(o,1); } } }
+function townCard(k,r){ const I=INST[k][r]; showCard({n:I.n,tipus:INST[k].n,f:I.f,t:I.t}); const p=townPins.find(p=>p.k===k&&p.r===r); if(p){ townHighlight([[k,r]]); townFly(k,r); } }
+function townFly(k,r){ const Z=ZONES[k]; if(r){ const p=townPins.find(p=>p.k===k&&p.r===r); const t=p.obj.position.clone().add(new THREE.Vector3(0,4,0)); flyTo(t,t.clone().add(new THREE.Vector3(6,10,24)),.9); } else { const t=new THREE.Vector3(Z.x,2,-4); flyTo(t,t.clone().add(new THREE.Vector3(0,30,52)),.9); } }
+function townHome(){ flyTo(new THREE.Vector3(0,0,-2),new THREE.Vector3(0,78,125),.9); }
+
+$('#tHome').onclick=()=>{ if(mode==='inst') townHome(); else home(); };
+const townBoxes=[]; TOWN.updateMatrixWorld(true); townPins.filter(p=>p.k).forEach(p=>{ const b=new THREE.Box3().setFromObject(p.obj); b.expandByScalar(.6); townBoxes.push(b); });
+function walkStart(){ if(mode!=='inst') setMode('inst'); fl=null; Walk.start(THREE,{camera,controls,canvas,start:[0,42],yaw:Math.PI,speed:5,eye:1.65,ground:(x,z)=>{ for(const Z of Object.values(ZONES)) if(Math.hypot(x-Z.x,z+6)<19) return .3; return 0; }, radius:88, center:[0,0],
+  blocked:(x,z)=>{ for(const b of townBoxes){ if(x>b.min.x&&x<b.max.x&&z>b.min.z&&z<b.max.z) return true; } for(const Z of Object.values(ZONES)) if(Math.hypot(x-Z.x,z+6)<3.1) return true; return false; }, onStop:()=>townHome()}); }
+Walk.button($('#tools'),walkStart); window.__c={dl,renderer,scene,THREE,TOWN};
+
+/* ================= ESCENARIS 2D ================= */
+const ST=$('#stage>div');
+const W_STEPS=[['👥 La ciutadania major de 18 anys vota a les eleccions…',[]],['…i tria els membres del Parlament (Catalunya), les Corts Generals (Espanya) i el Parlament Europeu.',[['cat','leg'],['esp','leg'],['ue','leg']]],['El Parlament tria el president o la presidenta (a Espanya, el Congrés dels Diputats)…',[['cat','cap'],['esp','exe']]],['…que forma el Govern amb els consellers o els ministres.',[['cat','exe'],['esp','exe'],['ue','exe']]],['Els tribunals són independents: és la divisió de poders.',[['esp','jud'],['ue','jud']]]];
+let whoI=0;
+function whoStep(i){ whoI=i; const [t,hl]=W_STEPS[whoI%W_STEPS.length]; const el=$('#whoT'); if(el) el.textContent=t; townHighlight(hl); if(!hl.length) townHome(); else townFly(hl[0][0]); whoI++; const b=$('#who'); if(b) b.textContent=whoI%W_STEPS.length?'Següent →':'🗳️ Torna a començar'; }
+function ctlInst(){ clearPins(); townPins.forEach(addObjPin); const C=$('#ctl'); C.style.display=''; C.innerHTML=`<div class="crow"><span class="val" style="font-size:14px">Qui governa?</span><div class="seg">${Object.entries(ZONES).map(([k,Z])=>`<button data-z="${k}">${Z.n}</button>`).join('')}</div><button class="pill" id="who">🗳️ Qui elegeix qui?</button></div><div id="whoT" class="t" style="font-size:14px;min-height:20px;margin:4px 0 0;color:#fff"></div>`;
+ C.querySelectorAll('[data-z]').forEach(b=>b.onclick=()=>{ C.querySelectorAll('[data-z]').forEach(x=>x.classList.toggle('on',x===b)); townHighlight([]); townFly(b.dataset.z); }); $('#who').onclick=()=>whoStep(whoI); }
+function stageInst(){ let h=`<p class="bigq" style="margin:0 0 10px;font-size:18px;text-align:center">Qui governa? Toca una institució</p><div class="inst"><div></div>${['cat','esp','ue'].map(k=>`<div class="hd">${INST[k].n}</div>`).join('')}`;
+ for(const [r,rn] of ROWS){ h+=`<div class="rw" style="background:${{cap:'rgba(255,210,63,.12)',leg:'rgba(47,140,255,.15)',exe:'rgba(182,255,59,.12)',jud:'rgba(192,139,255,.15)'}[r]}">${rn}</div>`; for(const k of ['cat','esp','ue']){ const I=INST[k][r]; h+=`<button data-k="${k}" data-r="${r}">${I.n}<small>${I.f&&I.f['Poder']?'poder '+I.f['Poder']:''}</small></button>`; } }
+ h+='</div><div class="row" style="justify-content:center;margin-top:12px"><button class="pill" id="who">🗳️ Qui elegeix qui?</button></div><div id="whoT" class="t" style="text-align:center;font-size:15px;min-height:24px;margin-top:6px"></div>'; ST.innerHTML=h;
+ ST.querySelectorAll('.inst button').forEach(b=>b.onclick=()=>{ ST.querySelectorAll('.inst button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); const I=INST[b.dataset.k][b.dataset.r]; showCard({n:I.n,tipus:INST[b.dataset.k].n,f:I.f,t:I.t}); });
+ let step=0; const W=[['👥 La ciutadania major de 18 anys vota a les eleccions…',[]],['…i tria els membres del Parlament (Catalunya), les Corts Generals (Espanya) i el Parlament Europeu.',[['cat','leg'],['esp','leg'],['ue','leg']]],['El Parlament tria el president o la presidenta (a Espanya, el Congrés dels Diputats)…',[['cat','cap'],['esp','exe']]],['…que forma el Govern amb els consellers o els ministres.',[['cat','exe'],['esp','exe']]],['Els tribunals són independents: és la divisió de poders.',[['cat','jud'],['esp','jud'],['ue','jud']]]];
+ $('#who').onclick=()=>{ const [t,hl]=W[step%W.length]; $('#whoT').textContent=t; ST.querySelectorAll('.inst button').forEach(x=>x.classList.toggle('hl',hl.some(([k,r])=>x.dataset.k===k&&x.dataset.r===r))); step++; $('#who').textContent=step%W.length?'Següent →':'🗳️ Torna a començar'; }; }
+function stageODS(){ ST.innerHTML=`<p class="bigq" style="margin:0 0 10px;font-size:18px;text-align:center">Els 17 Objectius de Desenvolupament Sostenible (Agenda 2030)</p><div class="ods">${ODS.map((o,i)=>`<button data-i="${i}" style="background:${o[1]}"><b>${i+1}</b>${o[0]}</button>`).join('')}</div>`;
+ ST.querySelectorAll('.ods button').forEach(b=>b.onclick=()=>{const o=ODS[+b.dataset.i]; showCard({n:(+b.dataset.i+1)+'. '+o[0],tipus:'Objectiu de Desenvolupament Sostenible',t:o[2],c:'Què pots fer tu? '+o[3]});}); }
+let cons={sub:'rec',item:null,score:0,n:0,queue:[]};
+function stageConsum(){ if(cons.sub==='rec'){ if(!cons.queue.length){ cons.queue=shuf(ITEMS); cons.score=0; cons.n=0; } const it=cons.queue[0];
+  ST.innerHTML=`<p class="bigq" style="margin:0;font-size:18px;text-align:center">A quin contenidor va?</p><div class="item"><b>${it[0]}</b>${it[1]}</div><div class="bins">${BINS.map(([k,n,c,e])=>`<button data-k="${k}" style="background:${c}"><span>${e}</span>${n}</button>`).join('')}</div><p id="recFb" class="t" style="text-align:center;min-height:24px;font-size:15px"></p><p style="text-align:center;color:var(--mu);font-size:13px">Encerts: <b id="recS" style="color:var(--li)">${cons.score}</b> de ${cons.n}</p>`;
+  ST.querySelectorAll('.bins button').forEach(b=>b.onclick=()=>{ const ok=b.dataset.k===it[2]; cons.n++; if(ok) cons.score++; const right=BINS.find(x=>x[0]===it[2]); $('#recFb').innerHTML=ok?`<span style="color:var(--li)">Molt bé! ${it[1]} va al contenidor ${right[1].toLowerCase()}.</span>`:`<span style="color:#ff8a9c">No! Va a: ${right[3]} ${right[1].toLowerCase()}.</span>`; cons.queue.shift(); setTimeout(stageConsum,ok?900:1800); ST.querySelectorAll('.bins button').forEach(x=>x.onclick=null); }); }
+ else { const Q=[['Com vas a l\'escola?',[['🚶 A peu o amb bici',0],['🚌 Transport públic',1],['🚗 En cotxe',3]]],['Quanta carn menges?',[['🥗 Poca',0],['🍝 Uns quants cops per setmana',1],['🍖 Cada dia',3]]],['Què fas amb la roba que ja no et va bé?',[['🔁 La dono o la reutilitzo',0],['🗑️ La llenço',2]]],['Separes els residus a casa?',[['♻️ Sempre',0],['🤷 De vegades',1],['❌ Mai',2]]],['Apagues els llums i aparells que no fas servir?',[['💡 Sempre',0],['🤷 De vegades',1],['❌ Mai',2]]],['Quantes coses noves compres?',[['🛒 Només el que necessito',0],['🛍️ Moltes',3]]]];
+  cons.ans=cons.ans||Q.map(()=>null);
+  ST.innerHTML=`<p class="bigq" style="margin:0;font-size:18px;text-align:center">Calcula la teva petjada ecològica</p><p class="t" style="text-align:center;font-size:14px;color:var(--mu)">Quants planetes Terra caldrien si tothom visqués com tu?</p>${Q.map(([q,o],i)=>`<div class="qrow"><p>${q}</p><div class="row">${o.map(([t,v],j)=>`<button class="pill ${cons.ans[i]===j?'on':''}" data-i="${i}" data-j="${j}">${t}</button>`).join('')}</div></div>`).join('')}<div id="pfR" style="text-align:center"></div>`;
+  ST.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{cons.ans[+b.dataset.i]=+b.dataset.j;stageConsum();});
+  if(cons.ans.every(a=>a!=null)){ const pts=cons.ans.reduce((s,a,i)=>s+Q[i][1][a][1],0); const pl=Math.max(.7,Math.min(4.5,.7+pts*.25)); $('#pfR').innerHTML=`<div class="pf">${'🌍'.repeat(Math.floor(pl))}${pl%1>.3?'<span style="opacity:.5">🌍</span>':''}</div><p class="t" style="font-size:16px">Caldrien uns <b style="color:${pl<=1.2?'var(--li)':pl<2.5?'var(--ye)':'#ff8a9c'}">${pl.toFixed(1).replace('.',',')} planetes</b>. ${pl<=1.2?'Molt bé: vius de manera sostenible!':'Només en tenim un! Quins hàbits podries canviar?'}</p>`; } } }
+
+/* ================= PANELS ================= */
+const P=$('#panel .pbody');
+function renderPanel(){ P.innerHTML='';
+ if(mode==='inst'){ P.appendChild(html(`<h3>Les institucions</h3><p class="lead">Com ens governem?</p><p class="t">En una <b>democràcia</b>, el poder és del poble, que tria els seus representants a les eleccions.</p>
+  <div class="sbox"><p class="h">La divisió de poders</p><ul><li><b>Legislatiu</b>: fa i aprova les lleis.</li><li><b>Executiu</b>: governa i fa complir les lleis.</li><li><b>Judicial</b>: jutja qui no compleix les lleis.</li></ul><p class="t" style="font-size:14px">Cada poder és independent dels altres.</p></div>
+  <div class="sbox"><p class="h">Catalunya, comunitat autònoma</p><p class="t" style="font-size:14px">Catalunya té dret a l'<b>autogovern</b> gràcies a l'<b>Estatut d'autonomia</b>. El conjunt de les seves institucions s'anomena <b>Generalitat</b>.</p></div>
+  <div class="sbox"><p class="h">Espanya, monarquia parlamentària</p><p class="t" style="font-size:14px">Ho diu la <b>Constitució</b>: el rei no governa, i el poder el tenen les Corts Generals, que trien els ciutadans majors de 18 anys.</p></div>
+  <div class="sbox"><p class="h">Activitats del llibre</p><p class="act">1: qui elegeix el president de la Generalitat, els diputats i els consellers? 3: relaciona cada funció amb la seva institució. 5: completa la taula de les institucions d'Espanya.</p></div>`));
+  P.appendChild(quiz([["Qui elabora les lleis a Catalunya?",["El Parlament","El Govern","El Síndic de Greuges"],0],["Quin poder té el Govern d'Espanya?",["L'executiu","El legislatiu","El judicial"],0]])); }
+ if(mode==='ue'){ P.appendChild(html(`<h3>La Unió Europea</h3><p class="lead">Unida en la diversitat</p><p class="t">Després de dues grans guerres, alguns països europeus es van unir per mantenir la <b>pau</b>. El 1957 sis països van crear la Comunitat Econòmica Europea, que el 1992 (Tractat de Maastricht) es va convertir en la <b>Unió Europea</b>.</p>
+  <div class="sl"><label><span>Any</span><b id="euY">${euYear}</b></label><input type="range" id="euS" min="1957" max="2026" step="1" value="${euYear}"></div>
+  <div class="hud"><div><small>Països membres</small><b class="c" id="euN"></b></div><div><small>Fan servir l'euro</small><b class="y" id="euE"></b></div></div>
+  <div class="row"><button class="pill ${showEuro?'on':''}" id="euB">💶 Zona euro</button></div>
+  <div class="sbox"><p class="h">Què compartim?</p><ul><li>Podem viatjar, viure i treballar a qualsevol país membre.</li><li>Una moneda única, l'<b>euro</b> (des del 2002 a Espanya).</li><li>Els valors: dignitat, llibertat, democràcia, igualtat i drets humans.</li></ul></div>
+  <div class="sbox"><p class="h">Activitats del llibre</p><p class="act">6 i 7: explica per què es va crear la UE i quins països en formen part. 8: quins beneficis té formar part de la UE?</p></div>`));
+  const upd=()=>{ $('#euY').textContent=euYear; const mem=countries.filter(c=>EUJOIN[c.n]&&EUJOIN[c.n]<=euYear&&!(EULEAVE[c.n]&&EULEAVE[c.n]<=euYear)).length+(euYear>=2004?1:0); $('#euN').textContent=mem; $('#euE').textContent=Object.values(EURO).filter(y=>y<=euYear).length+(euYear>=2008?1:0); colorUE(); };
+  $('#euS').oninput=e=>{euYear=+e.target.value;upd();}; $('#euB').onclick=e=>{showEuro=!showEuro;e.target.classList.toggle('on',showEuro);colorUE();}; upd();
+  P.appendChild(quiz([["Quants països formen la UE?",["27","15","50"],0],["Quan va entrar Espanya a la Comunitat Europea?",["El 1986","El 1957","El 2002"],0]])); }
+ if(mode==='idh'){ P.appendChild(html(`<h3>La riquesa al món</h3><p class="lead">Índex de desenvolupament humà (IDH)</p><p class="t">L'<b>IDH</b> mesura la qualitat de vida d'un país: quants anys viu la gent (salut), quants anys va a l'escola (educació) i quants diners guanya (ingressos). Com més alt és el país al mapa, més alt és l'IDH.</p>
+  <div class="sbox"><div class="leg">${['vh','h','m','l'].map(k=>`<button><i style="background:${IDHC[k][1]}"></i>IDH ${IDHC[k][0].toLowerCase()}</button>`).join('')}</div></div>
+  <div class="sbox"><p class="h">I aquí?</p><p class="t" style="font-size:14px">La pobresa no és només als països menys desenvolupats. Segons el llibre, a Catalunya més d'1,7 milions de persones estan en risc de pobresa o exclusió social, i gairebé un terç dels infants viu en llars en aquesta situació.</p><p class="t" style="font-size:14px">Per reduir les desigualtats, els <b>impostos</b> paguen serveis públics (escoles, hospitals), <b>pensions</b>, ajudes i l'<b>ingrés mínim vital</b>.</p></div>
+  <div class="sbox"><p class="h">Activitats del llibre</p><p class="act">1: què és l'IDH? 2: per què l'escolarització està relacionada amb el desenvolupament? 3: què es podria fer per reduir les desigualtats?</p></div>`));
+  P.appendChild(quiz([["Què mesura l'IDH?",["Salut, educació i ingressos","Només els diners","La mida del país"],0],["On hi ha més països amb IDH baix?",["A l'Àfrica","A Europa","A Oceania"],0]])); }
+ if(mode==='ods'){ P.appendChild(html(`<h3>Els ODS</h3><p class="lead">17 objectius per a un món millor</p><p class="t">L'any 2015 tots els països de les Nacions Unides es van comprometre a aconseguir 17 <b>Objectius de Desenvolupament Sostenible</b> abans del 2030.</p><p class="t">El <b>desenvolupament sostenible</b> vol dir satisfer les nostres necessitats sense posar en perill les de les generacions futures.</p><div class="sbox"><p class="h">Repte de classe</p><p class="act">Cada grup tria un ODS i proposa una acció per fer a l'escola.</p></div>`));
+  P.appendChild(quiz([["Fins a quin any hi ha per aconseguir els ODS?",["2030","2050","2100"],0]])); }
+ if(mode==='consum'){ P.appendChild(html(`<h3>Un consum responsable</h3><p class="lead">Els recursos del planeta són limitats</p><div class="sub"><button data-s="rec" class="${cons.sub==='rec'?'on':''}"><b>♻️</b>Recicla</button><button data-s="pet" class="${cons.sub==='pet'?'on':''}"><b>👣</b>Petjada</button></div>
+  <div class="sbox"><p class="h">Les 3 R</p><ul><li><b>Reduir</b>: comprar només el que cal i evitar els embolcalls.</li><li><b>Reutilitzar</b>: donar una segona vida a les coses.</li><li><b>Reciclar</b>: separar els residus perquè es puguin fer servir per fabricar coses noves.</li></ul></div>
+  <div class="sbox"><p class="h">Recursos naturals</p><p class="t" style="font-size:14px">Alguns es consumeixen més de pressa del que es regeneren: és la <b>sobreexplotació</b>. La <b>petjada ecològica</b> mesura quanta superfície de la Terra cal per produir tot el que consumim.</p><p class="t" style="font-size:14px">L'<b>economia circular</b> aprofita els residus com a recursos.</p></div>`));
+  P.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{cons.sub=b.dataset.s;renderPanel();stageConsum();}); }
+}
+
+/* ================= REPTE ================= */
+const RP=$('#rep');
+const repte=Kit.Repte(RP,{
+ inst:{ic:'🏛️',n:'Quina institució?',d:'Relaciona funcions i institucions.',make:()=>Kit.mc([["Elabora les lleis de Catalunya",["Parlament de Catalunya","Govern de la Generalitat","Tribunal Suprem"],0],["Forma i dirigeix el Govern i convoca eleccions a Catalunya",["La presidència de la Generalitat","El Parlament","El Síndic de Greuges"],0],["Desenvolupa les lleis que aprova el Parlament de Catalunya",["El Govern de la Generalitat","El Senat","El Consell Europeu"],0],["Fan les lleis d'Espanya i trien el president del Govern",["Les Corts Generals","El rei","Els tribunals"],0],["És el tribunal més important d'Espanya",["El Tribunal Suprem","El Congrés","La Comissió Europea"],0],["Defineix els objectius de la Unió Europea",["El Consell Europeu","El Parlament de Catalunya","El Banc Central Europeu"],0],["Vetlla perquè els països compleixin les lleis europees",["La Comissió Europea","El Senat","El Govern d'Espanya"],0],["Defensa els drets de la ciutadania davant l'Administració catalana",["El Síndic de Greuges","El Parlament Europeu","El rei"],0],["Gestiona l'euro",["El Banc Central Europeu","El Govern d'Espanya","El Consell de Garanties"],0]],8)},
+ poder:{ic:'⚖️',n:'Quin poder?',d:'Legislatiu, executiu o judicial.',make:()=>Kit.classify([['Fer les lleis','Legislatiu'],['Aprovar els pressupostos','Legislatiu'],['Governar el país','Executiu'],['Fer complir les lleis','Executiu'],['Jutjar qui no compleix les lleis','Judicial'],['Les Corts Generals','Legislatiu'],['El Govern','Executiu'],['Els tribunals','Judicial'],['El Parlament Europeu','Legislatiu'],['La Comissió Europea','Executiu']].map(([n,c])=>({n,cat:c})),['Legislatiu','Executiu','Judicial'],8,it=>`<em>${it.n}</em>: quin poder és?`)},
+ ue:{ic:'🇪🇺',n:'És de la UE?',d:'Quins països en són membres?',make:()=>Kit.classify(['Spain','France','Germany','Italy','Portugal','Poland','Sweden','Greece','Croatia','Ireland','Norway','Switzerland','United Kingdom','Turkey','Ukraine','Iceland','Serbia','Morocco'].map(n=>({n:nm(n),cat:EUJOIN[n]&&!EULEAVE[n]?'Sí, és membre':'No és membre'})),['Sí, és membre','No és membre'],8,it=>`<em>${it.n}</em> és membre de la Unió Europea?`)},
+ recicla:{ic:'♻️',n:'Quin contenidor?',d:'Envasos, paper, vidre, orgànic…',make:()=>shuf(ITEMS).slice(0,8).map(([e,n,k])=>{const right=BINS.find(b=>b[0]===k);const o=shuf([right,...shuf(BINS.filter(b=>b!==right)).slice(0,2)]);return {q:`${e} <em>${n}</em>: on el llences?`,opts:o.map(b=>b[3]+' '+b[1]),ok:o.indexOf(right),exp:''};})},
+ preguntes:{ic:'❓',n:'Preguntes de les unitats',d:'Institucions, UE, desigualtat, ODS.',make:()=>Kit.mc([["Què és l'Estatut d'autonomia?",["La norma que recull l'autogovern de Catalunya","La llei de la UE","Un tribunal"],0],["Quina és la forma de govern d'Espanya?",["Monarquia parlamentària","República","Dictadura"],0],["A partir de quina edat es pot votar a Espanya?",["18 anys","16 anys","21 anys"],0],["Quants països fan servir l'euro el 2026?",["21","27","12"],0],["Què vol dir desenvolupament sostenible?",["Cobrir les necessitats sense perjudicar les generacions futures","Créixer com més millor","Fabricar més coses"],0],["Què és la petjada ecològica?",["La superfície de Terra que cal per al que consumim","Una petjada a la sorra","Un tipus de reciclatge"],0],["Quantes R hi ha del consum responsable?",["Tres: reduir, reutilitzar i reciclar","Dues","Cinc"],0],["On van les piles gastades?",["A la deixalleria o als punts de recollida","Al contenidor groc","Al rebuig"],0],["Què és l'ingrés mínim vital?",["Una ajuda econòmica per a famílies sense prou diners","Un impost","Un sou dels polítics"],0],["Per què es va crear la Unió Europea?",["Per mantenir la pau i cooperar","Per fer una guerra","Per tancar fronteres"],0]],10)}
+});
+
+/* ================= MODES ================= */
+function applyMode(){ $('#card').classList.remove('show'); const map=['ue','idh'].includes(mode), inst=mode==='inst';
+ canvas.style.visibility=map||inst?'visible':'hidden'; $('#stage').classList.toggle('show',['ods','consum'].includes(mode)); TOWN.visible=inst; $('#ctl').style.display=inst?'':'none'; sea.visible=!inst; countries.forEach(c=>c.mesh.visible=!inst); if(inst){ townHome(); townHighlight([]); } $('#panel').style.display=mode==='repte'?'none':''; RP.style.display=mode==='repte'?'block':'none'; $('#tools').style.display=map||inst?'':'none'; const wb=$('#tWalk'); if(wb) wb.style.display=inst?'':'none'; if(Walk.on&&!inst) Walk.stop();
+ clearPins(); if(map){ setView(mode==='ue'?'eu':'world'); if(mode==='ue'){ colorUE(); countries.filter(c=>EUJOIN[c.n]).forEach(c=>addPin(c,nm(c.n),'#00e5ff')); } else { colorIDH(); ['Norway','Spain','United States of America','Brazil','China','India','Niger','Chad','Australia','Japan','Mexico','Nigeria','Russia','South Africa','Ethiopia'].forEach(n=>{const c=countries.find(x=>x.n===n); if(c) addPin(c,nm(n),IDHC[idhOf(n)][1]);}); } home(); }
+ if(mode==='inst') ctlInst(); if(mode==='ods') stageODS(); if(mode==='consum') stageConsum(); if(mode==='repte') repte.menu(); renderPanel(); }
+function setMode(m){ if(m!==mode) Vis.fade(); mode=m; document.querySelectorAll('#modes button').forEach(b=>b.classList.toggle('on',b.dataset.m===m)); applyMode(); }
+document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+$('#pmin').onclick=()=>{const m=$('#panel').classList.toggle('min');$('#pmin').textContent=m?'▴ Mostra el text':'▾ Amaga el text';};
+
+/* ================= LOOP ================= */
+let last=performance.now();
+function loop(now){ let dt=Math.min(.05,(now-last)/1000); last=now; if(window.UX&&UX.ST.paused) dt=0; if(!['ue','idh','inst'].includes(mode)) return;
+ if(mode==='inst') townUpdate(dt,now/1000);
+ if(fl){ fl.t=Math.min(1,fl.t+dt/fl.d); const k=1-Math.pow(1-fl.t,3); controls.target.lerpVectors(fl.ft,fl.tt,k); camera.position.lerpVectors(fl.fp,fl.tp,k); if(fl.t>=1) fl=null; }
+ for(const c of countries){ c.h+=(c.ht-c.h)*Math.min(1,dt*6); c.mesh.scale.y=c.h; }
+ Vis.tick(now/1000,camera); if(Walk.on) Walk.tick(dt); else controls.update(); renderer.render(scene,camera); updatePins(); }
+camera.position.set(0,62,62); renderer.setAnimationLoop(loop);
+applyMode(); $('#loading').remove(); Kit.initHelp('seen');
+{ const items=[]; for(const k in INST) for(const r in INST[k]) if(INST[k][r]&&INST[k][r].n&&r!=='n') items.push({k:INST[k][r].n,n:INST[k][r].n,ic:'🏛️'});
+  Object.keys(EUJOIN).filter(c=>!EULEAVE[c]).forEach(c=>items.push({k:CA[c]||c,n:CA[c]||c,ic:'🇪🇺'})); ODS.forEach((o,i)=>items.push({k:(i+1)+'. '+o[0],n:(i+1)+'. '+o[0],ic:'🎯'}));
+  UX.boot({items,title:'Institucions, països i ODS descoberts',reset:()=>setMode('inst'),
+   tour:{intro:'Hola! Aquí aprendràs qui mana i com ens organitzem. En 30 segons et dic com va.',before:[{text:'Anem al mapa de la Unió Europea. Toca el botó.',at:'#modes [data-m=ue]',done:()=>$('#modes button.on').dataset.m==='ue'}],tap:'Toca un país del mapa per veure si és de la Unió Europea i des de quan.',drag:'Arrossega per moure el mapa. Amb dos dits (o la roda) t\'hi apropes.'}}); }
+window.__x={setMode,setYear:y=>{euYear=y;colorUE();},startGame:k=>repte.start(k)};
+</script>
+</body>
+</html>

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Medi·Lab 3D · L'edat contemporània</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/*BASECSS*/
+#yearBig{position:fixed;top:78px;right:20px;z-index:3;font-family:Orbitron;font-size:44px;color:#fff;text-shadow:0 0 18px rgba(0,229,255,.7);pointer-events:none}
+#yearBig small{display:block;font-family:"Space Grotesk";font-size:14px;color:var(--cy);text-shadow:none;text-align:right}
+#tbar{position:fixed;left:394px;right:76px;bottom:calc(var(--tb) + 14px);z-index:4;padding:8px 14px}
+#tbar .per{display:flex;height:10px;border-radius:6px;overflow:hidden;margin:4px 0 2px}
+#tbar .per i{display:block;height:100%}
+#tbar .lab{display:flex;justify-content:space-between;font-size:11px;color:var(--mu)}
+.pin.ev span{font-size:12px}
+.pin.ev.cat span{border-color:#ffd23f}
+.pin.per2 i{display:none}.pin.per2 span{font-family:Orbitron;font-size:12px;letter-spacing:.06em;background:rgba(0,0,0,.55)}
+.cmp{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;font-size:14px;align-items:center}
+.cmp b{color:var(--cy);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.cmp span{color:#dbe8f8}
+.ordL{display:flex;flex-direction:column;gap:6px}
+.ordL button{text-align:left;border:1px solid var(--gb);background:rgba(0,0,0,.25);border-radius:12px;padding:10px 12px;cursor:pointer;font-size:15px;display:flex;gap:10px;align-items:center}
+.ordL button.done{border-color:var(--li);background:rgba(182,255,59,.14)}
+.ordL button i{font-style:normal;width:24px;height:24px;border-radius:50%;border:1px solid var(--mu);display:flex;align-items:center;justify-content:center;font-size:12px;flex:none}
+.ordL button.done i{background:var(--li);color:#173404;border-color:var(--li)}
+@media (max-width:860px){#yearBig{top:auto;bottom:calc(40% + var(--tb) + 20px);right:12px;font-size:30px}#tbar{display:none}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="loading"><i></i>VIATGEM EN EL TEMPS…</div>
+<div id="pins"></div>
+<div id="yearBig">1789<small></small></div>
+<header id="top" class="glass">
+  <div class="logo">MEDI·LAB 3D · VIATGE EN EL TEMPS<small>Coneixement del Medi · 6è · Unitat 7: «Ens endinsem en l'edat contemporània»</small></div>
+  <button id="helpBtn" aria-label="Ajuda i guia">?</button>
+</header>
+<nav id="modes">
+  <button data-m="linia" class="on"><span class="e">⏳</span>Línia del temps</button>
+  <button data-m="revol"><span class="e">🏭</span>Revolucions</button>
+  <button data-m="govern"><span class="e">🏛️</span>Formes de govern</button>
+  <button data-m="cat"><span class="e">🟨</span>Catalunya</button>
+  <button data-m="soc"><span class="e">👩‍👧</span>Societat</button>
+  <button data-m="repte"><span class="e">🏆</span>Repte</button>
+</nav>
+<aside id="panel" class="glass"><button id="pmin" class="mini">▾ Amaga el text</button><div class="pbody"></div></aside>
+<aside id="rep" class="glass" style="display:none"></aside>
+<div id="tbar" class="glass"><div class="per" id="tPer"></div><input type="range" id="tYear" min="1789" max="2025" step="1" value="1789"><div class="lab"><span>1789</span><span>1850</span><span>1900</span><span>1950</span><span>2000</span><span>avui</span></div></div>
+<nav id="tools" class="glass">
+  <button id="tPlay" title="Viatja / atura" aria-label="Viatja o atura">▶</button>
+  <button id="tNames" class="on" title="Noms" aria-label="Mostra o amaga els noms">🏷️</button>
+  <button id="tHome" title="Vista general" aria-label="Vista general">⟲</button>
+</nav>
+<div id="card" class="glass"><button class="x" aria-label="Tancar">×</button><span class="tag"></span><h2></h2><div class="facts"></div><p class="desc"></p><p class="cur"></p></div>
+
+<div id="help" role="dialog" aria-modal="true" aria-label="Ajuda">
+ <div class="hbox glass">
+  <button class="hx" aria-label="Tancar">×</button>
+  <div class="htabs"><button data-t="com" class="on">Com funciona</button><button data-t="guia">Guia del mestre</button></div>
+  <div class="hpage" data-p="com">
+   <h2>Benvinguts a la màquina del temps</h2>
+   <p class="hsub">Coneixement del Medi · 6è · Unitat 7: «Ens endinsem en l'edat contemporània»</p>
+   <div class="steps3">
+    <div class="st"><span>1</span><b>Viatja</b><p>Prem ▶ per recórrer la línia del temps des de 1789 fins avui, o mou la barra dels anys.</p></div>
+    <div class="st"><span>2</span><b>Toca els fets</b><p>Cada icona és un fet important. Toca-la per llegir-ne la fitxa. Les grogues són de Catalunya.</p></div>
+    <div class="st"><span>3</span><b>Compara</b><p>A <i>Formes de govern</i> i <i>Societat</i> pots veure com han canviat les coses al llarg del temps.</p></div>
+   </div>
+   <button class="hgo">Comença!</button>
+  </div>
+  <div class="hpage" data-p="guia" style="display:none">
+   <h2>Guia per a la classe</h2>
+   <p class="hsub">Propostes de 10–15 minuts per apartat i activitats del llibre relacionades.</p>
+   <details open><summary>⏳ Línia del temps</summary><p><b>Objectiu:</b> ordenar les etapes de l'edat contemporània a Espanya i Catalunya.</p><ol><li>Feu el viatge complet i que anotin a la llibreta el nom de cada etapa i els anys.</li><li>Amb els noms amagats, que diguin l'etapa de cada color.</li></ol><p class="lib">Llibre: línia del temps del Diari d'aprenentatge. Nota per al mestre: el llibre diu que Espanya va entrar a la Comunitat Econòmica Europea el 1981; l'ingrés va ser el 1986 (al laboratori hi posa 1986).</p></details>
+   <details><summary>🏭 Revolucions</summary><p><b>Objectiu:</b> explicar com va començar l'edat contemporània i què va ser la Revolució Industrial.</p><p class="lib">Llibre: activitats 1, 2 i 3 (pàg. 130-131).</p></details>
+   <details><summary>🏛️ Formes de govern</summary><p><b>Objectiu:</b> distingir monarquia absoluta, monarquia constitucional o parlamentària, república i dictadura.</p><ol><li>Tria cada forma i observa en quines etapes es repeteix.</li><li>Debat: què canvia per a la gent en cada forma de govern?</li></ol><p class="lib">Llibre: activitats 4 a 13.</p></details>
+   <details><summary>🟨 Catalunya</summary><p><b>Objectiu:</b> conèixer els fets principals de la història contemporània de Catalunya.</p><p class="lib">Llibre: activitats 5, 9 i 15. Solució de l'activitat 15: el retorn de Josep Tarradellas i l'aprovació de l'Estatut d'autonomia.</p></details>
+   <details><summary>👩‍👧 Societat</summary><p><b>Objectiu:</b> comparar la vida quotidiana en diferents moments i valorar el paper de les dones.</p><p class="lib">Llibre: activitats 16 i 17 (pàg. 142-143).</p></details>
+   <details><summary>🏆 Repte</summary><ul><li>«Ordena els fets» és ideal per fer-lo en parelles.</li><li>Els rècords es guarden a cada tauleta.</li></ul></details>
+  </div>
+ </div>
+</div>
+<div id="credit">Escena generada per ordinador. Les dates són les del llibre de text, llevat de les indicades a la guia.</div>
+
+<script>/*KIT*/</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+const {$,shuf,html,showCard,quiz,subtabs}=Kit; Kit.setPrefix('medilab_hist_');
+/* ================= DADES ================= */
+const Y0=1789, Y1=2025, SC=.6; const X=y=>(y-Y0)*SC;
+const FORMS={abs:['Monarquia absoluta','#c08bff',"El rei té tot el poder: fa les lleis, governa i jutja. No hi ha constitució."],cons:['Monarquia constitucional','#2f8cff',"Hi ha rei, però el seu poder està limitat per una constitució. Només votaven alguns homes."],rep:['República','#b6ff3b',"No hi ha rei: el cap de l'Estat és un president elegit."],dict:['Dictadura','#ff3b5c',"Una sola persona té tot el poder, normalment amb el suport de l'exèrcit. No hi ha llibertats ni eleccions lliures."],dem:['Monarquia parlamentària democràtica','#00e5ff',"Hi ha rei, però el poder és del poble, que vota els seus representants. La Constitució garanteix els drets de tothom."],war:['Guerra','#ff8a5c',"Període de guerra."]};
+const PER=[
+ {a:1789,b:1808,n:"Fi de l'Antic Règim",f:'abs',c:'#7a5cff',t:"A França, la Revolució Francesa (1789) acaba amb la monarquia absoluta. És l'inici de l'edat contemporània. A Espanya encara governa un rei absolut, Carles IV."},
+ {a:1808,b:1814,n:'Guerra del Francès',f:'war',c:'#ff8a5c',t:"Napoleó envaeix Espanya i posa el seu germà Josep Bonaparte com a rei. La població s'hi enfronta. A Cadis es redacta la primera constitució (1812)."},
+ {a:1814,b:1833,n:'Regnat de Ferran VII',f:'abs',c:'#c08bff',t:"Ferran VII torna i anul·la la Constitució de 1812: torna la monarquia absoluta."},
+ {a:1833,b:1868,n:"Regnat d'Isabel II",f:'cons',c:'#2f8cff',t:"S'estableix una monarquia constitucional i liberal. Hi ha guerres carlines. A Catalunya, industrialització i Renaixença."},
+ {a:1868,b:1874,n:'Sexenni Democràtic',f:'rep',c:'#7dffb2',t:"La revolució de 1868 fa fora Isabel II. Arriba un rei estranger, Amadeu de Savoia, que renuncia el 1873. Es proclama la Primera República."},
+ {a:1874,b:1923,n:'La Restauració',f:'cons',c:'#4f9cff',t:"Torna la monarquia amb Alfons XII i després Alfons XIII. El 1898 Espanya perd les últimes colònies. Hi ha vagues i conflictes socials."},
+ {a:1923,b:1930,n:'Dictadura de Primo de Rivera',f:'dict',c:'#ff6a7c',t:"El general Primo de Rivera fa un cop d'estat amb el suport del rei i estableix una dictadura militar."},
+ {a:1931,b:1936,n:'Segona República',f:'rep',c:'#b6ff3b',t:"Primera democràcia a Espanya. Les dones poden votar. Estatut d'autonomia de Catalunya (1932). Es construeixen milers d'escoles."},
+ {a:1936,b:1939,n:'Guerra Civil',f:'war',c:'#ff8a5c',t:"Un cop d'estat militar contra la República fa esclatar una guerra entre els republicans i els sublevats, dirigits per Franco."},
+ {a:1939,b:1975,n:'Franquisme',f:'dict',c:'#ff3b5c',t:"Dictadura del general Franco. No hi ha llibertats ni partits polítics. Primer, fam i autarquia; des dels anys 60, desenvolupament i turisme."},
+ {a:1975,b:1982,n:'La Transició',f:'dem',c:'#ffd23f',t:"Pas de la dictadura a la democràcia: rei Joan Carles I, eleccions de 1977, Constitució de 1978, Estatut de 1979."},
+ {a:1982,b:2025,n:'La democràcia, avui',f:'dem',c:'#00e5ff',t:"Espanya és una monarquia parlamentària democràtica, membre de la Unió Europea, amb comunitats autònomes."}];
+const EV=[
+ {y:1789,e:'⚖️',n:'Revolució Francesa',t:"El poble de França, cansat de la fam i sense drets, s'aixeca contra el rei. S'acaba la monarquia absoluta i comença l'edat contemporània.",k:'revol'},
+ {y:1804,e:'👑',n:'Napoleó, emperador',t:"Napoleó Bonaparte, que havia pres el poder el 1799, es proclama emperador i conquereix gran part d'Europa."},
+ {y:1808,e:'⚔️',n:'Comença la Guerra del Francès',t:"L'exèrcit de Napoleó entra a Espanya. Napoleó fa rei el seu germà Josep Bonaparte i el poble s'hi aixeca en contra."},
+ {y:1812,e:'📜',n:'Constitució de Cadis',t:"Les Corts reunides a Cadis aproven la primera constitució de la història d'Espanya, coneguda com «la Pepa». Limitava el poder del rei.",k:'gov'},
+ {y:1814,e:'👑',n:'Torna Ferran VII',t:"Derrotat Napoleó, Ferran VII torna i anul·la la Constitució: torna la monarquia absoluta."},
+ {y:1833,e:'👸',n:'Isabel II, reina',t:"Mor Ferran VII i el succeeix la seva filla Isabel. Els partidaris de l'infant Carles no ho accepten: comencen les guerres carlines."},
+ {y:1833,e:'📖',n:'La Renaixença',t:"Moviment cultural que recupera l'ús literari de la llengua catalana. Comença amb l'«Oda a la Pàtria» d'Aribau i va donar lloc al catalanisme.",cat:1,dy:1},
+ {y:1848,e:'🚂',n:'Primer tren de la Península',t:"La primera línia de tren de la península Ibèrica uneix Barcelona i Mataró.",cat:1,k:'revol'},
+ {y:1850,e:'🏭',n:'Industrialització a Catalunya',t:"Catalunya s'industrialitza, sobretot amb fàbriques tèxtils. Es construeixen colònies industrials al costat dels rius.",cat:1,k:'revol',dy:-1},
+ {y:1868,e:'✊',n:'Revolució de 1868',t:"Una revolta dels progressistes obliga Isabel II a marxar d'Espanya."},
+ {y:1871,e:'🤴',n:'Amadeu de Savoia',t:"Arriba un rei estranger que mai no va tenir el suport de la població. El 1873 renuncia al tron."},
+ {y:1873,e:'🗳️',n:'Primera República',t:"Es proclama la Primera República. Dura molt poc, menys de dos anys.",k:'gov'},
+ {y:1874,e:'👑',n:'Restauració: Alfons XII',t:"Un pronunciament militar restableix la monarquia amb Alfons XII. La Constitució de 1876 fa una monarquia constitucional."},
+ {y:1898,e:'⚓',n:'Pèrdua de les colònies',t:"Després de la guerra de Cuba, Espanya perd Cuba, Puerto Rico i les Filipines, les últimes colònies."},
+ {y:1902,e:'✊',n:'Vagues obreres',t:"Hi ha vagues constants per denunciar les dures condicions de treball. El quadre «La càrrega» de Ramon Casas mostra com es reprimien.",cat:1},
+ {y:1914,e:'🌍',n:'Primera Guerra Mundial',t:"De 1914 a 1918. Espanya es manté neutral, cosa que afavoreix la indústria catalana."},
+ {y:1917,e:'🚩',n:'Revolució Russa',t:"Cau el tsar i es crea el primer estat comunista del món: la Unió Soviètica."},
+ {y:1923,e:'🎖️',n:'Cop d\'estat de Primo de Rivera',t:"Amb el suport del rei Alfons XIII, el general Primo de Rivera estableix una dictadura militar.",k:'gov'},
+ {y:1931,e:'🗳️',n:'Segona República',t:"El 14 d'abril de 1931 es proclama la Segona República. És la primera democràcia d'Espanya. Es reconeix el vot de les dones (Clara Campoamor el va defensar).",k:'gov',soc:1},
+ {y:1932,e:'📜',n:"Estatut d'autonomia de Catalunya",t:"Catalunya aconsegueix l'autonomia i es restableix la Generalitat.",cat:1},
+ {y:1936,e:'⚔️',n:'Comença la Guerra Civil',t:"El 18 de juliol de 1936 un grup de militars encapçalats pel general Franco fa un cop d'estat contra la República."},
+ {y:1939,e:'🧳',n:'Fi de la guerra i exili',t:"La guerra acaba l'1 d'abril de 1939. Moltes persones han de marxar a l'exili, com el president de la Generalitat Lluís Companys, afusellat el 1940.",cat:1},
+ {y:1939,e:'🌍',n:'Segona Guerra Mundial',t:"De 1939 a 1945. Després es crea l'ONU i els Estats Units i la Unió Soviètica esdevenen les grans potències.",dy:1},
+ {y:1959,e:'🏖️',n:'Desenvolupisme',t:"S'acaba l'autarquia i Espanya s'obre a l'exterior. L'economia creix gràcies al turisme i la indústria. Molta gent emigra del camp a la ciutat i a Europa.",soc:1},
+ {y:1975,e:'👑',n:'Mor Franco. Joan Carles I',t:"Franco mor el 20 de novembre de 1975. Dos dies després Joan Carles I és proclamat rei. Comença la Transició."},
+ {y:1977,e:'🗳️',n:'Primeres eleccions democràtiques',t:"Primeres eleccions lliures des de la República. Torna el president Josep Tarradellas de l'exili.",cat:1,k:'gov'},
+ {y:1978,e:'📜',n:'Constitució de 1978',t:"Aprovada pels ciutadans el 6 de desembre de 1978. Espanya és un estat democràtic i una monarquia parlamentària, amb comunitats autònomes.",k:'gov'},
+ {y:1979,e:'📜',n:'Estatut de Sau',t:"Catalunya aprova en referèndum el seu Estatut d'autonomia. El 1980, Jordi Pujol guanya les primeres eleccions al Parlament.",cat:1,dy:1},
+ {y:1981,e:'🪖',n:'Intent de cop d\'estat (23-F)',t:"Un grup de militars i guàrdies civils intenta un cop d'estat al Congrés, però fracassa."},
+ {y:1982,e:'🗳️',n:'Govern del PSOE',t:"Felipe González guanya les eleccions: per primer cop des de la República governa un partit d'esquerres.",dy:1},
+ {y:1986,e:'🇪🇺',n:'Entrada a la Comunitat Europea',t:"Espanya entra a la Comunitat Econòmica Europea, l'actual Unió Europea."},
+ {y:2020,e:'📱',n:'Espanya i Catalunya, avui',t:"Societat diversa, envellida i connectada. Reptes: el canvi climàtic, les migracions, la igualtat entre dones i homes.",soc:1}];
+const ERAS=[
+ {y:1850,n:'Cap al 1850',d:{'🏠 Llum':'Espelmes i llums d\'oli','🚶 Transport':'A peu, a cavall, en carro. Primer tren (1848)','🧑‍🏭 Feina':'Al camp, als tallers i a les primeres fàbriques, 12 hores o més','🏫 Escola':'Molts infants no hi anaven: havien de treballar','👩 Dones':'Sense dret a vot ni a estudiar a la universitat','✉️ Comunicació':'Cartes que trigaven dies'}},
+ {y:1931,n:'Cap al 1931',d:{'🏠 Llum':'Electricitat a les ciutats','🚶 Transport':'Tramvia, metro, tren, primers cotxes','🧑‍🏭 Feina':'Fàbriques i vagues per millorar les condicions','🏫 Escola':'La República construeix milers d\'escoles','👩 Dones':'Per primer cop poden votar','✉️ Comunicació':'Telègraf, telèfon, ràdio i diaris'}},
+ {y:1960,n:'Cap al 1960',d:{'🏠 Llum':'Electrodomèstics: nevera, rentadora','🚶 Transport':'El SEAT 600, l\'autobús','🧑‍🏭 Feina':'Fàbriques i turisme. Molta emigració','🏫 Escola':'Separada per a nens i nenes','👩 Dones':'Sense llibertats, necessitaven permís del marit per a moltes coses','✉️ Comunicació':'Ràdio i primeres televisions'}},
+ {y:2020,n:'Avui',d:{'🏠 Llum':'Electricitat i energies renovables','🚶 Transport':'Cotxes elèctrics, bicicletes, avions','🧑‍🏭 Feina':'Sobretot serveis. Drets laborals','🏫 Escola':'Obligatòria i mixta fins als 16 anys','👩 Dones':'Igualtat davant la llei, però encara hi ha desigualtats','✉️ Comunicació':'Internet, mòbils, xarxes'}}];
+
+/* ================= ESCENA ================= */
+const canvas=$('#c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.outputColorSpace=THREE.SRGBColorSpace;
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x050a18); scene.fog=new THREE.Fog(0x050a18,40,120);
+const camera=new THREE.PerspectiveCamera(45,1,0.1,800);
+const controls=new OrbitControls(camera,canvas); controls.enableDamping=true; controls.dampingFactor=.1; controls.rotateSpeed=.5; controls.zoomSpeed=.8; controls.minDistance=6; controls.maxDistance=120; controls.maxPolarAngle=1.45;
+function resize(){renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;
+ if(innerWidth>860) camera.setViewOffset(innerWidth,innerHeight,-190,0,innerWidth,innerHeight); else camera.setViewOffset(innerWidth,innerHeight,0,innerHeight*.2,innerWidth,innerHeight); camera.updateProjectionMatrix();}
+addEventListener('resize',resize); resize();
+scene.add(new THREE.HemisphereLight(0xcfe6ff,0x202030,1.3)); const dl=new THREE.DirectionalLight(0xffffff,1.8); dl.position.set(20,40,30); scene.add(dl);
+/* estrelles */
+{const N=3000,pos=new Float32Array(N*3);for(let i=0;i<N;i++)pos.set([Math.random()*220-50,Math.random()*90-20,Math.random()*160-80],i*3);const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));scene.add(new THREE.Points(g,new THREE.PointsMaterial({color:0x9fb4ff,size:.25,transparent:true,opacity:.7})));}
+const emoTex={}; function emoji(e){ if(emoTex[e]) return emoTex[e]; const c=document.createElement('canvas'); c.width=c.height=128; const g=c.getContext('2d'); g.font='100px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(e,64,70); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; emoTex[e]=t; return t; }
+/* camí */
+const road=new THREE.Mesh(new THREE.BoxGeometry(X(Y1)+6,.15,2.2),new THREE.MeshStandardMaterial({color:0x14213a,emissive:0x0a1730,roughness:.6})); road.position.set(X(Y1)/2,0,0); scene.add(road);
+const glowLine=new THREE.Mesh(new THREE.BoxGeometry(X(Y1)+6,.06,.12),new THREE.MeshBasicMaterial({color:0x00e5ff})); glowLine.position.set(X(Y1)/2,.12,0); scene.add(glowLine);
+const plats=[]; const pins=[];
+function addPin(pos,txt,col,onclick,cls=''){ const b=document.createElement('button'); b.className='pin '+cls; b.style.setProperty('--c',col); b.innerHTML='<i></i><span></span>'; b.querySelector('span').textContent=txt; if(onclick) b.onclick=e=>{e.stopPropagation();onclick();}; else b.style.pointerEvents='none'; $('#pins').appendChild(b); const p={el:b,pos}; pins.push(p); return p; }
+PER.forEach((p,i)=>{ const w=X(p.b)-X(p.a); const m=new THREE.Mesh(new THREE.BoxGeometry(w-.15,.5,9),new THREE.MeshStandardMaterial({color:p.c,emissive:p.c,emissiveIntensity:.18,transparent:true,opacity:.75,roughness:.5})); m.position.set(X(p.a)+w/2,-.4,0); m.userData.per=p; scene.add(m); plats.push(m); p.mesh=m;
+ const yr=new THREE.Mesh(new THREE.BoxGeometry(.08,.6,9),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.4})); yr.position.set(X(p.a),-.1,0); scene.add(yr);
+ p.pin=addPin(new THREE.Vector3(X(p.a)+w/2,.2,5.2),p.n,p.c,()=>perCard(p),'per2'); p.ypin=addPin(new THREE.Vector3(X(p.a),.3,-5),String(p.a),'#fff',null,'per2'); });
+/* fets */
+const evObjs=[];
+EV.forEach((e,i)=>{ const g=new THREE.Group(); const side=(i%2?1:-1)*(e.dy?2.6:1); const x=X(e.y);
+ const post=new THREE.Mesh(new THREE.CylinderGeometry(.06,.06,2.6,6),new THREE.MeshBasicMaterial({color:e.cat?0xffd23f:0x9fb4cc})); post.position.set(0,1.3,0); g.add(post);
+ const disc=new THREE.Mesh(new THREE.CylinderGeometry(.9,.9,.12,24),new THREE.MeshStandardMaterial({color:e.cat?0x5a4810:0x1b2a44,emissive:e.cat?0x3a2a00:0x081428})); disc.position.y=.08; g.add(disc);
+ const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:emoji(e.e),transparent:true})); spr.scale.setScalar(1.7); spr.position.y=3.4; g.add(spr); spr.userData.ev=e;
+ g.position.set(x,0,side*2.2); scene.add(g); e.g=g; e.spr=spr; evObjs.push(spr);
+ e.pin=addPin(new THREE.Vector3(x,4.8,side*2.2),e.y+' · '+e.n,e.cat?'#ffd23f':'#00e5ff',()=>evCard(e),'ev'+(e.cat?' cat':'')); });
+/* tren de vapor animat prop de 1848 */
+const train=new THREE.Group(); { const body=new THREE.Mesh(new THREE.BoxGeometry(1.6,.8,.8),new THREE.MeshStandardMaterial({color:0x2a2a2a})); body.position.y=.6; train.add(body); const ch=new THREE.Mesh(new THREE.CylinderGeometry(.15,.2,.6,10),new THREE.MeshStandardMaterial({color:0x111111})); ch.position.set(.5,1.2,0); train.add(ch); const cab=new THREE.Mesh(new THREE.BoxGeometry(.6,1,.8),new THREE.MeshStandardMaterial({color:0x8a2a2a})); cab.position.set(-.6,.8,0); train.add(cab); for(let k=0;k<2;k++){const w=new THREE.Mesh(new THREE.CylinderGeometry(.25,.25,.9,12),new THREE.MeshStandardMaterial({color:0x444444}));w.rotation.x=Math.PI/2;w.position.set(-.4+k*.8,.25,0);train.add(w);} }
+train.position.set(X(1848),.1,3.9); scene.add(train);
+const steam=new THREE.Points(new THREE.BufferGeometry(),new THREE.PointsMaterial({color:0xdddddd,size:.35,transparent:true,opacity:.6,depthWrite:false})); steam.geometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(40*3),3)); scene.add(steam);
+const tv=new THREE.Vector3();
+let showNames=true;
+function updatePins(){ for(const p of pins){ let vis=(showNames||p.always)&&!p.hidden; if(vis){ tv.copy(p.pos).project(camera); vis=tv.z<1&&Math.abs(tv.x)<1.05&&Math.abs(tv.y)<1.05; if(vis) p.el.style.transform=`translate(${(tv.x*.5+.5)*innerWidth-5}px,${(-tv.y*.5+.5)*innerHeight-5}px)`; } p.el.classList.toggle('hide',!vis); } }
+
+/* ================= INTERACCIÓ ================= */
+let year=1789, playing=false, mode='linia', formSel=null;
+const perOf=y=>PER.find(p=>y>=p.a&&y<p.b)||PER[PER.length-1];
+function perCard(p){ showCard({n:p.n,tipus:FORMS[p.f][0],f:{'Anys':p.a+' – '+(p.b>=2025?'avui':p.b)},t:p.t}); }
+function evCard(e){ const p=perOf(e.y); showCard({n:e.n,tipus:e.cat?'Catalunya':'Espanya i el món',f:{'Any':String(e.y),'Etapa':p.n},t:e.t}); goYear(e.y,true); }
+let fl=null; function flyTo(t,p,d=1){fl={t:0,d,ft:controls.target.clone(),tt:t,fp:camera.position.clone(),tp:p};}
+function goYear(y,flyit){ year=Math.max(Y0,Math.min(Y1,y)); updYear(); if(flyit){ const t=new THREE.Vector3(X(year),1.5,0); const off=camera.position.clone().sub(controls.target); if(off.length()>40||off.length()<6) off.set(-6,9,16); flyTo(t,t.clone().add(off),.8); } }
+function updYear(){ const p=perOf(year); $('#yearBig').innerHTML=Math.round(year)+'<small>'+p.n+'</small>'; const s=$('#tYear'); if(document.activeElement!==s) s.value=Math.round(year); for(const q of PER){ const on=q===p||formSel&&q.f===formSel; q.mesh.material.emissiveIntensity=on?.55:.12; q.mesh.material.opacity=formSel?(q.f===formSel?.95:.25):(q===p?.95:.6); } }
+$('#tYear').oninput=e=>{ playing=false; $('#tPlay').textContent='▶'; goYear(+e.target.value,false); const t=new THREE.Vector3(X(year),1.5,0); const off=camera.position.clone().sub(controls.target); controls.target.copy(t); camera.position.copy(t).add(off); };
+$('#tPer').innerHTML=PER.map(p=>`<i style="width:${(p.b-p.a)/(Y1-Y0)*100}%;background:${p.c}" title="${p.n}"></i>`).join('');
+const ray=new THREE.Raycaster(); let down=null;
+canvas.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY};});
+canvas.addEventListener('pointerup',e=>{ if(!down||Math.hypot(e.clientX-down.x,e.clientY-down.y)>6){down=null;return;} down=null;
+ ray.setFromCamera(new THREE.Vector2(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1),camera);
+ const h=ray.intersectObjects([...evObjs,...plats],false); if(!h.length) return; const o=h[0].object; if(o.userData.ev) return evCard(o.userData.ev); if(o.userData.per) perCard(o.userData.per); });
+$('#tPlay').onclick=()=>{ playing=!playing; if(playing&&year>=Y1-1) year=Y0; $('#tPlay').textContent=playing?'⏸':'▶'; };
+$('#tNames').onclick=()=>{showNames=!showNames;$('#tNames').classList.toggle('on',showNames);};
+function home(){ const asp=innerWidth/innerHeight,f=asp<1?1.6:1; flyTo(new THREE.Vector3(X(1907),0,0),new THREE.Vector3(X(1907)-25,38*f,52*f)); }
+$('#tHome').onclick=home;
+
+/* ================= PANELS ================= */
+const P=$('#panel .pbody');
+function renderPanel(){ P.innerHTML='';
+ if(mode==='linia'){ P.appendChild(html(`<h3>L'edat contemporània</h3><p class="lead">De 1789 fins avui</p><p class="t">L'edat contemporània va començar amb la <b>Revolució Francesa</b> (1789) i arriba fins als nostres dies. Prem ▶ per viatjar o toca una etapa.</p><div class="sbox"><p class="h">Etapes a Espanya</p><div class="leg" id="pL"></div></div>`));
+  const L=$('#pL'); PER.forEach(p=>{const b=document.createElement('button');b.innerHTML=`<i style="background:${p.c}"></i>${p.n}<em>${p.a}–${p.b>=2025?'avui':p.b}</em>`;b.onclick=()=>{perCard(p);goYear(p.a+.5,true);};L.appendChild(b);});
+  P.appendChild(quiz([["Amb quin fet comença l'edat contemporània?",["La Revolució Francesa","La Guerra Civil","La Constitució de 1978"],0],["Quina etapa va després de la Guerra Civil?",["La Segona República","El franquisme","La Transició"],1]])); }
+ if(mode==='revol'){ P.appendChild(html(`<h3>Dues grans revolucions</h3><p class="lead">Així va començar l'edat contemporània</p>
+  <div class="sbox"><p class="h">⚖️ La Revolució Francesa (1789)</p><p class="t" style="font-size:14px">El poble de França, que patia fam i no tenia drets, es va revoltar contra el rei. Es va passar d'una <b>monarquia absoluta</b> a un sistema <b>liberal</b>: el poder ja no era només del rei. També hi va haver dones que van lluitar pels seus drets.</p></div>
+  <div class="sbox"><p class="h">🏭 La Revolució Industrial</p><p class="t" style="font-size:14px">Fa uns 250 anys, al Regne Unit, van començar grans canvis en la manera de treballar:</p><div class="cmp"><b>Abans</b><span>🔨 Tallers artesans: poques persones fan el producte sencer amb eines senzilles. Es produeix poc.</span><b>Després</b><span>🏭 Fàbriques: moltes persones, cadascuna fa una part, amb màquines. Es produeix molt i barat.</span><b>Energia</b><span>⚙️ La màquina de vapor, que funciona amb carbó. Després, l'electricitat i el petroli.</span><b>Transport</b><span>🚂 Tren i vaixell de vapor. Després, cotxe, avió, tramvia i metro.</span><b>Feina</b><span>😓 12 hores o més, en llocs insalubres i amb sous molt baixos. Neixen els sindicats.</span></div></div>
+  <div class="row"><button class="pill" id="go1789">Ves a 1789</button><button class="pill" id="go1848">Ves al primer tren (1848)</button></div>
+  <div class="sbox"><p class="h">Activitats del llibre</p><p class="act">1: explica com va començar l'edat contemporània. 2: quins canvis va suposar la Revolució Francesa? 3: què és la Revolució Industrial?</p></div>`));
+  $('#go1789').onclick=()=>evCard(EV[0]); $('#go1848').onclick=()=>evCard(EV.find(e=>e.y===1848));
+  P.appendChild(quiz([["On va començar la Revolució Industrial?",["Al Regne Unit","A Espanya","A Rússia"],0],["Quina font d'energia feien servir les màquines de vapor?",["El carbó","El vent","L'electricitat"],0]])); }
+ if(mode==='govern'){ P.appendChild(html(`<h3>Formes de govern</h3><p class="lead">Qui mana?</p><p class="t">En 200 anys, Espanya ha tingut moltes formes de govern. Toca'n una i mira en quines etapes es repeteix.</p><div class="sbox"><div class="leg" id="fL"></div></div><div id="fTxt"></div>
+  <div class="sbox"><p class="h">Les constitucions</p><p class="t" style="font-size:14px">Una <b>constitució</b> és la llei més important d'un país: diu com s'organitza i quins drets té la gent. La primera va ser la de <b>1812</b> (Cadis); l'actual és la de <b>1978</b>.</p></div>`));
+  const L=$('#fL'); Object.entries(FORMS).filter(([k])=>k!=='war').forEach(([k,[n,c]])=>{const b=document.createElement('button');b.innerHTML=`<i style="background:${c}"></i>${n}<em>${PER.filter(p=>p.f===k).length} etapes</em>`;b.classList.toggle('on',formSel===k);b.onclick=()=>{formSel=formSel===k?null:k;renderPanel();updYear();};L.appendChild(b);});
+  if(formSel) $('#fTxt').innerHTML=`<div class="sbox"><p class="h">${FORMS[formSel][0]}</p><p class="t" style="font-size:14px">${FORMS[formSel][2]}</p><ul>${PER.filter(p=>p.f===formSel).map(p=>`<li>${p.n} (${p.a}–${p.b>=2025?'avui':p.b})</li>`).join('')}</ul></div>`;
+  P.appendChild(quiz([["Com es diu la forma de govern on una sola persona té tot el poder amb el suport de l'exèrcit?",["Dictadura","República","Monarquia parlamentària"],0],["Quina és la forma de govern actual d'Espanya?",["Monarquia parlamentària","República","Monarquia absoluta"],0]])); }
+ if(mode==='cat'){ P.appendChild(html(`<h3>Catalunya a l'edat contemporània</h3><p class="lead">Els fets marcats en groc</p><div class="sbox"><div class="leg" id="cL"></div></div>
+  <div class="sbox"><p class="h">Activitats del llibre</p><p class="act">15: quins fets van ser els més rellevants a Catalunya durant la Transició?</p></div>`));
+  const L=$('#cL'); EV.filter(e=>e.cat).forEach(e=>{const b=document.createElement('button');b.innerHTML=`<span style="font-size:18px">${e.e}</span>${e.n}<em>${e.y}</em>`;b.onclick=()=>evCard(e);L.appendChild(b);});
+  P.appendChild(quiz([["Què va ser la Renaixença?",["Un moviment que va recuperar l'ús literari del català","Una guerra","Una fàbrica"],0],["Quin president va tornar de l'exili el 1977?",["Josep Tarradellas","Lluís Companys","Jordi Pujol"],0]])); }
+ if(mode==='soc'){ P.appendChild(html(`<h3>Com vivia la gent?</h3><p class="lead">Compara diferents moments</p>${Kit.subtabs?'' :''}<div class="sub" id="eraT"></div><div class="sbox"><div class="cmp" id="eraD"></div></div>
+  <div class="sbox"><p class="h">Les dones, protagonistes</p><ul><li>Segle XIX: moviments feministes per aconseguir el dret a vot i a l'educació.</li><li>1931: la Segona República reconeix el vot de les dones.</li><li>Franquisme: es perden molts drets.</li><li>Democràcia: igualtat davant la llei, però encara hi ha desigualtats (sous, tasques de casa…).</li></ul></div>
+  <div class="sbox"><p class="h">Una societat envellida</p><p class="t" style="font-size:14px">El 1970, 10 de cada 100 persones tenien més de 65 anys. El 2020, ja n'eren 21 de cada 100.</p><div style="display:flex;gap:10px;align-items:flex-end;height:70px"><div style="flex:1;text-align:center;font-size:12px"><div style="height:${10*2.6}px;background:var(--cy);border-radius:6px 6px 0 0"></div>1970: 10%</div><div style="flex:1;text-align:center;font-size:12px"><div style="height:${21*2.6}px;background:var(--li);border-radius:6px 6px 0 0"></div>2020: 21%</div></div></div>
+  <div class="sbox"><p class="h">Activitats del llibre</p><p class="act">16: què va suposar la democràcia per a les dones? 17: reflexiona i explica quines desigualtats encara hi ha.</p></div>`));
+  const T=$('#eraT'); ERAS.forEach((E,i)=>{const b=document.createElement('button');b.innerHTML=`<b>${['🕯️','📻','📺','📱'][i]}</b>${E.n}`;b.classList.toggle('on',i===eraSel);b.onclick=()=>{eraSel=i;renderPanel();goYear(E.y,true);};T.appendChild(b);});
+  $('#eraD').innerHTML=Object.entries(ERAS[eraSel].d).map(([k,v])=>`<b>${k}</b><span>${v}</span>`).join(''); }
+}
+let eraSel=0;
+
+/* ================= REPTE ================= */
+const RP=$('#rep');
+const repte=Kit.Repte(RP,{
+ ordena:{ic:'🔢',n:'Ordena els fets',d:'Toca els fets del més antic al més recent.',make:()=>[0,1,2,3,4],custom:(S,api)=>{ let round=0, total=0; const play=()=>{ if(round>=4){ return api.done(Math.round(total/4*10)/10); } const set=shuf(EV.filter((e,i,a)=>a.findIndex(x=>x.y===e.y)===i)).slice(0,5); const sorted=set.slice().sort((a,b)=>a.y-b.y); let k=0, mist=0;
+   $('#rProg').textContent=`${round+1} / 4`; $('#rBar').style.width=(round/4*100)+'%'; $('#rQ').innerHTML='Toca els fets <em>del més antic al més recent</em>'; $('#rSub').textContent=''; $('#rOpts').innerHTML='<div class="ordL" id="oL"></div>'; $('#rNext').style.display='none'; $('#rFb').textContent='';
+   shuf(set).forEach(e=>{const b=document.createElement('button');b.innerHTML=`<i></i><span>${e.e} ${e.n}</span>`;b.onclick=()=>{ if(b.classList.contains('done')) return; if(e===sorted[k]){ k++; b.classList.add('done'); b.querySelector('i').textContent=k; b.querySelector('span').innerHTML+=` <small style="color:var(--li)">(${e.y})</small>`; if(k===5){ const sc=Math.max(0,10-mist*2.5); total+=sc; $('#rScore').textContent='★ '+(Math.round(total/(round+1)*10)/10).toString().replace('.',','); api.fb(mist?`Fet amb ${mist} errada${mist>1?'s':''}.`:'Perfecte!',!mist); round++; const n=$('#rNext'); n.style.display='block'; n.textContent=round>=4?'Veure la nota →':'Següent →'; n.onclick=play; } } else { mist++; api.fb(`No: ${e.n} és de ${e.y}. Quin és més antic?`,false); } }; $('#oL').appendChild(b);}); };
+  play(); }},
+ any:{ic:'📅',n:'Quin any?',d:'Endevina l\'any de cada fet.',make:()=>shuf(EV).slice(0,8).map(e=>{const opts=new Set([e.y]);while(opts.size<3){const d=shuf([-1,1])[0]*(3+Math.floor(Math.random()*25));const y=e.y+d;if(y>=1789&&y<=2025)opts.add(y);}const o=shuf([...opts]);return {q:`${e.e} <em>${e.n}</em>: en quin any?`,opts:o.map(String),ok:o.indexOf(e.y),exp:e.t};})},
+ etapa:{ic:'⏳',n:'Quina etapa?',d:'A quina etapa pertany cada fet?',make:()=>shuf(EV.filter(e=>e.y>1800&&e.y<2000)).slice(0,8).map(e=>{const right=perOf(e.y).n;const o=shuf([right,...shuf(PER.map(p=>p.n).filter(n=>n!==right)).slice(0,2)]);return {q:`${e.e} <em>${e.n}</em> (${e.y}) és de l'etapa…`,opts:o,ok:o.indexOf(right),exp:''};})},
+ govern:{ic:'🏛️',n:'Quina forma de govern?',d:'Monarquia, república o dictadura?',make:()=>Kit.classify(PER.filter(p=>p.f!=='war').map(p=>({n:p.n,cat:FORMS[p.f][0]})),Object.entries(FORMS).filter(([k])=>k!=='war').map(([k,v])=>v[0]),8,it=>`Quina forma de govern hi havia durant <em>${it.n}</em>?`)},
+ preguntes:{ic:'❓',n:'Preguntes de la unitat',d:'Tota l\'edat contemporània.',make:()=>Kit.mc([["Quina va ser la primera constitució d'Espanya?",["La de Cadis (1812)","La de 1978","La de 1876"],0],["Qui va envair Espanya el 1808?",["Napoleó","Franco","Primo de Rivera"],0],["On va anar el primer tren de la Península?",["De Barcelona a Mataró","De Madrid a Toledo","De Sevilla a Cadis"],0],["Què va passar el 1898?",["Espanya va perdre les últimes colònies","Va començar la Guerra Civil","Es va aprovar la Constitució"],0],["Quan van poder votar les dones per primer cop a Espanya?",["Durant la Segona República","Al segle XIX","Durant el franquisme"],0],["Quan es va proclamar la Segona República?",["El 14 d'abril de 1931","El 18 de juliol de 1936","El 20 de novembre de 1975"],0],["Què va ser la Transició?",["El pas de la dictadura a la democràcia","Una guerra","Una revolució industrial"],0],["Quin pintor va crear el cubisme?",["Pablo Picasso","Ramon Casas","Joan Miró"],0],["Què és l'Estatut de Sau?",["L'Estatut d'autonomia de Catalunya de 1979","Una constitució","Un tractat de pau"],0],["Per què la població espanyola està envellida?",["Neixen pocs infants i vivim més anys","Han marxat tots els joves","Per la guerra"],0],["Què es va crear després de la Segona Guerra Mundial?",["L'ONU","La Unió Soviètica","La Renaixença"],0]],10)}
+});
+
+/* ================= MODES ================= */
+function applyMode(){ $('#card').classList.remove('show'); $('#panel').style.display=mode==='repte'?'none':''; RP.style.display=mode==='repte'?'block':'none'; if(mode!=='govern') formSel=null;
+ for(const e of EV){ const dim=mode==='cat'&&!e.cat||mode==='soc'&&!e.soc&&false; e.spr.material.opacity=dim?.25:1; e.pin.hidden=mode==='cat'&&!e.cat; }
+ if(mode==='repte') repte.menu(); renderPanel(); updYear(); }
+function setMode(m){ mode=m; document.querySelectorAll('#modes button').forEach(b=>b.classList.toggle('on',b.dataset.m===m)); applyMode(); }
+document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+$('#pmin').onclick=()=>{const m=$('#panel').classList.toggle('min');$('#pmin').textContent=m?'▴ Mostra el text':'▾ Amaga el text';};
+
+/* ================= LOOP ================= */
+let last=performance.now(), T=0;
+function loop(now){ const dt=Math.min(.05,(now-last)/1000); last=now; T+=dt;
+ if(playing){ year+=dt*6; if(year>=Y1){year=Y1;playing=false;$('#tPlay').textContent='▶';} updYear(); const t=new THREE.Vector3(X(year),1.5,0); const off=camera.position.clone().sub(controls.target); if(off.length()>40) off.set(-6,9,16); controls.target.copy(t); camera.position.copy(t).add(off); }
+ if(fl){ fl.t=Math.min(1,fl.t+dt/fl.d); const k=1-Math.pow(1-fl.t,3); controls.target.lerpVectors(fl.ft,fl.tt,k); camera.position.lerpVectors(fl.fp,fl.tp,k); if(fl.t>=1) fl=null; }
+ train.position.x=X(1848)+Math.sin(T*.4)*4; const sa=steam.geometry.attributes.position.array; for(let i=0;i<40;i++){const k=((i/40)+T*.5)%1;sa.set([train.position.x+.5-k*1.5*Math.sign(Math.cos(T*.4)),1.5+k*2,3.9+Math.sin(i)*.3*k],i*3);} steam.geometry.attributes.position.needsUpdate=true;
+ for(const e of EV){ const near=Math.abs(e.y-year)<1.5; e.spr.scale.setScalar(near?2.4+Math.sin(T*5)*.12:1.7); e.spr.position.y=3.4+Math.sin(T*1.5+e.y)*.15; }
+ controls.update(); renderer.render(scene,camera); updatePins(); }
+controls.target.set(X(1789)+6,1.5,0); camera.position.set(X(1789)-2,10,20);
+renderer.setAnimationLoop(loop);
+applyMode(); $('#loading').remove(); Kit.initHelp('seen');
+window.__h={setMode,goYear,startGame:k=>repte.start(k),evCard:i=>evCard(EV[i])};
+</script>
+</body>
+</html>

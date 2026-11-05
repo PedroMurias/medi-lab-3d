@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Medi·Lab 3D · Paisatges i societat d'Espanya</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/*BASECSS*/
+.pin.lbl{pointer-events:none}.pin.lbl i{display:none}.pin.lbl span{background:none;border:0;color:#cfe8ff;font-style:italic;text-shadow:0 1px 3px #000;font-size:13px}
+.pin.peak i{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:10px solid #fff;background:none;border-radius:0;box-shadow:none}
+.pin.city i{width:7px;height:7px;background:#fff}
+.pin.eco span{font-size:13px}
+svg.chart{width:100%;height:auto;display:block}
+.bars3{display:flex;flex-direction:column;gap:6px}
+.bars3 div{display:flex;align-items:center;gap:8px;font-size:14px}
+.bars3 b{flex:none;width:110px}
+.bars3 i{display:block;height:16px;border-radius:6px}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="loading"><i></i>CARREGANT EL MAPA…</div>
+<div id="pins"></div>
+<header id="top" class="glass">
+  <div class="logo">MEDI·LAB 3D · ESPANYA I EUROPA<small>Coneixement del Medi · 6è · Unitat 5: «Paisatges i societat»</small></div>
+  <button id="helpBtn" aria-label="Ajuda i guia">?</button>
+</header>
+<nav id="modes">
+  <button data-m="territori" class="on"><span class="e">🗺️</span>Territori</button>
+  <button data-m="relleu"><span class="e">⛰️</span>Relleu</button>
+  <button data-m="rius"><span class="e">🌊</span>Rius</button>
+  <button data-m="climes"><span class="e">🌦️</span>Climes</button>
+  <button data-m="societat"><span class="e">👥</span>Població</button>
+  <button data-m="repte"><span class="e">🏆</span>Repte</button>
+</nav>
+<aside id="panel" class="glass"><button id="pmin" class="mini">▾ Amaga el text</button><div class="pbody"></div></aside>
+<aside id="rep" class="glass" style="display:none"></aside>
+<nav id="tools" class="glass">
+  <button id="tNames" class="on" title="Noms" aria-label="Mostra o amaga els noms">🏷️</button>
+  <button id="tTop" title="Vista des de dalt" aria-label="Vista des de dalt">⬇</button>
+  <button id="tHome" title="Vista inicial" aria-label="Vista inicial">⟲</button>
+</nav>
+<div id="card" class="glass"><button class="x" aria-label="Tancar">×</button><span class="tag"></span><h2></h2><div class="facts"></div><p class="desc"></p><p class="cur"></p></div>
+
+<div id="help" role="dialog" aria-modal="true" aria-label="Ajuda">
+ <div class="hbox glass">
+  <button class="hx" aria-label="Tancar">×</button>
+  <div class="htabs"><button data-t="com" class="on">Com funciona</button><button data-t="guia">Guia del mestre</button></div>
+  <div class="hpage" data-p="com">
+   <h2>Benvinguts al mapa 3D d'Espanya i Europa</h2>
+   <p class="hsub">Coneixement del Medi · 6è · Unitat 5: «Paisatges i societat»</p>
+   <div class="steps3">
+    <div class="st"><span>1</span><b>Mou el mapa</b><p><i>Ordinador:</i> arrossega per girar, roda per fer zoom, botó dret per desplaçar.</p><p><i>Tauleta:</i> un dit per girar, dos per zoom.</p></div>
+    <div class="st"><span>2</span><b>Toca els noms</b><p>Toca una serralada, un riu o una ciutat per veure'n la fitxa. Amb 🏷️ amagues els noms per estudiar.</p></div>
+    <div class="st"><span>3</span><b>Espanya o Europa</b><p>A <i>Relleu</i> i <i>Rius</i> pots canviar entre el mapa d'Espanya i el d'Europa.</p></div>
+   </div>
+   <button class="hgo">Comença!</button>
+  </div>
+  <div class="hpage" data-p="guia" style="display:none">
+   <h2>Guia per a la classe</h2>
+   <p class="hsub">Propostes de 10–15 minuts per apartat. El relleu està exagerat per veure'l millor.</p>
+   <details open><summary>🗺️ Territori</summary><p><b>Objectiu:</b> situar Espanya: península, arxipèlags, ciutats autònomes, límits i mars.</p><ol><li>Amb els noms amagats, que localitzin els països veïns i els mars.</li><li>On són les Canàries de veritat? (Al mapa estan en un requadre.)</li></ol><p class="lib">Llibre: activitats 1 i 2 (pàg. 86-87).</p></details>
+   <details><summary>⛰️ Relleu</summary><p><b>Objectiu:</b> identificar la Meseta, les serralades interiors, les que l'envolten i les exteriors, les depressions i el relleu d'Europa.</p><ol><li>Fes servir els filtres de grup: on és cada serralada respecte de la Meseta?</li><li>Busca el cim més alt de cada serralada (triangles).</li><li>Canvia a Europa: penínsules, illes i l'Elbrus.</li></ol><p class="lib">Llibre: activitats 3 a 5 i 11 (pàg. 88-89 i 94-95). Solucions: Meseta 700-1.000 m; depressió de l'Ebre 0-400 m; cim més alt de la Península: Mulhacén (3.479 m).</p></details>
+   <details><summary>🌊 Rius</summary><p><b>Objectiu:</b> distingir els vessants i explicar per què els rius són diferents.</p><ol><li>Per què els rius cantàbrics són curts? (Neixen a prop del mar.)</li><li>Per què els rius mediterranis porten poca aigua a l'estiu?</li><li>A Europa: on desemboquen el Volga i el Danubi?</li></ol><p class="lib">Llibre: activitats 6, 7 i 12.</p></details>
+   <details><summary>🌦️ Climes</summary><p><b>Objectiu:</b> localitzar els quatre climes d'Espanya i comparar-ne els climogrames.</p><ol><li>Compara el mediterrani típic, d'interior i sec: temperatures i pluges.</li><li>On és l'únic clima subtropical?</li></ol><p class="lib">Llibre: activitats 8, 9 i 10 (pàg. 92-93).</p></details>
+   <details><summary>👥 Població i economia</summary><p><b>Objectiu:</b> descriure la població i relacionar les activitats amb els sectors econòmics.</p><ol><li>Columnes de les ciutats: on viu més gent? Què és l'Espanya buidada?</li><li>Classifica les activitats del mapa en primari, secundari i terciari.</li></ol><p class="lib">Llibre: activitats 13 a 17 (pàg. 96-99). Les xifres de població de les ciutats són aproximades.</p></details>
+   <details><summary>🏆 Repte</summary><ul><li>«Troba-ho al mapa» amaga els noms: és una bona prova de localització.</li><li>Els rècords es guarden a cada tauleta.</li></ul></details>
+  </div>
+ </div>
+</div>
+<div id="credit">Contorns: Natural Earth (domini públic). Relleu esquemàtic generat a partir dels cims principals, exagerat verticalment.</div>
+
+<script>/*KIT*/</script>
+<script>window.ESP=/*ESP*/;window.EU=/*EU*/;</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+const {$,shuf,html,showCard,quiz,subtabs}=Kit; Kit.setPrefix('medilab_esp_');
+const D2R=Math.PI/180;
+/* ================= RENDER ================= */
+const canvas=$('#c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.outputColorSpace=THREE.SRGBColorSpace;
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x071528);
+const camera=new THREE.PerspectiveCamera(40,1,0.1,2000);
+const controls=new OrbitControls(camera,canvas); controls.enableDamping=true; controls.dampingFactor=.1; controls.rotateSpeed=.5; controls.zoomSpeed=.8; controls.maxPolarAngle=1.35; controls.screenSpacePanning=false; controls.minDistance=8; controls.maxDistance=260;
+function resize(){renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;
+ if(innerWidth>860) camera.setViewOffset(innerWidth,innerHeight,-190,0,innerWidth,innerHeight); else camera.setViewOffset(innerWidth,innerHeight,0,innerHeight*.2,innerWidth,innerHeight); camera.updateProjectionMatrix(); wake();}
+addEventListener('resize',resize);
+scene.add(new THREE.HemisphereLight(0xffffff,0x334455,1.1));
+const sunL=new THREE.DirectionalLight(0xffffff,2.2); sunL.position.set(-40,60,-30); scene.add(sunL);
+let awake=60; const wake=(n=40)=>{awake=Math.max(awake,n);}; controls.addEventListener('change',()=>wake(2));
+
+/* ================= GEO HELPERS ================= */
+function segDist(px,py,ax,ay,bx,by){const dx=bx-ax,dy=by-ay,l=dx*dx+dy*dy;let t=l?((px-ax)*dx+(py-ay)*dy)/l:0;t=Math.max(0,Math.min(1,t));const x=ax+t*dx-px,y=ay+t*dy-py;return [Math.sqrt(x*x+y*y),t];}
+function polyDist(lon,lat,pts,cosl){let best=1e9,bt=0,bi=0;for(let i=0;i<pts.length-1;i++){const [d,t]=segDist(lon*cosl,lat,pts[i][0]*cosl,pts[i][1],pts[i+1][0]*cosl,pts[i+1][1]);if(d<best){best=d;bt=t;bi=i;}}return [best,bi,bt];}
+function rnd(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296;};}
+function noise2(seed){const R=rnd(seed),P=new Float32Array(256*256);for(let i=0;i<P.length;i++)P[i]=R();const f=(x,y)=>{const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi,g=(a,b)=>P[((b&255)*256)+(a&255)],u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf);return g(xi,yi)*(1-u)*(1-v)+g(xi+1,yi)*u*(1-v)+g(xi,yi+1)*(1-u)*v+g(xi+1,yi+1)*u*v;};return (x,y)=>{let a=0,amp=.5,fr=1;for(let i=0;i<4;i++){a+=amp*f(x*fr,y*fr);amp*=.5;fr*=2;}return a;};}
+const NZ=noise2(7);
+const HYP=[[-1,[60,110,70]],[0,[86,140,80]],[200,[130,165,90]],[500,[195,190,120]],[900,[190,150,95]],[1400,[160,110,70]],[2000,[130,95,75]],[2700,[205,200,195]],[3500,[250,250,250]]];
+function hyp(h){for(let i=1;i<HYP.length;i++){if(h<=HYP[i][0]){const [h0,c0]=HYP[i-1],[h1,c1]=HYP[i],t=(h-h0)/(h1-h0);return [c0[0]+(c1[0]-c0[0])*t,c0[1]+(c1[1]-c0[1])*t,c0[2]+(c1[2]-c0[2])*t];}}return HYP[HYP.length-1][1];}
+
+/* ================= MAP ENGINE ================= */
+function makeMap(cfg){
+ const {lon0,lon1,lat0,lat1,clat,K,step,hs}=cfg, cosl=Math.cos(clat*D2R);
+ const W=Math.round((lon1-lon0)*cfg.ppd), H=Math.round((lat1-lat0)*cfg.ppd);
+ const map={cfg,cosl,W,H,group:new THREE.Group(),pins:[]};
+ map.X=lon=>(lon-cfg.cx)*cosl*K; map.Z=lat=>-(lat-cfg.cy)*K;
+ /* màscara: R = país focus, G = altra terra */
+ const mc=document.createElement('canvas'); mc.width=W; mc.height=H; const g=mc.getContext('2d'); g.fillStyle='#000'; g.fillRect(0,0,W,H);
+ const PX=(lon,lat)=>[(lon-lon0)/(lon1-lon0)*W,(lat1-lat)/(lat1-lat0)*H];
+ map.PX=PX;
+ const drawPolys=(polys,col,shift)=>{g.fillStyle=col;for(const poly of polys){g.beginPath();for(const ring of poly){ring.forEach(([x,y],i)=>{let [lo,la]=shift?shift(x,y):[x,y];const [px,py]=PX(lo,la);i?g.lineTo(px,py):g.moveTo(px,py);});g.closePath();}g.fill('evenodd');}};
+ cfg.paintMask(drawPolys);
+ const md=g.getImageData(0,0,W,H).data; map.mask=md;
+ map.landAt=(lon,lat)=>{const x=Math.floor((lon-lon0)/(lon1-lon0)*W),y=Math.floor((lat1-lat)/(lat1-lat0)*H);if(x<0||y<0||x>=W||y>=H)return 0;const i=(y*W+x)*4;return md[i]>127?2:md[i+1]>127?1:0;};
+ /* alçades a la graella */
+ const nx=Math.round((lon1-lon0)/step)+1, ny=Math.round((lat1-lat0)/step)+1; const Hs=new Float32Array(nx*ny);
+ for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){const lon=lon0+i*step, lat=lat1-j*step; Hs[j*nx+i]=cfg.height(lon,lat,map);}
+ map.Hs=Hs; map.nx=nx; map.ny=ny;
+ map.hAt=(lon,lat)=>{const fx=(lon-lon0)/step, fy=(lat1-lat)/step; const i=Math.max(0,Math.min(nx-2,Math.floor(fx))), j=Math.max(0,Math.min(ny-2,Math.floor(fy))), u=Math.min(1,Math.max(0,fx-i)), v=Math.min(1,Math.max(0,fy-j)); return Hs[j*nx+i]*(1-u)*(1-v)+Hs[j*nx+i+1]*u*(1-v)+Hs[(j+1)*nx+i]*(1-u)*v+Hs[(j+1)*nx+i+1]*u*v;};
+ map.Y=h=>Math.max(0,h)*hs;
+ /* malla */
+ const geo=new THREE.BufferGeometry(), pos=new Float32Array(nx*ny*3), uv=new Float32Array(nx*ny*2), idx=[];
+ for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){const k=j*nx+i, lon=lon0+i*step, lat=lat1-j*step, h=Hs[k]; pos.set([map.X(lon),h>0?map.Y(h)+.03:-.25,map.Z(lat)],k*3); uv.set([i/(nx-1),1-j/(ny-1)],k*2);
+  if(i<nx-1&&j<ny-1) idx.push(k,k+nx,k+1,k+1,k+nx,k+nx+1);}
+ geo.setAttribute('position',new THREE.BufferAttribute(pos,3)); geo.setAttribute('uv',new THREE.BufferAttribute(uv,2)); geo.setIndex(idx); geo.computeVertexNormals();
+ map.tex={}; map.mesh=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({roughness:.95,metalness:0})); map.mesh.userData.map=map; map.group.add(map.mesh);
+ const sea=new THREE.Mesh(new THREE.PlaneGeometry((lon1-lon0)*cosl*K*1.6,(lat1-lat0)*K*1.6),new THREE.MeshStandardMaterial({color:0x1d4f86,roughness:.4,metalness:.1,transparent:true,opacity:.85}));
+ sea.rotation.x=-Math.PI/2; sea.position.set((map.X(lon0)+map.X(lon1))/2,0,(map.Z(lat0)+map.Z(lat1))/2); map.group.add(sea);
+ map.ll=(uvx,uvy)=>[lon0+uvx*(lon1-lon0),lat0+uvy*(lat1-lat0)];
+ map.v3=(lon,lat,up=0)=>new THREE.Vector3(map.X(lon),map.Y(map.hAt(lon,lat))+up,map.Z(lat));
+ /* textura */
+ map.paint=(key,fn)=>{ if(map.tex[key]) return map.tex[key]; const c=document.createElement('canvas'); c.width=W; c.height=H; const cg=c.getContext('2d'); const im=cg.createImageData(W,H);
+  for(let y=0;y<H;y++){const lat=lat1-(y+.5)/H*(lat1-lat0);for(let x=0;x<W;x++){const lon=lon0+(x+.5)/W*(lon1-lon0);const i=(y*W+x)*4;const L=md[i]>127?2:md[i+1]>127?1:0;const col=fn(lon,lat,L,L?map.hAt(lon,lat):0);im.data[i]=col[0];im.data[i+1]=col[1];im.data[i+2]=col[2];im.data[i+3]=255;}}
+  cg.putImageData(im,0,0); if(cfg.overlay) cfg.overlay(cg,map,key); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=8; map.tex[key]=t; return t; };
+ map.use=key=>{ map.mesh.material.map=map.tex[key]; map.mesh.material.needsUpdate=true; wake(); };
+ scene.add(map.group); return map; }
+
+/* ================= ESPANYA: dades ================= */
+const CAN=[6.6,7.0]; /* desplaçament del requadre de les Canàries (lon, lat) */
+const canShift=(x,y)=>y<30.5?[x+CAN[0],y+CAN[1]]:[x,y];
+const RANGES=[
+ {id:'pirineus',n:'Pirineus',g:'ext',pk:['Aneto',3404],p:[[-1.75,43.15,1200],[-0.8,42.85,2300],[0.1,42.72,3000],[0.65,42.63,3404],[1.4,42.55,2900],[2.3,42.45,2400],[3.0,42.45,1200]],t:"Formen una frontera natural amb França. Hi ha els cims més alts de la serralada exterior del nord-est."},
+ {id:'cantabrica',n:'Serralada Cantàbrica',g:'env',pk:['Torre Cerredo',2648],p:[[-7.0,42.85,1600],[-6.0,43.0,2100],[-4.84,43.2,2648],[-4.0,43.05,2000],[-3.3,43.0,1500]],t:"Envolta la Meseta pel nord. Hi ha els Picos de Europa."},
+ {id:'bascos',n:'Muntanyes Basques',g:'ext',pk:['Aitxuri',1551],p:[[-3.1,43.05,1100],[-2.55,43.0,1551],[-1.8,43.0,1200]],t:"Uneixen la serralada Cantàbrica amb els Pirineus."},
+ {id:'galaic',n:'Massís Galaic',g:'ext',pk:['Cabeza de Manzaneda',1781],p:[[-8.2,42.6,900],[-7.6,42.4,1400],[-7.35,42.25,1781],[-7.0,41.95,1300]],t:"És un relleu molt antic i desgastat, a Galícia."},
+ {id:'lleo',n:'Muntanyes de Lleó',g:'env',pk:['Teleno',2183],p:[[-6.9,42.75,1800],[-6.4,42.35,2183],[-6.25,41.95,1500]],t:"Tanquen la Meseta pel nord-oest."},
+ {id:'central',n:'Sistema Central',g:'int',pk:['Almanzor',2591],p:[[-7.6,40.3,1600],[-6.4,40.3,1700],[-5.25,40.25,2591],[-4.3,40.75,2200],[-3.6,41.05,2100],[-2.9,41.25,1500]],t:"Divideix la Meseta en dues parts: la Submeseta Nord i la Submeseta Sud."},
+ {id:'toledo',n:'Muntanyes de Toledo',g:'int',pk:['Villuercas',1601],p:[[-5.3,39.45,1601],[-4.6,39.42,1300],[-3.9,39.5,1100]],t:"S'eleven al centre de la Submeseta Sud."},
+ {id:'iberic',n:'Sistema Ibèric',g:'env',pk:['Moncayo',2313],p:[[-3.3,42.35,1700],[-2.6,42.0,2000],[-1.83,41.79,2313],[-1.5,41.0,1700],[-1.0,40.35,1800],[-0.6,39.95,1300]],t:"Envolta la Meseta per l'est."},
+ {id:'morena',n:'Sierra Morena',g:'env',pk:['Bañuela',1332],p:[[-7.2,38.05,900],[-5.6,38.25,1000],[-4.15,38.35,1332],[-2.7,38.4,1100]],t:"Tanca la Meseta pel sud. Separa la Meseta de la depressió del Guadalquivir."},
+ {id:'betica',n:'Serralada Bètica',g:'ext',pk:['Mulhacén',3479],p:[[-5.4,36.65,1500],[-4.3,36.95,2000],[-3.31,37.05,3479],[-2.6,37.15,2600],[-1.8,37.45,1700]],t:"Està formada per la serralada Penibètica (amb el Mulhacén, el cim més alt de la Península) i la Subbètica."},
+ {id:'subbetica',n:'Serralada Subbètica',g:'ext',pk:['La Sagra',2381],p:[[-4.7,37.25,1300],[-3.6,37.55,1700],[-2.56,37.95,2381],[-1.6,38.3,1600],[-0.3,38.72,1300]],t:"És la part de la serralada Bètica més propera a la depressió del Guadalquivir.",nolabel:0},
+ {id:'litoral',n:'Sistema Mediterrani Català',g:'ext',pk:["Turó de l'Home",1706],p:[[0.7,40.85,1100],[1.3,41.25,1000],[1.9,41.6,1200],[2.43,41.77,1706],[2.8,42.1,1100]],t:"Són les serralades Litoral i Prelitoral, paral·leles a la costa catalana."},
+ {id:'tramuntana',n:'Serra de Tramuntana',g:'illes',pk:['Puig Major',1436],p:[[2.35,39.6,900],[2.81,39.8,1436],[3.15,39.92,900]],t:"És la serralada principal de Mallorca."},
+ {id:'teide',n:'El Teide',g:'illes',pk:['Teide',3715],p:[[-16.64,28.27,3715]],w:.12,t:"Volcà de l'illa de Tenerife. És el cim més alt d'Espanya.",can:1},
+ {id:'nieves',n:'Gran Canària',g:'illes',p:[[-15.57,27.96,1950]],w:.13,nolabel:1,can:1},{id:'palma',n:'La Palma',g:'illes',p:[[-17.86,28.72,2400]],w:.09,nolabel:1,can:1},
+ {id:'estrela',n:'Serra da Estrela',g:'pt',p:[[-8.2,40.15,1200],[-7.6,40.32,1990],[-7.4,40.3,1700]],nolabel:1},{id:'rif',n:'Rif',g:'pt',p:[[-5.6,35.2,1600],[-4.5,35.0,2400],[-3.4,35.1,1500]],nolabel:1}
+];
+for(const r of RANGES) if(r.can) r.p=r.p.map(([x,y,h])=>[x+CAN[0],y+CAN[1],h]);
+const MESETA=[[-6.8,42.6],[-4.5,42.85],[-3.3,42.6],[-2.6,41.9],[-2.0,41.5],[-1.7,40.6],[-1.3,39.6],[-2.0,38.7],[-4.0,38.55],[-6.6,38.6],[-7.2,39.4],[-6.9,40.6],[-6.6,41.6]];
+const GROUPS={int:['Serralades interiors de la Meseta','#ffd23f'],env:['Serralades que envolten la Meseta','#ff8a5c'],ext:['Serralades exteriors','#c08bff'],illes:['Relleu de les illes','#7dffb2']};
+const DEP=[{id:'ebre',n:"Depressió de l'Ebre",lon:-0.3,lat:41.6,t:"Plana triangular travessada pel riu Ebre, envoltada pels Pirineus, el Sistema Ibèric i les serralades catalanes. Té entre 0 i 400 m d'altitud."},{id:'guadal',n:'Depressió del Guadalquivir',lon:-5.3,lat:37.5,t:"Plana oberta a l'oceà Atlàntic, entre Sierra Morena i la serralada Bètica, travessada pel Guadalquivir."},{id:'meseta',n:'Meseta Central',lon:-4.4,lat:41.6,t:"Gran altiplà al centre de la península Ibèrica. Ocupa gairebé la meitat del territori i té entre 700 i 1.000 m d'altitud. Està inclinada cap a l'oest."}];
+const RIVERS=[
+ {id:'mino',n:'Miño',v:'atl',km:340,neix:'Serra de Meira (Lugo)',p:[[-7.6,43.2],[-7.55,42.9],[-7.6,42.5],[-7.9,42.35],[-8.15,42.15],[-8.6,42.0],[-8.87,41.87]],t:"Riu gallec, curt i cabalós. Fa de frontera amb Portugal al seu tram final."},
+ {id:'sil',n:'Sil',v:'atl',km:230,neix:'Muntanyes de Lleó',p:[[-6.3,42.98],[-6.6,42.55],[-7.1,42.4],[-7.6,42.38]],t:"És l'afluent principal del Miño.",trib:1},
+ {id:'duero',n:'Duero',v:'atl',km:897,neix:'Picos de Urbión (Sistema Ibèric)',p:[[-2.88,41.98],[-2.47,41.76],[-3.2,41.62],[-3.7,41.65],[-4.7,41.55],[-5.4,41.5],[-5.75,41.5],[-6.3,41.3],[-6.9,41.0],[-7.6,41.1],[-8.2,41.1],[-8.67,41.14]],t:"Travessa la Submeseta Nord i desemboca a l'Atlàntic, a Portugal."},
+ {id:'tajo',n:'Tajo',v:'atl',km:1007,neix:'Serra d\'Albarracín (Sistema Ibèric)',p:[[-1.72,40.32],[-2.3,40.5],[-3.0,40.25],[-3.6,40.03],[-4.03,39.86],[-4.8,39.95],[-5.8,39.75],[-6.8,39.65],[-7.5,39.4],[-8.2,39.45],[-8.7,39.0],[-9.1,38.7]],t:"És el riu més llarg de la península Ibèrica. Passa per Toledo i desemboca a Lisboa."},
+ {id:'guadiana',n:'Guadiana',v:'atl',km:744,neix:'Llacunes de Ruidera',p:[[-2.85,38.95],[-3.7,39.1],[-4.5,39.1],[-5.7,38.95],[-6.35,38.9],[-6.97,38.88],[-7.2,38.6],[-7.45,38.0],[-7.5,37.5],[-7.42,37.18]],t:"Travessa la Submeseta Sud i fa de frontera amb Portugal."},
+ {id:'guadalquivir',n:'Guadalquivir',v:'atl',km:657,neix:'Serra de Cazorla',p:[[-2.85,37.95],[-3.6,38.0],[-4.2,37.9],[-4.78,37.88],[-5.5,37.62],[-5.98,37.38],[-6.2,37.0],[-6.36,36.8]],t:"És l'únic riu navegable d'Espanya (fins a Sevilla). Passa per Còrdova i Sevilla."},
+ {id:'ebre',n:'Ebre',v:'med',km:910,neix:'Fontibre (serralada Cantàbrica)',p:[[-4.1,43.03],[-3.6,42.75],[-2.9,42.62],[-2.45,42.47],[-1.6,42.05],[-0.88,41.65],[-0.3,41.35],[0.2,41.15],[0.52,40.82],[0.87,40.72]],t:"És el riu més cabalós d'Espanya i el més llarg que és tot a Espanya. Forma el delta de l'Ebre."},
+ {id:'segre',n:'Segre',v:'med',km:265,neix:'Pirineus (França)',p:[[1.9,42.45],[1.45,42.35],[1.2,42.0],[0.62,41.62],[0.35,41.38]],t:"És l'afluent més llarg de l'Ebre. Passa per Lleida.",trib:1},
+ {id:'xuquer',n:'Xúquer',v:'med',km:497,neix:'Serrania de Conca',p:[[-1.9,40.4],[-2.13,40.07],[-1.95,39.5],[-1.4,39.15],[-0.8,39.2],[-0.45,39.15],[-0.23,39.18]],t:"Desemboca al Mediterrani al sud de València."},
+ {id:'turia',n:'Túria',v:'med',km:280,neix:'Muntanyes Universals',p:[[-1.4,40.4],[-1.1,40.34],[-0.9,39.95],[-0.6,39.65],[-0.33,39.45]],t:"Passa per València."},
+ {id:'segura',n:'Segura',v:'med',km:325,neix:'Serra de Segura',p:[[-2.5,38.1],[-2.0,38.2],[-1.4,38.05],[-1.13,37.98],[-0.9,38.05],[-0.65,38.1]],t:"Passa per Múrcia. Porta poca aigua."},
+ {id:'llobregat',n:'Llobregat',v:'med',km:170,neix:'Castellar de n\'Hug',p:[[1.85,42.25],[1.85,41.9],[1.85,41.6],[1.95,41.45],[2.1,41.3]],t:"Desemboca prop de Barcelona."},
+ {id:'ter',n:'Ter',v:'med',km:208,neix:'Ulldeter (Pirineus)',p:[[2.2,42.4],[2.5,42.05],[2.82,41.98],[3.2,42.05]],t:"Passa per Girona."},
+ {id:'nalon',n:'Nalón',v:'cant',km:145,neix:'Serralada Cantàbrica',p:[[-5.5,43.15],[-5.85,43.3],[-6.1,43.5],[-6.07,43.56]],t:"És el riu més llarg d'Astúries."},
+ {id:'navia',n:'Navia',v:'cant',km:159,neix:'Serralada Cantàbrica',p:[[-6.9,42.9],[-6.8,43.2],[-6.73,43.55]],t:"Riu curt i cabalós."},
+ {id:'eo',n:'Eo',v:'cant',km:91,neix:'Serra de Meira',p:[[-7.25,43.2],[-7.05,43.53]],t:"Fa de límit entre Galícia i Astúries."},
+ {id:'bidasoa',n:'Bidasoa',v:'cant',km:66,neix:'Pirineus navarresos',p:[[-1.6,43.12],[-1.79,43.37]],t:"Fa de frontera amb França en el seu tram final."}];
+const VES={atl:['Vessant atlàntic','#2f8cff',"És el més extens. Els rius de la Meseta són llargs i irregulars; els de Galícia, curts i cabalosos."],med:['Vessant mediterrani','#ff8a5c',"Rius curts i amb poc cabal (excepte l'Ebre). A l'estiu porten molt poca aigua. Hi ha rambles i torrents."],cant:['Vessant cantàbric','#7dffb2',"Rius curts, perquè neixen a la serralada Cantàbrica, molt a prop del mar, i cabalosos, perquè hi plou molt."]};
+const CITIES=[['Madrid',-3.70,40.42,3.3],['Barcelona',2.17,41.39,1.66],['València',-0.38,39.47,.8],['Sevilla',-5.98,37.39,.68],['Saragossa',-0.88,41.65,.68],['Màlaga',-4.42,36.72,.58],['Múrcia',-1.13,37.98,.46],['Palma',2.65,39.57,.42],['Las Palmas',-15.42,28.12,.38,1],['Bilbao',-2.93,43.26,.35],['Alacant',-0.48,38.35,.34],['Còrdova',-4.78,37.88,.32],['Valladolid',-4.72,41.65,.3],['Vigo',-8.72,42.24,.29],['Gijón',-5.66,43.54,.27],['Vitòria',-2.67,42.85,.25],['La Corunya',-8.41,43.36,.25],['Granada',-3.6,37.18,.23],['Santa Cruz de Tenerife',-16.25,28.47,.21,1],['Oviedo',-5.85,43.36,.22],['Pamplona',-1.64,42.81,.2],['Santander',-3.8,43.46,.17],['Burgos',-3.7,42.34,.17],['Badajoz',-6.97,38.88,.15],['Salamanca',-5.66,40.96,.14],['Lleida',0.62,41.62,.14],['Tarragona',1.25,41.12,.13],['Girona',2.82,41.98,.1],['Càceres',-6.37,39.47,.1],['Toledo',-4.03,39.86,.085],['Ceuta',-5.32,35.89,.083],['Melilla',-2.94,35.29,.085],['Sòria',-2.47,41.76,.04],['Terol',-1.1,40.34,.036],['Conca',-2.13,40.07,.054],['Osca',-0.41,42.14,.053]].map(([n,lon,lat,m,can])=>{if(can){lon+=CAN[0];lat+=CAN[1];}return {n,lon,lat,m};});
+const CLIMES={tipic:{n:'Mediterrani típic',c:[230,140,40],t:"Hiverns suaus i estius càlids. Pluges escasses i irregulars, a la primavera i la tardor.",veg:"Matolls i boscos d'alzina i pi.",city:'Barcelona',T:[9.5,10.2,12.4,14.4,17.7,21.6,24.4,24.6,21.8,18.3,13.4,10.4],P:[41,30,40,46,50,32,23,51,85,95,57,46]},
+ interior:{n:"Mediterrani d'interior",c:[200,90,60],t:"Temperatures extremes: estius càlids i hiverns freds. Pluges escasses, de vegades en forma de neu.",veg:"Matolls i boscos d'alzina i pi.",city:'Madrid',T:[6.3,7.9,11.2,12.9,16.7,22.2,25.6,25.1,20.9,15.1,9.9,6.9],P:[33,35,25,45,47,22,11,9,24,59,57,51]},
+ sec:{n:'Mediterrani sec',c:[240,205,120],t:"Temperatures suaus a la costa i extremes a l'interior. Pluges molt escasses i estius molt secs.",veg:"Matolls adaptats a la sequera.",city:'Almeria',T:[12.5,13.1,14.7,16.4,19.1,22.8,25.8,26.4,24.1,20.5,16.4,13.6],P:[23,24,18,22,11,4,1,3,14,24,29,26]},
+ atlantic:{n:'Atlàntic',c:[60,170,200],t:"Temperatures suaus tot l'any: estius frescos i hiverns temperats. Pluges abundants i regulars.",veg:"Boscos de roures, castanyers i faigs, i prats.",city:'Santander',T:[9.7,9.8,11,12,14.2,16.8,19,19.4,18.1,15.8,12.5,10.6],P:[106,92,94,105,84,62,52,72,84,119,157,118]},
+ muntanya:{n:'De muntanya',c:[150,120,105],t:"Per sobre dels 1.500 m. Hiverns per sota de 0 °C i estius frescos (uns 15 °C). Pluges abundants, a l'hivern en forma de neu.",veg:"Boscos de pi, roure i avet; a dalt, prats naturals.",city:'Navacerrada (1.894 m)',T:[-0.9,-0.6,1.6,3.1,7,12.2,16.1,15.8,11.7,6.8,2.5,0.1],P:[131,134,92,124,123,52,22,19,61,154,171,177]},
+ subtropical:{n:'Subtropical',c:[120,200,120],t:"Temperatures suaus tot l'any, amb poques variacions. Plou més al nord de les illes; al sud gairebé no plou.",veg:"Espècies endèmiques: laurisilva i bosc de pi canari.",city:'Las Palmas',T:[18.4,18.5,19.1,19.6,20.5,21.9,23.4,24.3,24.2,23.1,21.2,19.4],P:[26,23,15,7,2,0,0,0,7,17,26,30]}};
+const ECO=[
+ {s:1,e:'🌾',n:'Cereals (blat i ordi)',lon:-4.6,lat:41.9,t:"Castella i Lleó és una gran zona de cereals."},{s:1,e:'🫒',n:'Olivera',lon:-3.8,lat:37.8,t:"Andalusia (sobretot Jaén) és la primera productora d'oli d'oliva del món."},{s:1,e:'🍇',n:'Vinya',lon:-3.2,lat:39.2,t:"Castella-la Manxa té moltíssima vinya. També La Rioja i Catalunya."},{s:1,e:'🍊',n:'Fruites i hortalisses',lon:-0.6,lat:39.0,t:"A la Comunitat Valenciana i Múrcia hi ha regadius de tarongers i hortalisses."},
+ {s:1,e:'🐖',n:'Bestiar porcí',lon:0.9,lat:41.9,t:"És el bestiar més nombrós. Es cria sobretot a Catalunya i Aragó."},{s:1,e:'🐑',n:'Bestiar oví',lon:-6.1,lat:39.3,t:"Predomina a Extremadura, Castella i Lleó i Castella-la Manxa."},{s:1,e:'🐄',n:'Bestiar boví',lon:-7.6,lat:43.0,t:"Sobretot a Galícia i a la cornisa cantàbrica, per la llet i la carn."},{s:1,e:'🎣',n:'Pesca',lon:-8.8,lat:42.4,t:"Espanya és un dels principals països pesquers d'Europa. Destaca Galícia."},
+ {s:2,e:'🏭',n:'Indústria',lon:2.0,lat:41.5,t:"Catalunya és una de les principals regions industrials, amb Madrid, el País Basc i la Comunitat Valenciana."},{s:2,e:'🚗',n:'Fàbriques de cotxes',lon:-3.6,lat:40.3,t:"Espanya és un dels grans fabricants de cotxes d'Europa."},{s:2,e:'⚙️',n:'Indústria metal·lúrgica',lon:-2.9,lat:43.2,t:"Al País Basc hi ha una important tradició industrial."},{s:2,e:'🏗️',n:'Construcció',lon:-0.5,lat:38.5,t:"La construcció també forma part del sector secundari."},
+ {s:3,e:'🏖️',n:'Turisme de sol i platja',lon:2.95,lat:39.55,t:"Espanya és un dels països més visitats del món. Les Balears i les Canàries reben molts turistes."},{s:3,e:'⛷️',n:"Turisme d'esquí",lon:0.9,lat:42.6,t:"Als Pirineus i a Sierra Nevada hi ha estacions d'esquí."},{s:3,e:'🏛️',n:'Turisme cultural',lon:-3.3,lat:37.4,t:"Ciutats com Granada, Sevilla o Barcelona tenen monuments molt visitats."},{s:3,e:'🛒',n:'Comerç',lon:-3.9,lat:40.55,t:"El comerç és l'activitat més important del sector terciari."},{s:3,e:'🚢',n:'Ports',lon:-0.3,lat:39.45,t:"Els ports principals són Algesires, València, Barcelona i Bilbao."},{s:3,e:'✈️',n:'Transport',lon:-3.55,lat:40.5,t:"Els aeroports més transitats són Madrid-Barajas i Barcelona-el Prat."}];
+const SECT={1:['Sector primari','#b6ff3b',4,"Obté aliments i matèries primeres de la natura: agricultura, ramaderia i pesca."],2:['Sector secundari','#ff8a5c',20,"Transforma les matèries primeres en productes elaborats: indústria i construcció."],3:['Sector terciari','#00e5ff',76,"Serveis: comerç, transport, turisme, educació, sanitat… És el que dona més feina."]};
+
+/* ---- alçada Espanya ---- */
+function meseta(lon,lat){ /* dins del polígon amb vora suau */ let inside=false; for(let i=0,j=MESETA.length-1;i<MESETA.length;j=i++){const [xi,yi]=MESETA[i],[xj,yj]=MESETA[j]; if((yi>lat)!==(yj>lat)&&lon<(xj-xi)*(lat-yi)/(yj-yi)+xi) inside=!inside;}
+ let d=1e9; for(let i=0,j=MESETA.length-1;i<MESETA.length;j=i++){ d=Math.min(d,segDist(lon*.77,lat,MESETA[j][0]*.77,MESETA[j][1],MESETA[i][0]*.77,MESETA[i][1])[0]); } const s=Math.min(1,d/.6); return inside? .5+.5*s : Math.max(0,.5-.5*s); }
+function hESP(lon,lat,map){ const L=map.landAt(lon,lat); if(!L) return -50; let h=40+NZ(lon*3,lat*3)*220; const m=meseta(lon,lat); h=Math.max(h,m*(lat>40.3?820:680)+NZ(lon*2+9,lat*2)*120);
+ if(lon>-1.6&&lon<1.0&&lat>41.0&&lat<42.4) h*=.55; /* Ebre */ if(lon>-6.5&&lon<-3.5&&lat>36.8&&lat<38.1) h*=.6; /* Guadalquivir */
+ for(const r of RANGES){ const w=r.w||.38; if(r.p.length===1){const [x,y,hh]=r.p[0];const d=Math.hypot((lon-x)*.9,lat-y);h=Math.max(h,hh*Math.exp(-((d/w)**2)));continue;} const [d,i,t]=polyDist(lon,lat,r.p,.77); if(d>1.3) continue; const hh=r.p[i][2]+(r.p[i+1][2]-r.p[i][2])*t; h=Math.max(h,hh*Math.exp(-((d/w)**2))*(.75+.5*NZ(lon*6,lat*6))); }
+ return Math.max(20,h); }
+const MAPES={lon0:-11.9,lon1:5.0,lat0:34.4,lat1:44.4,clat:40,cx:-3.4,cy:39.6,K:10,step:.04,ppd:100,hs:.0013,
+ paintMask:(draw)=>{ for(const k of ['PRT','FRA','AND','MAR','DZA','GIB']) if(ESP[k]) draw(ESP[k],'#00ff00'); draw(ESP.ESP,'#ff0000',canShift); },
+ height:hESP,
+ overlay:(g,map,key)=>{ const [x0,y0]=map.PX(-11.75,37.1), [x1,y1]=map.PX(-6.5,34.55); g.strokeStyle='rgba(255,255,255,.6)'; g.lineWidth=3; g.strokeRect(x0,y0,x1-x0,y1-y0);
+  g.strokeStyle='rgba(20,30,40,.55)'; g.lineWidth=2; for(const k of ['PRT','FRA','AND']) for(const poly of ESP[k]){ g.beginPath(); poly[0].forEach(([x,y],i)=>{const [px,py]=map.PX(x,y); i?g.lineTo(px,py):g.moveTo(px,py);}); g.stroke(); } }};
+/* clima d'Espanya (simplificat) */
+function climaESP(lon,lat,h){ if(lat<37.2&&lon<-6.5) return 'subtropical'; if(h>1450) return 'muntanya';
+ if((lat>42.75&&lon<-1.7)||(lon<-7.3&&lat>41.8)||(lat>42.55&&lon<-4)) return 'atlantic';
+ if((lon>-3.2&&lat<38.75&&lon<-0.4)||(lon>-2.4&&lon<-0.9&&lat<38.5)) return 'sec';
+ if(meseta(lon,lat)>.45||(lon>-1.7&&lon<0.6&&lat>41.05&&lat<42.3)||(lon>-6.6&&lon<-4.0&&lat>37.2&&lat<38.3)) return 'interior';
+ return 'tipic'; }
+
+/* ================= EUROPA: dades ================= */
+const ERANGES=[
+ {n:'Alps',pk:['Mont Blanc',4808],p:[[5.6,44.2,2500],[6.86,45.83,4808],[8.5,46.3,4000],[10.5,46.6,3500],[12.5,47.0,3200],[15.0,47.4,2000]]},
+ {n:'Pirineus',pk:['Aneto',3404],p:[[-1.8,43.1,1500],[0.65,42.63,3404],[3.0,42.45,1500]]},
+ {n:'Apenins',pk:['Gran Sasso',2912],p:[[8.5,44.4,1600],[11.0,44.1,1800],[13.57,42.47,2912],[15.2,41.0,1800],[16.1,39.5,1700],[15.9,38.3,1500]]},
+ {n:'Carpats',pk:['Gerlachovský',2655],p:[[17.6,48.9,1400],[20.13,49.16,2655],[23.0,48.8,1800],[25.0,47.8,2000],[26.0,46.0,2000],[24.5,45.5,2500],[22.5,45.3,1800]]},
+ {n:'Balcans',pk:['Musala',2925],p:[[14.8,45.6,1500],[17.0,44.0,2000],[19.0,42.7,2200],[21.0,41.9,2200],[23.58,42.18,2925],[25.3,42.7,2000],[27.2,42.8,1200]]},
+ {n:'Caucas',pk:['Elbrus',5642],p:[[38.5,44.4,2500],[42.44,43.35,5642],[44.5,42.7,5000],[47.0,41.8,3500],[49.0,40.9,2000]]},
+ {n:'Serralada Escandinava',pk:['Galdhøpiggen',2469],p:[[6.5,58.8,1200],[8.31,61.64,2469],[11.5,63.2,1500],[14.0,65.5,1600],[17.5,68.0,1800],[21.0,69.6,1300]]},
+ {n:'Urals',pk:['Narodnaia',1895],p:[[58.8,51.5,900],[59.3,55.5,1200],[59.2,59.5,1300],[59.6,63.0,1500],[60.0,65.0,1895],[65.0,68.5,1200]]},
+ {n:'Massís Central',p:[[2.4,44.5,1300],[2.8,45.5,1800],[3.5,46.0,1100]]},{n:'Escòcia',nolabel:1,p:[[-5.5,56.5,1300],[-4.3,57.3,1200]]},{n:'Islàndia',nolabel:1,p:[[-19,64.8,1800],[-17,64.6,2000]]},{n:'Sistema Central',nolabel:1,p:[[-6.4,40.3,1800],[-3.6,41.0,2200]]},{n:'Bètica',nolabel:1,p:[[-4.5,37.0,2000],[-3.31,37.05,3479],[-2.0,37.4,2000]]},{n:'Cantàbrica',nolabel:1,p:[[-6.5,43.0,2000],[-4.8,43.15,2600],[-3.5,43.0,1500]]},{n:'Dinàrics',nolabel:1,p:[[15.5,44.8,1600],[18.5,43.3,2200]]},{n:'Turquia',nolabel:1,p:[[28,39.5,1800],[33,38.5,2500],[38,39,2800]]},{n:'Atles',nolabel:1,p:[[-9,30.8,2500],[-6,31.5,3800],[-3,33,2500],[2,35,1800]]}];
+const ERIV=[
+ {n:'Volga',v:'casp',p:[[32.9,57.2],[35.9,56.9],[38,57.6],[39.9,57.6],[41.9,57.0],[44,56.3],[47.2,56.1],[49.1,55.8],[48.4,54.3],[50.1,53.2],[48.0,51.5],[46.0,49.5],[44.5,48.7],[47.0,47.0],[48.0,46.3],[48.6,45.8]],t:"És el riu més llarg d'Europa (uns 3.500 km). Desemboca al mar Caspi."},
+ {n:'Ural',v:'casp',p:[[59.4,54.5],[58.6,51.8],[55.1,51.8],[51.4,51.2],[51.5,49.0],[51.9,47.1]],t:"Fa de frontera natural entre Europa i Àsia."},
+ {n:'Danubi',v:'negre',p:[[8.2,48.0],[10,48.4],[12.1,49.0],[13.4,48.5],[16.4,48.2],[17.1,48.1],[18.9,47.8],[19.05,47.5],[18.9,46.0],[19.5,45.3],[20.5,44.8],[22.5,44.6],[23,43.8],[25.5,43.65],[27.9,44.1],[28.0,45.3],[28.8,45.3],[29.7,45.2]],t:"Travessa deu països i quatre capitals (Viena, Bratislava, Budapest i Belgrad)."},
+ {n:'Dnièper',v:'negre',p:[[33.0,55.8],[32.0,54.8],[30.4,53.9],[30.3,52.0],[30.5,50.45],[32.0,49.4],[34.5,48.5],[35.1,47.8],[33.5,46.8],[32.6,46.6],[31.8,46.5]],t:"Passa per Kíiv. Desemboca al mar Negre."},
+ {n:'Don',v:'negre',p:[[38.2,53.9],[39.2,52.5],[39.2,51.0],[40.5,49.9],[42.5,49.5],[43.4,48.5],[41.0,47.6],[39.7,47.2],[39.2,47.1]],t:"Desemboca al mar d'Azov, al costat del mar Negre."},
+ {n:'Rin',v:'atl',p:[[9.2,46.6],[9.6,47.5],[8.6,47.6],[7.6,47.6],[7.8,48.6],[8.4,49.0],[8.27,50.0],[7.6,50.36],[6.95,50.94],[6.75,51.4],[6.1,51.85],[5.0,51.9],[4.1,51.95]],t:"És un riu cabalós i molt navegable. Desemboca al mar del Nord."},
+ {n:'Elba',v:'atl',p:[[15.6,50.7],[15.7,50.1],[14.4,50.5],[14.0,50.8],[13.7,51.05],[12.6,51.9],[11.7,52.8],[10.0,53.55],[8.8,53.85]],t:"Passa per Hamburg i desemboca al mar del Nord."},
+ {n:'Oder',v:'atl',p:[[17.6,49.6],[18.2,50.1],[17.05,51.1],[15.5,51.95],[14.6,52.4],[14.3,53.4],[14.5,53.9]],t:"Desemboca al mar Bàltic."},
+ {n:'Vístula',v:'atl',p:[[18.95,49.6],[19.9,50.05],[21.6,50.7],[21.0,52.25],[19.0,52.9],[18.6,53.1],[18.8,54.0],[18.95,54.35]],t:"Passa per Varsòvia i desemboca al mar Bàltic."},
+ {n:'Loira',v:'atl',p:[[4.2,44.8],[4.0,46.0],[3.1,47.0],[2.4,47.7],[1.9,47.9],[0.7,47.4],[-0.55,47.45],[-1.55,47.2],[-2.2,47.28]],t:"És el riu més llarg de França."},
+ {n:'Sena',v:'atl',p:[[4.7,47.6],[4.1,48.3],[3.0,48.4],[2.35,48.86],[1.5,49.1],[0.2,49.45]],t:"Passa per París."},
+ {n:'Tajo',v:'atl',p:RIVERS.find(r=>r.id==='tajo').p,t:"El riu més llarg de la península Ibèrica."},
+ {n:'Ebre',v:'med',p:RIVERS.find(r=>r.id==='ebre').p,t:"Riu del vessant mediterrani."},
+ {n:'Po',v:'med',p:[[7.1,44.7],[7.7,45.07],[8.6,45.1],[9.7,45.05],[10.8,45.0],[11.6,44.95],[12.4,44.95]],t:"És el riu més llarg d'Itàlia."},
+ {n:'Roine',v:'med',p:[[8.4,46.6],[7.4,46.25],[6.15,46.2],[5.4,45.75],[4.85,45.75],[4.85,44.9],[4.8,43.95],[4.6,43.4]],t:"Neix als Alps i desemboca al Mediterrani."},
+ {n:'Petxora',v:'art',p:[[58.5,62],[57.2,63.9],[56.4,65.2],[52.2,65.3],[52.5,67.0],[53.5,68.0],[54.0,68.4]],t:"Riu del vessant àrtic. A l'hivern es glaça."},
+ {n:'Dvina Septentrional',v:'art',p:[[46.3,60.8],[45.0,61.3],[43.3,62.1],[41.6,63.3],[40.5,64.5]],t:"Riu del vessant àrtic. A l'hivern es glaça."}];
+const EVES={med:['Mediterrani','#ff8a5c','Rius poc cabalosos; a l\'estiu en porten molt poca (estiatge).'],atl:['Atlàntic','#2f8cff','Rius cabalosos i molts de navegables.'],negre:['Mar Negre','#c08bff','Rius llargs i navegables.'],casp:['Mar Caspi','#ffd23f','Rius llargs i cabalosos.'],art:['Àrtic','#7dffb2','Rius cabalosos que a l\'hivern es glacen.']};
+const ELBL=[['Oceà Atlàntic',-18,47],['Oceà Glacial Àrtic',20,74.5],['Mar Mediterrani',17,35.3],['Mar Negre',34,43.4],['Mar del Nord',3.2,56],['Mar Bàltic',19.5,57.3],['Mar de Barentsz',42,72.5],['Mar Caspi',50.5,42.5],['Península Ibèrica',-4.5,39.2],['Península Itàlica',14.5,41.3],['Península Balcànica',23,40.6],['Península Escandinava',15,63.5],['Jutlàndia',9.2,56.2],['Gran Bretanya',-1.5,53.2],['Irlanda',-8,53.2],['Islàndia',-18,65],['Còrsega',9.1,42.1],['Sardenya',9.0,40],['Sicília',14.2,37.5],['Creta',24.9,35.2],['Xipre',33.2,35.0],['Gran Plana Europea',30,54.5],['Cap Nord',25.8,71.1]];
+let EMAP=null;
+function buildEurope(){ if(EMAP) return EMAP;
+ EMAP=makeMap({lon0:-26,lon1:66,lat0:33,lat1:72.5,clat:52,cx:18,cy:52,K:1.75,step:.2,ppd:22,hs:.00042,
+  paintMask:(draw)=>{ for(const c of EU) draw(c.p,'#00ff00'); },
+  height:(lon,lat,map)=>{ if(!map.landAt(lon,lat)) return -50; let h=60+NZ(lon*.8,lat*.8)*260; for(const r of ERANGES){const [d,i,t]=polyDist(lon,lat,r.p,.62);if(d>3.5)continue;const hh=r.p.length>1?r.p[i][2]+(r.p[i+1][2]-r.p[i][2])*t:r.p[0][2];h=Math.max(h,hh*Math.exp(-((d/1.0)**2))*(.75+.5*NZ(lon*2,lat*2)));} if(lat>50&&lat<58&&lon>5&&lon<45) h*=.6; return Math.max(15,h); },
+  overlay:(g,map)=>{ g.strokeStyle='rgba(20,30,40,.45)'; g.lineWidth=1.2; for(const c of EU) for(const poly of c.p){ g.beginPath(); poly[0].forEach(([x,y],i)=>{const [px,py]=map.PX(x,y); i?g.lineTo(px,py):g.moveTo(px,py);}); g.stroke(); } } });
+ EMAP.paint('relleu',(lon,lat,L,h)=>L?hyp(h):[24,70,125]); EMAP.use('relleu'); EMAP.group.visible=false;
+ for(const r of ERANGES){ if(r.nolabel) continue; const top=r.p.reduce((a,b)=>b[2]>a[2]?b:a); addPin(EMAP,'erange',top[0],top[1],r.n,'#ffd23f',()=>showCard({n:r.n,tipus:'Serralada d\'Europa',f:r.pk?{'Cim més alt':r.pk[0],'Altitud':r.pk[1].toLocaleString('ca')+' m'}:{},t:r.n==='Caucas'?"Hi ha l'Elbrus, el cim més alt d'Europa (5.642 m).":r.n==='Urals'?"Formen el límit oriental d'Europa amb Àsia. Són muntanyes antigues i arrodonides.":r.n==='Serralada Escandinava'?"Serralada del nord: poca altitud i formes arrodonides.":r.n==='Massís Central'?"Relleu antic del centre d'Europa, com els Vosges i la Selva Negra.":"Serralada del sud d'Europa: més alta i menys erosionada perquè es va formar més tard."}),2.2); }
+ for(const [n,lon,lat] of ELBL) addPin(EMAP,'elbl',lon,lat,n,'#fff',null,.5,'lbl');
+ const tubes=new THREE.Group(); EMAP.group.add(tubes); EMAP.rivers=tubes;
+ for(const r of ERIV){ const pts=r.p.map(([lo,la])=>EMAP.v3(lo,la,.12)); const tube=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),pts.length*6,.13,6),new THREE.MeshBasicMaterial({color:EVES[r.v][1]})); tube.userData.eriv=r; tubes.add(tube); pickables.push(tube);
+  const mid=r.p[Math.floor(r.p.length/2)]; addPin(EMAP,'eriv',mid[0],mid[1],r.n,EVES[r.v][1],()=>showCard({n:'Riu '+r.n,tipus:'Vessant '+EVES[r.v][0].toLowerCase(),t:r.t,c:EVES[r.v][2]}),.5); }
+ return EMAP; }
+
+/* ================= ESTAT, PINS ================= */
+const pins=[], pickables=[]; let mode='territori', sub={relleu:'esp',rius:'esp',societat:'pob'}, showNames=true, relFilter=null, rivFilter=null;
+function addPin(map,kind,lon,lat,txt,col,onclick,up=.6,cls=''){ const b=document.createElement('button'); b.className='pin '+cls; b.style.setProperty('--c',col); b.innerHTML='<i></i><span></span>'; b.querySelector('span').textContent=txt; if(onclick) b.onclick=e=>{e.stopPropagation();onclick();}; else b.style.pointerEvents='none'; $('#pins').appendChild(b); const p={el:b,map,kind,lon,lat,pos:null,up,txt}; pins.push(p); return p; }
+const tv=new THREE.Vector3();
+function pinVisible(p){ const k=p.kind;
+ if(p.map===EMAP) return EMAP.group.visible&&(k==='erange'?mode==='relleu':k==='eriv'?mode==='rius':k==='elbl');
+ if(!MAP.group.visible) return false;
+ if(k==='lim'||k==='mar') return mode==='territori'||k==='mar'&&mode!=='societat';
+ if(k==='range'||k==='peak'||k==='dep') return mode==='relleu'&&(!relFilter||p.g===relFilter||k==='dep'&&relFilter==='dep');
+ if(k==='riv') return mode==='rius'&&(!rivFilter||p.v===rivFilter);
+ if(k==='city') return mode==='societat'&&sub.societat==='pob'||mode==='territori'&&p.cap;
+ if(k==='eco') return mode==='societat'&&sub.societat==='eco'&&(!ecoFilter||p.s===ecoFilter);
+ if(k==='clim') return mode==='climes';
+ return false; }
+function updatePins(){ for(const p of pins){ let vis=pinVisible(p)&&(showNames||p.always)&&!p.hide; if(vis){ if(!p.pos) p.pos=p.map.v3(p.lon,p.lat,p.up); tv.copy(p.pos); if(p.bar) tv.y+=p.bar; p.map.group.localToWorld(tv); tv.project(camera); vis=tv.z<1&&Math.abs(tv.x)<1.05&&Math.abs(tv.y)<1.05; if(vis) p.el.style.transform=`translate(${(tv.x*.5+.5)*innerWidth-5}px,${(-tv.y*.5+.5)*innerHeight-5}px)`; } p.el.classList.toggle('hide',!vis); } }
+
+/* ================= CONSTRUCCIÓ ESPANYA ================= */
+const MAP=makeMap(MAPES);
+const TEX={
+ territori:(lon,lat,L)=>L===2?[214,178,110]:L===1?[110,118,125]:[24,70,125],
+ relleu:(lon,lat,L,h)=>L===2?hyp(h):L===1?[105,112,118]:[24,70,125],
+ suau:(lon,lat,L,h)=>{if(!L)return [20,58,105];if(L===1)return [80,86,92];const c=hyp(h);return [c[0]*.55+60,c[1]*.55+60,c[2]*.55+60];},
+ climes:(lon,lat,L,h)=>{ if(!L) return [24,70,125]; if(L===1) return [90,96,102]; const k=climaESP(lon+(NZ(lon*9,lat*9)-.5)*.35,lat+(NZ(lon*9+3,lat*9)-.5)*.25,h); let c=CLIMES[k].c; if(selClim&&selClim!==k) c=[c[0]*.3+30,c[1]*.3+34,c[2]*.3+40]; return c; }};
+for(const k of ['territori','relleu','suau']) MAP.paint(k,TEX[k]);
+MAP.use('territori');
+/* pins de territori */
+const LIM=[['FRANÇA',1.5,43.6],['PORTUGAL',-8.0,39.6],['ANDORRA',1.55,42.62],['MARROC',-5.3,34.75],['ALGÈRIA',1.0,35.0]];
+LIM.forEach(([n,lo,la])=>{const p=addPin(MAP,'lim',lo,la,n,'#9fb4cc',null,.4,'lbl');});
+[['Mar Cantàbric',-4.6,44.0],['Oceà Atlàntic',-11.0,41.5],['Mar Mediterrani',3.0,38.2],['Illes Balears',2.9,40.1],['Illes Canàries',-9.0,36.7],['Estret de Gibraltar',-5.6,35.95]].forEach(([n,lo,la])=>addPin(MAP,'mar',lo,la,n,'#fff',null,.3,'lbl'));
+const TERR=[{n:'Península Ibèrica',lon:-4,lat:40.6,t:"La major part d'Espanya és a la península Ibèrica, que comparteix amb Portugal i Andorra. Està separada de la resta d'Europa pels Pirineus i envoltada pel mar.",f:{'Límits':'França, Andorra, Portugal i el mar'}},{n:'Illes Balears',lon:2.9,lat:39.6,t:"Arxipèlag del Mediterrani amb cinc illes principals: Mallorca, Menorca, Eivissa, Formentera i Cabrera.",f:{'Mar':'Mediterrani'}},{n:'Illes Canàries',lon:-9,lat:35.6,t:"Arxipèlag de l'oceà Atlàntic, davant de la costa d'Àfrica, amb vuit illes principals. Al mapa estan en un requadre per veure-les millor: de veritat són molt més al sud.",f:{'Oceà':'Atlàntic','Illes principals':'8'}},{n:'Ceuta i Melilla',lon:-4.1,lat:35.55,t:"Són les dues ciutats autònomes, situades al nord d'Àfrica.",f:{'Continent':'Àfrica'}}];
+TERR.forEach(T=>addPin(MAP,'lim',T.lon,T.lat,T.n,'#00e5ff',()=>showCard({n:T.n,tipus:'Territori',f:T.f,t:T.t})));
+const capPin=addPin(MAP,'city',-3.7,40.42,'Madrid (capital)','#ffd23f',()=>showCard({n:'Madrid',tipus:'Capital d\'Espanya',f:{'Habitants':'uns 3,3 milions'},t:"És la ciutat més poblada d'Espanya i la capital."})); capPin.cap=1;
+/* relleu */
+for(const r of RANGES){ if(r.nolabel||r.g==='pt') continue; const top=r.p.reduce((a,b)=>b[2]>a[2]?b:a);
+ const pr=addPin(MAP,'range',r.p[Math.floor((r.p.length-1)/2)][0],r.p[Math.floor((r.p.length-1)/2)][1]+(r.id==='subbetica'?.25:0),r.n,GROUPS[r.g][1],()=>rangeCard(r),.9); pr.g=r.g;
+ if(r.pk){ const pp=addPin(MAP,'peak',top[0],top[1],r.pk[0]+' '+r.pk[1].toLocaleString('ca')+' m','#fff',()=>rangeCard(r),.3,'peak'); pp.g=r.g; } }
+DEP.forEach(d=>{const p=addPin(MAP,'dep',d.lon,d.lat,d.n,'#7fd0ff',()=>showCard({n:d.n,tipus:d.id==='meseta'?'Altiplà':'Depressió',t:d.t}),.4); p.g='dep';});
+function rangeCard(r){ showCard({n:r.n,tipus:GROUPS[r.g][0],f:r.pk?{'Cim més alt':r.pk[0],'Altitud':r.pk[1].toLocaleString('ca')+' m'}:{},t:r.t}); }
+/* rius */
+const rivGroup=new THREE.Group(); MAP.group.add(rivGroup);
+for(const r of RIVERS){ const pts=r.p.map(([lo,la])=>MAP.v3(lo,la,.15)); const curve=new THREE.CatmullRomCurve3(pts); const tube=new THREE.Mesh(new THREE.TubeGeometry(curve,pts.length*8,r.trib?.11:.17,6),new THREE.MeshBasicMaterial({color:VES[r.v][1]})); tube.userData.riv=r; r.tube=tube; rivGroup.add(tube); pickables.push(tube);
+ const mid=r.p[Math.floor(r.p.length/2)]; const p=addPin(MAP,'riv',mid[0],mid[1],r.n,VES[r.v][1],()=>rivCard(r),.4); p.v=r.v; }
+function rivCard(r){ showCard({n:'Riu '+r.n,tipus:VES[r.v][0],f:{'Longitud':'uns '+r.km.toLocaleString('ca')+' km','Neix':r.neix,'Desemboca':r.v==='atl'?"a l'oceà Atlàntic":r.v==='med'?(r.trib?"a l'Ebre (afluent)":'al mar Mediterrani'):'al mar Cantàbric'},t:r.t+(r.trib&&r.id==='sil'?'':''),c:VES[r.v][2]}); }
+/* ciutats: columnes */
+const barGroup=new THREE.Group(); MAP.group.add(barGroup); const barMat=new THREE.MeshStandardMaterial({color:0x00e5ff,emissive:0x00a0c0,emissiveIntensity:.35,transparent:true,opacity:.92});
+for(const c of CITIES){ const h=Math.max(.25,c.m*6); const m=new THREE.Mesh(new THREE.CylinderGeometry(.32,.32,h,12),barMat); const b=MAP.v3(c.lon,c.lat); m.position.set(b.x,b.y+h/2,b.z); barGroup.add(m); m.userData.city=c; pickables.push(m);
+ const p=addPin(MAP,'city',c.lon,c.lat,c.n,'#00e5ff',()=>showCard({n:c.n,tipus:'Ciutat',f:{'Habitants (aprox.)':c.m>=1?c.m.toLocaleString('ca')+' milions':Math.round(c.m*1000).toLocaleString('ca')+'.000'},t:c.m>.5?'És una de les ciutats més poblades d\'Espanya.':c.m<.06?'És una de les capitals de província menys poblades: forma part de l\'anomenada Espanya buidada.':'Capital o ciutat important.'}),.3,'city'); p.bar=h+.2; }
+/* economia */
+let ecoFilter=null;
+ECO.forEach(e=>{const p=addPin(MAP,'eco',e.lon,e.lat,e.e+' '+e.n,SECT[e.s][1],()=>showCard({n:e.n,tipus:SECT[e.s][0],t:e.t}),.5,'eco'); p.s=e.s;});
+/* climes */
+let selClim=null;
+
+/* ================= CÀMERA ================= */
+let fly=null; function flyTo(t,p,d=1){fly={t:0,d,ft:controls.target.clone(),tt:t,fp:camera.position.clone(),tp:p};wake(80);}
+function home(){ const asp=innerWidth/innerHeight, f=asp<1?1.7:1; const eu=EMAP&&EMAP.group.visible; if(eu) flyTo(new THREE.Vector3(0,0,8),new THREE.Vector3(0,55*f,60*f)); else flyTo(new THREE.Vector3(-3,0,9),new THREE.Vector3(-3,92*f,86*f)); }
+$('#tHome').onclick=home; $('#tTop').onclick=()=>{const t=controls.target.clone(),d=camera.position.distanceTo(t);flyTo(t,t.clone().add(new THREE.Vector3(0,d,.01)));};
+$('#tNames').onclick=()=>{showNames=!showNames;$('#tNames').classList.toggle('on',showNames);wake();};
+
+/* ================= PICKING ================= */
+const ray=new THREE.Raycaster(); let down=null;
+canvas.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY};});
+canvas.addEventListener('pointerup',e=>{ if(!down||Math.hypot(e.clientX-down.x,e.clientY-down.y)>6){down=null;return;} down=null;
+ ray.setFromCamera(new THREE.Vector2(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1),camera);
+ const vis=o=>{let v=o.visible,p=o.parent;while(p){v=v&&p.visible;p=p.parent;}return v;};
+ const objs=[...pickables.filter(vis)]; const active=EMAP&&EMAP.group.visible?EMAP:MAP; objs.push(active.mesh);
+ const hits=ray.intersectObjects(objs,false); if(!hits.length) return; const h=hits[0];
+ if(mode==='repte'&&R.onPick){ const ll=active.ll(h.uv.x,h.uv.y); R.onPick(ll,h); return; }
+ if(h.object.userData.riv) return rivCard(h.object.userData.riv);
+ if(h.object.userData.eriv){const r=h.object.userData.eriv;return showCard({n:'Riu '+r.n,tipus:'Vessant '+EVES[r.v][0].toLowerCase(),t:r.t,c:EVES[r.v][2]});}
+ if(h.object.userData.city){ const c=h.object.userData.city; return showCard({n:c.n,tipus:'Ciutat',f:{'Habitants (aprox.)':c.m>=1?c.m.toLocaleString('ca')+' milions':Math.round(c.m*1000).toLocaleString('ca')+'.000'}}); }
+ if(h.object===MAP.mesh){ const [lon,lat]=MAP.ll(h.uv.x,h.uv.y); const L=MAP.landAt(lon,lat); if(L!==2) return; const hh=MAP.hAt(lon,lat);
+  if(mode==='climes'){ selectClim(climaESP(lon,lat,hh)); return; }
+  showCard({n:'Altitud aproximada',tipus:'Relleu',f:{'Altitud':Math.round(hh/10)*10+' m','Coordenades':lat.toFixed(1).replace('.',',')+'° N, '+Math.abs(lon).toFixed(1).replace('.',',')+'° '+(lon<0?'O':'E')}}); } });
+
+/* ================= PANELS ================= */
+const P=$('#panel .pbody');
+function climogram(k){ const C=CLIMES[k], W=330,H=170,l=34,r=34,t=14,b=24,iw=W-l-r,ih=H-t-b; const pmax=Math.max(100,Math.ceil(Math.max(...C.P)/50)*50),tmin=-10,tmax=40; const bx=i=>l+iw*(i+.5)/12,py=v=>t+ih*(1-v/pmax),ty=v=>t+ih*(1-(v-tmin)/(tmax-tmin));
+ let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" font-family="Space Grotesk" font-size="10">`; for(let q=0;q<=5;q++){const y=t+ih*q/5;s+=`<line x1="${l}" x2="${W-r}" y1="${y}" y2="${y}" stroke="rgba(255,255,255,.08)"/><text x="${l-4}" y="${y+3}" fill="#7fb3ff" text-anchor="end">${Math.round(pmax*(1-q/5))}</text><text x="${W-r+4}" y="${y+3}" fill="#ff8a9c">${Math.round(tmax-(tmax-tmin)*q/5)}</text>`;}
+ C.P.forEach((p,i)=>s+=`<rect x="${bx(i)-iw/30}" y="${py(p)}" width="${iw/15}" height="${t+ih-py(p)}" fill="#2f8cff" opacity=".85"/>`); s+=`<polyline fill="none" stroke="#ff3b5c" stroke-width="2.2" points="${C.T.map((v,i)=>bx(i)+','+ty(v)).join(' ')}"/>`;
+ 'GFMAMJJASOND'.split('').forEach((m,i)=>s+=`<text x="${bx(i)}" y="${H-8}" fill="#8aa0bd" text-anchor="middle">${m}</text>`); s+=`<text x="2" y="10" fill="#7fb3ff">mm</text><text x="${W-2}" y="10" fill="#ff8a9c" text-anchor="end">°C</text></svg>`;
+ return s+`<p style="margin:4px 0 0;font-size:12px;color:var(--mu)">${C.city} · ${C.P.reduce((a,b)=>a+b,0).toLocaleString('ca')} mm l'any · ${(C.T.reduce((a,b)=>a+b,0)/12).toFixed(1).replace('.',',')} °C de mitjana · dades aproximades</p>`; }
+function selectClim(k){ selClim=k; MAP.tex.climes=null; MAP.paint('climes',TEX.climes); MAP.use('climes'); document.querySelectorAll('#clLeg button').forEach(b=>b.classList.toggle('on',b.dataset.k===k)); const B=$('#clBox'); if(!B) return; if(!k){B.innerHTML='';return;} const C=CLIMES[k];
+ B.innerHTML=`<div class="sbox"><p class="h">Clima ${C.n.toLowerCase()}</p><p class="t" style="font-size:14px;margin:2px 0">${C.t}</p><p class="t" style="font-size:14px;margin:2px 0"><b>Vegetació:</b> ${C.veg}</p><p class="h" style="margin-top:8px">Climograma</p>${climogram(k)}</div>`; B.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+function evolSVG(){ const D=[[2001,40.8],[2005,43.4],[2010,46.5],[2012,46.8],[2015,46.4],[2018,46.7],[2021,47.4]]; const W=320,H=150,l=30,b=22,t=10,r=10; const x=y=>l+(y-2001)/20*(W-l-r), y=v=>t+(1-(v-40)/8)*(H-t-b);
+ let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" font-family="Space Grotesk" font-size="10">`; for(let v=40;v<=48;v+=2) s+=`<line x1="${l}" x2="${W-r}" y1="${y(v)}" y2="${y(v)}" stroke="rgba(255,255,255,.08)"/><text x="${l-4}" y="${y(v)+3}" fill="#8aa0bd" text-anchor="end">${v}</text>`;
+ s+=`<polyline fill="none" stroke="#00e5ff" stroke-width="2.5" points="${D.map(([a,v])=>x(a)+','+y(v)).join(' ')}"/>`; D.forEach(([a,v])=>s+=`<circle cx="${x(a)}" cy="${y(v)}" r="3" fill="#00e5ff"/>`); [2001,2005,2010,2015,2021].forEach(a=>s+=`<text x="${x(a)}" y="${H-6}" fill="#8aa0bd" text-anchor="middle">${a}</text>`);
+ return s+'</svg><p style="margin:2px 0 0;font-size:12px;color:var(--mu)">Milions d\'habitants (aproximat)</p>'; }
+function renderPanel(){ P.innerHTML=''; const sw=(key,list)=>P.appendChild(subtabs(list,sub[key],k=>{sub[key]=k;applyMode();}));
+ if(mode==='territori'){ P.appendChild(html(`<h3>El territori d'Espanya</h3><p class="lead">On és Espanya?</p><p class="t">Espanya és al sud-oest d'Europa. El seu territori està format per:</p><div class="sbox"><ul><li>La major part de la <b>península Ibèrica</b>.</li><li>Les <b>illes Balears</b>, al mar Mediterrani.</li><li>Les <b>illes Canàries</b>, a l'oceà Atlàntic.</li><li>Les ciutats autònomes de <b>Ceuta</b> i <b>Melilla</b>, al nord d'Àfrica.</li></ul></div>
+  <div class="sbox"><p class="h">Límits</p><ul><li><b>Nord</b>: mar Cantàbric, França i Andorra.</li><li><b>Est</b>: mar Mediterrani.</li><li><b>Sud</b>: mar Mediterrani, estret de Gibraltar i oceà Atlàntic.</li><li><b>Oest</b>: Portugal i oceà Atlàntic.</li></ul></div><p class="t" style="font-size:13px;color:var(--mu)">Toca els noms blaus. Amb 🏷️ pots amagar-los per estudiar.</p>`));
+  P.appendChild(quiz([["Quin país limita amb Espanya per l'oest?",["França","Portugal","Marroc"],1],["On són les illes Canàries?",["Al mar Mediterrani","A l'oceà Atlàntic","Al mar Cantàbric"],1]])); }
+ if(mode==='relleu'){ sw('relleu',[['esp','🇪🇸','Espanya'],['eu','🇪🇺','Europa']]);
+  if(sub.relleu==='esp'){ P.appendChild(html(`<h3>El relleu d'Espanya</h3><p class="lead">Molt variat: altiplans, serralades i depressions</p><p class="t">Al centre hi ha la <b>Meseta Central</b>, un gran altiplà inclinat cap a l'oest. Al seu voltant hi ha serralades i, fora, dues grans depressions.</p>
+   <div class="sbox"><p class="h">Toca un grup</p><div class="leg" id="rLeg"></div></div>
+   <div class="sbox"><p class="h">Llegenda d'altituds</p><div style="height:12px;border-radius:6px;background:linear-gradient(90deg,rgb(86,140,80),rgb(130,165,90),rgb(195,190,120),rgb(190,150,95),rgb(160,110,70),rgb(130,95,75),rgb(205,200,195),#fff)"></div><div class="row" style="justify-content:space-between;font-size:11px;color:var(--mu);margin-top:3px"><span>0</span><span>500</span><span>1.000</span><span>2.000</span><span>3.500 m</span></div></div>
+   <div class="sbox"><p class="h">Activitats del llibre</p><p class="act">3: quines altituds té la Meseta? I la depressió de l'Ebre? 4: escriu el cim més alt de cada serralada. 5: quines serralades envolten les depressions?</p></div>`));
+   const L=$('#rLeg'); [...Object.entries(GROUPS),['dep',['Meseta i depressions','#7fd0ff']]].forEach(([k,[n,c]])=>{const b=document.createElement('button');b.innerHTML=`<i style="background:${c}"></i>${n}`;b.classList.toggle('on',relFilter===k);b.onclick=()=>{relFilter=relFilter===k?null:k;renderPanel();wake();};L.appendChild(b);});
+   P.appendChild(quiz([["Quina serralada divideix la Meseta en dues?",["El Sistema Central","Sierra Morena","Els Pirineus"],0],["Quin és el cim més alt de la península Ibèrica?",["L'Aneto","El Mulhacén","El Teide"],1]])); }
+  else { P.appendChild(html(`<h3>El relleu d'Europa</h3><p class="lead">Un continent de planes i serralades</p><p class="t">Al centre i l'est hi ha la <b>Gran Plana Europea</b>. Les serralades del <b>sud</b> són altes i poc erosionades (Pirineus, Alps, Carpats, Balcans, Caucas). Les del <b>nord</b> són baixes i arrodonides (Escandinava, Urals).</p>
+   <div class="sbox"><p class="h">Costes</p><ul><li><b>Oceans i mars</b>: Glacial Àrtic, Atlàntic, Mediterrani, Negre, del Nord, Bàltic i de Barentsz.</li><li><b>Penínsules</b>: balcànica, itàlica, ibèrica, Jutlàndia i escandinava.</li><li><b>Illes</b>: Islàndia, Irlanda, Gran Bretanya (la més gran), Còrsega, Sardenya, Sicília, Creta, Xipre…</li></ul></div>
+   <div class="sbox"><p class="h">Activitat del llibre</p><p class="act">11: dibuixa un mapa d'Europa i localitza les grans unitats del relleu.</p></div>`));
+   P.appendChild(quiz([["On és el cim més alt d'Europa, l'Elbrus?",["Als Alps","Al Caucas","Als Urals"],1],["Quines muntanyes separen Europa d'Àsia?",["Els Urals","Els Carpats","Els Balcans"],0]])); } }
+ if(mode==='rius'){ sw('rius',[['esp','🇪🇸','Espanya'],['eu','🇪🇺','Europa']]);
+  if(sub.rius==='esp'){ P.appendChild(html(`<h3>Els rius d'Espanya</h3><p class="lead">Tres vessants</p><p class="t">Un <b>vessant</b> és el conjunt de rius que desemboquen al mateix mar. El <b>relleu</b> decideix la longitud dels rius i el <b>clima</b>, el seu cabal.</p><div class="sbox"><div class="leg" id="vLeg"></div></div><div id="vTxt"></div>
+   <div class="sbox"><p class="h">Activitats del llibre</p><p class="act">6: descriu els rius de cada vessant. 7: per què els rius cantàbrics són curts? On neix l'Ebre?</p></div>`));
+   const L=$('#vLeg'); Object.entries(VES).forEach(([k,[n,c,t]])=>{const b=document.createElement('button');b.innerHTML=`<i style="background:${c}"></i>${n}<em>${RIVERS.filter(r=>r.v===k&&!r.trib).length} rius</em>`;b.classList.toggle('on',rivFilter===k);b.onclick=()=>{rivFilter=rivFilter===k?null:k;renderPanel();applyRiv();};L.appendChild(b);});
+   if(rivFilter) $('#vTxt').innerHTML=`<div class="sbox"><p class="h">${VES[rivFilter][0]}</p><p class="t" style="font-size:14px">${VES[rivFilter][2]}</p></div>`;
+   P.appendChild(quiz([["Quin és el riu més llarg de la península Ibèrica?",["L'Ebre","El Tajo","El Duero"],1],["On desemboquen els rius que travessen la Meseta?",["Al Mediterrani","A l'Atlàntic","Al Cantàbric"],1]])); }
+  else { P.appendChild(html(`<h3>Els rius d'Europa</h3><p class="lead">Cinc vessants</p><div class="sbox"><div class="leg">${Object.values(EVES).map(([n,c,t])=>`<button><i style="background:${c}"></i>${n}<em>${t.split(';')[0].split('.')[0]}</em></button>`).join('')}</div></div><p class="t">Molts rius europeus són navegables: es pot anar del mar del Nord al mar Negre pel Rin i el Danubi!</p>
+   <div class="sbox"><p class="h">Activitat del llibre</p><p class="act">12: indica el nom de dos rius de cada vessant europeu.</p></div>`));
+   P.appendChild(quiz([["Quin és el riu més llarg d'Europa?",["El Danubi","El Volga","El Rin"],1]])); } }
+ if(mode==='climes'){ P.appendChild(html(`<h3>Els climes d'Espanya</h3><p class="lead">Toca un clima o un lloc del mapa</p><p class="t">A Espanya hi ha quatre climes: <b>mediterrani</b> (amb tres variants), <b>atlàntic</b>, <b>de muntanya</b> i <b>subtropical</b>.</p><div class="sbox"><div class="leg" id="clLeg"></div></div><div id="clBox"></div><p style="font-size:12px;color:var(--mu)">Mapa simplificat per a primària.</p>
+  <div class="sbox"><p class="h">Activitats del llibre</p><p class="act">8: fes una taula amb els quatre climes. 9 i 10: compara el mediterrani típic i el d'interior.</p></div>`));
+  const L=$('#clLeg'); Object.entries(CLIMES).forEach(([k,C])=>{const b=document.createElement('button');b.dataset.k=k;b.innerHTML=`<i style="background:rgb(${C.c})"></i>${C.n}`;b.onclick=()=>selectClim(selClim===k?null:k);L.appendChild(b);}); if(selClim) selectClim(selClim); }
+ if(mode==='societat'){ sw('societat',[['pob','👥','Població'],['eco','🏭','Economia']]);
+  if(sub.societat==='pob'){ P.appendChild(html(`<h3>La població d'Espanya</h3><p class="lead">Unes 47 milions de persones</p>${evolSVG()}
+   <div class="sbox"><p class="h">Com és la població?</p><ul><li><b>Natalitat baixa</b>: neixen menys de 8 nadons per cada 1.000 habitants.</li><li><b>Mortalitat baixa</b>: unes 9 persones per cada 1.000.</li><li><b>Esperança de vida alta</b>: uns 82 anys.</li><li>Per això és una població <b>envellida</b>.</li></ul></div>
+   <div class="sbox"><p class="h">On viu la gent?</p><p class="t" style="font-size:14px">Les columnes mostren els habitants de les ciutats. La població es concentra a la <b>costa</b>, a les <b>illes</b> i a les <b>ciutats</b>. Al centre hi ha zones gairebé buides: l'<b>Espanya buidada</b>.</p></div>
+   <div class="sbox"><p class="h">Migracions</p><ul><li>Fins als anys 70: <b>èxode rural</b> (del camp a la ciutat) i emigració a Amèrica i Europa.</li><li>Des de finals del segle XX: arriben molts <b>immigrants</b>, sobretot a Catalunya, Madrid i Andalusia.</li></ul></div>
+   <div class="sbox"><p class="h">Activitats del llibre</p><p class="act">13 i 14: com ha evolucionat la població? Per què envelleix?</p></div>`)); }
+  else { P.appendChild(html(`<h3>Les activitats econòmiques</h3><p class="lead">Tres sectors</p><div class="bars3">${Object.entries(SECT).map(([k,[n,c,pc]])=>`<div><b style="color:${c}">${n}</b><i style="width:${pc*2.4}px;background:${c}"></i>${pc} %</div>`).join('')}</div><p style="font-size:12px;color:var(--mu)">Persones que hi treballen de cada 100 (aproximat).</p>
+   <div class="sbox"><p class="h">Toca un sector</p><div class="leg" id="eLeg"></div></div><div id="eTxt"></div>
+   <div class="sbox"><p class="h">Activitats del llibre</p><p class="act">15 a 17: quines activitats són de cada sector? Per què el turisme és tan important a Espanya?</p></div>`));
+   const L=$('#eLeg'); Object.entries(SECT).forEach(([k,[n,c,pc,t]])=>{const b=document.createElement('button');b.innerHTML=`<i style="background:${c}"></i>${n}`;b.classList.toggle('on',ecoFilter==+k);b.onclick=()=>{ecoFilter=ecoFilter==+k?null:+k;renderPanel();wake();};L.appendChild(b);}); if(ecoFilter) $('#eTxt').innerHTML=`<div class="sbox"><p class="t" style="font-size:14px">${SECT[ecoFilter][3]}</p></div>`;
+   P.appendChild(quiz([["A quin sector pertany el turisme?",["Primari","Secundari","Terciari"],2],["Quin sector dona més feina a Espanya?",["El primari","El secundari","El terciari"],2]])); } }
+}
+function applyRiv(){ for(const r of RIVERS){ r.tube.visible=!rivFilter||r.v===rivFilter; } wake(); }
+
+/* ================= MODES ================= */
+const RP=$('#rep'); let R={};
+const FIND=[...RANGES.filter(r=>!r.nolabel&&r.g!=='pt'&&r.g!=='illes').map(r=>({n:r.n,kind:'serralada',test:(lo,la)=>polyDist(lo,la,r.p,.77)[0]<.45,at:r.p[Math.floor(r.p.length/2)]})),
+ ...RIVERS.filter(r=>!r.trib).map(r=>({n:'el riu '+r.n,kind:'riu',test:(lo,la)=>polyDist(lo,la,r.p,.77)[0]<.3,at:r.p[Math.floor(r.p.length/2)]})),
+ ...CITIES.slice(0,14).map(c=>({n:c.n,kind:'ciutat',test:(lo,la)=>Math.hypot((lo-c.lon)*.77,la-c.lat)<.4,at:[c.lon,c.lat]})),
+ {n:'les illes Balears',kind:'arxipèlag',test:(lo,la)=>lo>1&&lo<4.5&&la>38.5&&la<40.3,at:[2.9,39.6]},{n:'les illes Canàries',kind:'arxipèlag (al requadre)',test:(lo,la)=>lo<-6.4&&la<37.1,at:[-9,35.7]},{n:'la Meseta Central',kind:'altiplà',test:(lo,la)=>meseta(lo,la)>.5,at:[-4.4,40.6]}];
+let marker=null;
+function showMarker(lo,la,ok){ if(!marker){ marker=new THREE.Mesh(new THREE.ConeGeometry(.6,2,12),new THREE.MeshBasicMaterial({color:0xb6ff3b})); marker.rotation.x=Math.PI; MAP.group.add(marker);} marker.material.color.set(ok?0xb6ff3b:0xff3b5c); const v=MAP.v3(lo,la,1.3); marker.position.copy(v); marker.visible=true; wake(); }
+const repte=Kit.Repte(RP,{
+ troba:{ic:'📍',n:'Troba-ho al mapa',d:'Serralades, rius i ciutats sense noms.',make:()=>shuf(FIND).slice(0,10),custom:(S,api)=>{ const ask=()=>{ if(S.i>=S.qs.length){R.onPick=null;return api.done();} api.hud(); const q=S.qs[S.i]; let tries=0; $('#rQ').innerHTML=`Toca <em>${q.n}</em>`; $('#rSub').textContent='('+q.kind+') Pots girar i fer zoom.'; $('#rOpts').innerHTML=''; $('#rNext').style.display='none';
+   R.onPick=([lo,la])=>{ const ok=q.test(lo,la); showMarker(lo,la,ok); if(ok){ S.score+=tries?.5:1; api.fb(tries?'Ara sí! Mig punt.':'Molt bé!',true); next(); } else { tries++; if(tries>=2){ api.fb('Era aquí (marca verda).',false); showMarker(q.at[0],q.at[1],true); next(); } else api.fb('No és aquí. Torna-ho a provar.',false); } };
+   const next=()=>{ R.onPick=null; S.i++; api.hud(); const b=$('#rNext'); b.style.display='block'; b.textContent=S.i>=S.qs.length?'Veure la nota →':'Següent →'; b.onclick=()=>{ $('#rFb').textContent=''; ask(); }; }; };
+  showNames=false; $('#tNames').classList.remove('on'); setMap('esp'); MAP.use('relleu'); rivGroup.visible=true; applyRiv(); barGroup.visible=false; home(); ask(); }},
+ vessant:{ic:'🌊',n:'Quin vessant?',d:'Classifica els rius d\'Espanya.',make:()=>Kit.classify(RIVERS.filter(r=>!r.trib).map(r=>({n:r.n,cat:VES[r.v][0]})),Object.values(VES).map(v=>v[0]),8,it=>`El riu <em>${it.n}</em> és del…`)},
+ clima:{ic:'🌦️',n:'Quin clima és?',d:'Mira el climograma i endevina-ho.',make:()=>shuf(Object.keys(CLIMES).concat(shuf(Object.keys(CLIMES)).slice(0,2))).map(k=>{const o=shuf([k,...shuf(Object.keys(CLIMES).filter(x=>x!==k)).slice(0,2)]);return {q:'Quin clima mostra aquest climograma?',sub:climogram(k).replace(/<p[^>]*>.*<\/p>/,''),opts:o.map(x=>CLIMES[x].n),ok:o.indexOf(k),exp:CLIMES[k].city+'. '+CLIMES[k].t};})},
+ sector:{ic:'🏭',n:'Quin sector?',d:'Primari, secundari o terciari.',make:()=>Kit.classify([...ECO.map(e=>({n:e.n.toLowerCase(),cat:SECT[e.s][0]})),{n:'una botiga',cat:SECT[3][0]},{n:'un hospital',cat:SECT[3][0]},{n:'una fàbrica de mobles',cat:SECT[2][0]},{n:'la mineria',cat:SECT[1][0]}],Object.values(SECT).map(s=>s[0]),8,it=>`<em>${it.n[0].toUpperCase()+it.n.slice(1)}</em>: a quin sector pertany?`)},
+ preguntes:{ic:'❓',n:'Preguntes de la unitat',d:'Territori, relleu, rius, climes i societat.',make:()=>Kit.mc([["Quina serralada envolta la Meseta pel sud?",["Sierra Morena","El Sistema Central","Els Pirineus"],0],["Quin és el cim més alt d'Espanya?",["El Mulhacén","El Teide","L'Aneto"],1],["Quin riu passa per Saragossa?",["L'Ebre","El Tajo","El Segura"],0],["Per què els rius del vessant mediterrani porten poca aigua a l'estiu?",["Perquè hi plou poc","Perquè són molt llargs","Perquè neixen als Pirineus"],0],["On hi ha clima subtropical?",["A les Canàries","A Galícia","A Madrid"],0],["Què és l'Espanya buidada?",["Zones del centre amb molt poca població","Les costes plenes de turistes","Les illes"],0],["Per què la població espanyola està envellida?",["Neixen pocs nadons i vivim molts anys","Arriben molts immigrants","Hi ha molta emigració"],0],["Quina és la illa més gran d'Europa?",["Gran Bretanya","Sicília","Islàndia"],0],["Quines són les ciutats autònomes d'Espanya?",["Ceuta i Melilla","Palma i Las Palmas","Andorra i Gibraltar"],0],["Quina depressió és entre Sierra Morena i la serralada Bètica?",["La del Guadalquivir","La de l'Ebre","La Meseta"],0],["Quin clima té el nord de la Península?",["Atlàntic","Mediterrani sec","Subtropical"],0]],10)}
+},{onExit:()=>{R.onPick=null; if(marker) marker.visible=false; showNames=true; $('#tNames').classList.add('on'); wake();}});
+function setMap(which){ const eu=which==='eu'; if(eu) buildEurope(); MAP.group.visible=!eu; if(EMAP) EMAP.group.visible=eu; wake(); }
+function applyMode(){ $('#card').classList.remove('show');
+ const eu=(mode==='relleu'&&sub.relleu==='eu')||(mode==='rius'&&sub.rius==='eu'); const wasEU=EMAP&&EMAP.group.visible; setMap(eu?'eu':'esp');
+ if(EMAP&&EMAP.rivers) EMAP.rivers.visible=mode==='rius';
+ MAP.use(mode==='territori'?'territori':mode==='climes'?(MAP.paint('climes',TEX.climes),'climes'):mode==='rius'||mode==='societat'?'suau':'relleu');
+ rivGroup.visible=mode==='rius'; applyRiv(); barGroup.visible=mode==='societat'&&sub.societat==='pob';
+ $('#panel').style.display=mode==='repte'?'none':''; RP.style.display=mode==='repte'?'block':'none'; if(mode==='repte') repte.menu();
+ renderPanel(); if(eu!==!!wasEU||mode==='territori'||mode==='repte') home(); wake(); }
+function setMode(m){ mode=m; document.querySelectorAll('#modes button').forEach(b=>b.classList.toggle('on',b.dataset.m===m)); applyMode(); }
+document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+$('#pmin').onclick=()=>{const m=$('#panel').classList.toggle('min');$('#pmin').textContent=m?'▴ Mostra el text':'▾ Amaga el text';};
+
+/* ================= LOOP ================= */
+let last=performance.now();
+function loop(now){ const dt=Math.min(.05,(now-last)/1000); last=now;
+ if(fly){ fly.t=Math.min(1,fly.t+dt/fly.d); const k=1-Math.pow(1-fly.t,3); controls.target.lerpVectors(fly.ft,fly.tt,k); camera.position.lerpVectors(fly.fp,fly.tp,k); if(fly.t>=1) fly=null; awake=Math.max(awake,2); }
+ controls.update(); if(awake<=0) return; awake--; renderer.render(scene,camera); updatePins(); }
+resize(); camera.position.set(-3,92,86); controls.target.set(-3,0,9);
+renderer.setAnimationLoop(loop);
+applyMode(); $('#loading').remove(); Kit.initHelp('seen');
+window.__s={setMode,sub,applyMode,selectClim,setMap,startGame:k=>repte.start(k),pick:(lo,la)=>R.onPick&&R.onPick([lo,la])};
+</script>
+</body>
+</html>

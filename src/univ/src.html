@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Medi 3D · Laboratori de l'univers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--cy:#00e5ff;--li:#b6ff3b;--bl:#2f8cff;--rd:#ff3b5c;--ye:#ffd23f;--tx:#e6f1ff;--mu:#8aa0bd;--gb:rgba(0,229,255,.22);--tb:86px}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;color:var(--tx);font-family:"Space Grotesk",system-ui,sans-serif;-webkit-tap-highlight-color:transparent;overflow:hidden;background:#030712}
+button,input{font:inherit;color:inherit}
+.glass{background:rgba(10,19,36,.93);border:1px solid var(--gb);border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.06)}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#loading{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--cy);font-family:Orbitron;letter-spacing:.12em;font-size:14px;z-index:40;background:#030712}
+#loading i{width:64px;height:64px;border-radius:50%;border:3px solid rgba(0,229,255,.15);border-top-color:var(--cy);animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+#top{position:fixed;top:12px;left:50%;transform:translateX(-50%);width:min(760px,calc(100% - 24px));display:flex;align-items:center;gap:12px;padding:8px 10px 8px 16px;z-index:7}
+.logo{font-family:Orbitron;font-weight:800;font-size:15px;letter-spacing:.08em;color:var(--cy);text-shadow:0 0 12px rgba(0,229,255,.6);white-space:nowrap;margin-right:auto}
+.logo small{display:block;font-family:"Space Grotesk";font-weight:400;letter-spacing:0;font-size:12px;color:var(--mu);text-shadow:none}
+#helpBtn{width:38px;height:38px;flex:none;border-radius:50%;border:1px solid var(--cy);background:rgba(0,229,255,.12);color:var(--cy);font-size:18px;font-weight:700;cursor:pointer}
+#modes{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;z-index:8;display:flex;gap:2px;padding:6px;background:rgba(10,19,36,.95);border:1px solid var(--gb);border-radius:20px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+#modes button{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:78px;padding:8px 8px 6px;border:0;background:none;border-radius:14px;font-size:12px;color:var(--mu);cursor:pointer}
+#modes button span.e{font-size:22px;line-height:1;filter:grayscale(.6)}
+#modes button.on{color:#fff;background:linear-gradient(135deg,rgba(0,229,255,.25),rgba(47,140,255,.25));box-shadow:0 0 0 1px rgba(0,229,255,.5)}
+#modes button.on span.e{filter:none}
+#panel{position:fixed;top:84px;left:12px;width:370px;bottom:calc(var(--tb) + 10px);padding:14px 16px;z-index:5;overflow:auto}
+#panel.min{bottom:auto}
+#panel.min .pbody{display:none}
+#pmin{display:none;margin:0 0 8px auto}
+.sub{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px}
+.sub button{flex:1;min-width:70px;border:1px solid transparent;background:rgba(0,0,0,.28);border-radius:12px;padding:7px 4px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--mu)}
+.sub button b{font-size:20px;line-height:1;font-weight:400}
+.sub button.on{border-color:var(--cy);background:rgba(0,229,255,.18);color:#fff}
+#panel h3{margin:0 0 4px;font-size:22px;text-shadow:0 0 14px rgba(0,229,255,.35)}
+#panel .lead{color:var(--li);font-size:14px;margin:0 0 8px}
+#panel p.t{font-size:15px;line-height:1.5;color:#dbe8f8;margin:6px 0}
+.sbox{background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:10px 12px;margin:10px 0}
+.h{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--cy);margin:0 0 6px;font-weight:600}
+.sbox ul{margin:0;padding-left:18px;font-size:14px;line-height:1.5;color:#dbe8f8}
+.act{font-size:14px;line-height:1.5;color:var(--li);margin:0}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pill{border:1px solid var(--gb);background:rgba(0,0,0,.25);border-radius:10px;padding:7px 11px;cursor:pointer;font-size:14px}
+.pill.on{background:rgba(0,229,255,.22);border-color:var(--cy);color:#fff}
+.big{border:0;border-radius:12px;padding:10px 14px;cursor:pointer;font-weight:600;background:linear-gradient(135deg,var(--cy),var(--bl));color:#03111f}
+.mini{border:1px solid var(--gb);background:rgba(0,0,0,.25);border-radius:10px;padding:5px 10px;font-size:12px;cursor:pointer;color:var(--mu)}
+.hud{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.hud div{background:rgba(0,0,0,.28);border-radius:12px;padding:8px 10px}
+.hud small{display:block;font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:uppercase}
+.hud b{font-size:18px;font-family:Orbitron;color:#fff}
+.hud b.c{color:var(--cy)}.hud b.y{color:var(--ye)}
+.leg{display:flex;flex-direction:column;gap:3px}
+.leg button{display:flex;align-items:center;gap:9px;border:1px solid transparent;background:none;border-radius:9px;padding:6px 8px;cursor:pointer;text-align:left;font-size:14px;color:#d6e6fa}
+.leg button:hover{background:rgba(0,229,255,.08)}
+.leg button.on{border-color:var(--cy);background:rgba(0,229,255,.15)}
+.leg i{width:14px;height:14px;border-radius:4px;flex:none}
+.leg em{margin-left:auto;font-style:normal;font-size:12px;color:var(--mu)}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:transparent;cursor:pointer;width:100%}
+input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:4px;background:linear-gradient(90deg,var(--cy),var(--bl))}
+input[type=range]::-moz-range-track{height:4px;border-radius:4px;background:linear-gradient(90deg,var(--cy),var(--bl))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;margin-top:-7px;box-shadow:0 0 0 3px rgba(0,229,255,.35),0 0 12px var(--cy)}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#fff;border:0}
+.sl label{display:flex;justify-content:space-between;font-size:13px;color:var(--mu)}
+.sl label b{color:var(--cy);font-family:Orbitron}
+.q{margin:8px 0 0}.q p{margin:0 0 6px;font-size:14px;color:#fff}
+.q button{display:block;width:100%;text-align:left;border:1px solid var(--gb);background:rgba(0,0,0,.25);border-radius:10px;padding:8px 10px;margin:4px 0;cursor:pointer;font-size:14px}
+.q button.ok{border-color:var(--li);background:rgba(182,255,59,.15)}.q button.ko{border-color:var(--rd);background:rgba(255,59,92,.12)}
+.q .fb{font-size:13px;min-height:18px}
+svg.cg{width:100%;height:auto;display:block}
+#card{position:fixed;right:76px;bottom:calc(var(--tb) + 10px);width:min(360px,calc(100% - 100px));padding:16px 18px;z-index:6;display:none}
+#card.show{display:block;animation:pop .25s ease}
+@keyframes pop{from{opacity:0;transform:translateY(10px)}}
+#card .x{position:absolute;top:10px;right:12px;border:0;background:none;font-size:22px;color:var(--mu);cursor:pointer}
+#card .tag{display:inline-block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border-radius:20px;border:1px solid var(--cy);color:var(--cy)}
+#card h2{margin:8px 0 8px;font-size:22px;text-shadow:0 0 14px rgba(0,229,255,.35)}
+#card .facts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}
+#card .facts div{background:rgba(0,0,0,.28);border-radius:10px;padding:6px 8px;font-size:13px;color:#dbe8f8}
+#card .facts small{display:block;font-size:10px;color:var(--mu);letter-spacing:.06em;text-transform:uppercase}
+#card p{margin:6px 0;font-size:15px;line-height:1.45;color:#dbe8f8}
+#card .cur{border-left:2px solid var(--li);padding-left:10px;color:#dbe8f8}
+#card .cur b{display:block;font-size:11px;letter-spacing:.12em;color:var(--li);text-transform:uppercase}
+#tools{position:fixed;right:12px;bottom:calc(var(--tb) + 10px);display:flex;flex-direction:column;gap:4px;padding:6px;z-index:4}
+#tools button{width:46px;height:46px;border:0;border-radius:12px;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#cfe3ff;font-size:20px}
+#tools button:hover{background:rgba(0,229,255,.1)}
+#tools button.on{background:rgba(0,229,255,.22);color:#fff}
+#pins{position:fixed;inset:0;pointer-events:none;z-index:3}
+.pin{position:absolute;left:0;top:0;pointer-events:auto;border:0;background:none;padding:0;cursor:pointer;display:flex;align-items:center;gap:6px}
+.pin i{width:9px;height:9px;border-radius:50%;background:var(--c,#00e5ff);box-shadow:0 0 0 2px rgba(0,0,0,.45),0 0 8px var(--c,#00e5ff);flex:none}
+.pin span{font-size:12px;padding:1px 7px;border-radius:8px;background:rgba(5,10,20,.8);border:1px solid rgba(0,229,255,.3);white-space:nowrap;color:#e6f1ff}
+.pin.big i{width:12px;height:12px}
+.pin.hide{display:none}
+.pin.on span{border-color:var(--cy);background:rgba(0,60,80,.9)}
+#rep .rc{display:flex;align-items:center;gap:12px;text-align:left;border:1px solid var(--gb);background:rgba(0,0,0,.22);border-radius:14px;padding:12px;cursor:pointer;width:100%;margin:6px 0}
+#rep .rc:hover{border-color:var(--cy)}
+.rc .ic{font-size:26px;width:40px;text-align:center}
+.rc b{display:block;font-size:16px;color:#fff}.rc small{display:block;font-size:13px;color:var(--mu)}
+.rc .best{margin-left:auto;font-family:Orbitron;font-size:13px;color:var(--li)}
+.rtop{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--mu)}
+.rtop b{margin-left:auto;color:var(--li);font-family:Orbitron}
+.rbar{height:5px;border-radius:5px;background:rgba(255,255,255,.1);margin:10px 0 12px;overflow:hidden}
+.rbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cy),var(--li));transition:width .3s}
+#rQ{margin:0 0 4px;font-size:20px;line-height:1.3}#rQ em{font-style:normal;color:var(--cy)}
+#rSub{margin:0 0 10px;font-size:14px;color:var(--mu)}
+#rOpts{display:flex;flex-direction:column;gap:6px}
+#rOpts button{text-align:left;border:1px solid var(--gb);background:rgba(0,0,0,.25);border-radius:12px;padding:10px 12px;cursor:pointer;font-size:15px;display:flex;gap:10px;align-items:center}
+#rOpts button.ok{border-color:var(--li);background:rgba(182,255,59,.16)}
+#rOpts button.ko{border-color:var(--rd);background:rgba(255,59,92,.14);animation:shake .3s}
+#rOpts button i{flex:none;width:24px;height:24px;border-radius:50%;border:1px solid var(--mu);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:12px}
+#rOpts button.ok i{background:var(--li);color:#173404;border-color:var(--li)}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+#rFb{min-height:22px;margin:10px 0 6px;font-size:15px;line-height:1.4}#rFb.ok{color:var(--li)}#rFb.ko{color:#ff8a9c}
+#rNext{display:none;width:100%}
+#rBig{font-family:Orbitron;font-size:60px;text-align:center;color:var(--li);margin:6px 0}
+#rBig small{display:block;font-family:"Space Grotesk";font-size:15px;color:var(--mu)}
+#help{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;background:rgba(2,6,14,.72);padding:16px}
+#help.show{display:flex}
+.hbox{position:relative;width:min(760px,100%);max-height:calc(100% - 20px);overflow:auto;padding:20px 22px}
+.hx{position:absolute;top:10px;right:14px;border:0;background:none;color:var(--mu);font-size:26px;cursor:pointer}
+.htabs{display:flex;gap:6px;margin-bottom:12px}
+.htabs button{border:1px solid var(--gb);background:rgba(0,0,0,.25);border-radius:10px;padding:7px 14px;cursor:pointer;color:var(--mu)}
+.htabs button.on{background:rgba(0,229,255,.2);color:#fff;border-color:var(--cy)}
+.hbox h2{margin:4px 0 2px;font-size:24px}
+.hsub{margin:0 0 14px;color:var(--mu);font-size:14px}
+.steps3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.st{background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:14px}
+.st span{display:inline-flex;width:30px;height:30px;border-radius:50%;align-items:center;justify-content:center;background:var(--cy);color:#03111f;font-weight:700;margin-bottom:6px}
+.st b{display:block;font-size:17px;margin-bottom:6px}.st p{margin:6px 0;font-size:14px;line-height:1.45;color:#d6e6fa}
+.st i{font-style:normal;color:var(--li)}
+.hgo{display:block;margin:16px auto 0;border:0;border-radius:12px;padding:12px 40px;font-size:17px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,var(--cy),var(--bl));color:#03111f}
+.hpage details{background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:10px 14px;margin:8px 0}
+.hpage summary{cursor:pointer;font-size:16px;font-weight:600}
+.hpage details p,.hpage details li{font-size:14px;line-height:1.5;color:#d6e6fa}
+.hpage ol,.hpage ul{margin:6px 0;padding-left:20px}
+.lib{color:var(--li)!important}
+#credit{position:fixed;left:14px;bottom:2px;font-size:10px;color:#5d7391;z-index:1;max-width:calc(50% - 230px)}
+@media (max-width:1100px){#credit{display:none}}
+@media (max-width:860px){
+ :root{--tb:74px}
+ #top{width:calc(100% - 16px);top:8px}.logo small{display:none}.logo{font-size:12px}
+ #modes{left:8px;right:8px;transform:none;bottom:8px;justify-content:space-between;padding:4px}
+ #modes button{min-width:0;flex:1;padding:6px 1px 4px;font-size:10px}
+ #modes button span.e{font-size:19px}
+ #panel{top:auto;left:8px;right:8px;width:auto;bottom:calc(var(--tb) + 8px);max-height:40%}
+ #panel.min{max-height:none}
+ #pmin{display:block}
+ #card{left:8px;right:60px;width:auto;bottom:calc(var(--tb) + 8px);z-index:9}
+ #tools{top:62px;bottom:auto}
+ #tools button{width:40px;height:40px}
+ .steps3{grid-template-columns:1fr}
+}
+/*UXCSS*/
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="loading"><i></i>CARREGANT L'UNIVERS…</div>
+<div id="pins"></div>
+<header id="top" class="glass">
+  <div class="logo">MEDI·LAB 3D · L'UNIVERS<small>Coneixement del Medi · 6è · Unitat 4: «La Terra, el nostre planeta»</small></div>
+  <button id="helpBtn" aria-label="Ajuda i guia">?</button>
+</header>
+<nav id="modes">
+  <button data-m="univers" class="on"><span class="e">🌌</span>Univers</button>
+  <button data-m="solar"><span class="e">☀️</span>Sistema solar</button>
+  <button data-m="terra"><span class="e">🌍</span>La Terra</button>
+  <button data-m="climes"><span class="e">🌡️</span>Climes</button>
+  <button data-m="paisatges"><span class="e">🏞️</span>Paisatges</button>
+  <button data-m="repte"><span class="e">🏆</span>Repte</button>
+</nav>
+<aside id="panel" class="glass"><button id="pmin" class="mini">▾ Amaga el text</button><div class="pbody"></div></aside>
+<nav id="tools" class="glass">
+  <button id="tPlay" title="Atura / continua" aria-label="Atura o continua">⏸</button>
+  <button id="tZin" title="Apropa" aria-label="Apropa">＋</button>
+  <button id="tZout" title="Allunya" aria-label="Allunya">－</button>
+  <button id="tHome" title="Vista inicial" aria-label="Vista inicial">⟲</button>
+</nav>
+<div id="card" class="glass"><button class="x" aria-label="Tancar">×</button><span class="tag"></span><h2></h2><div class="facts"></div><p class="desc"></p><p class="cur"></p></div>
+
+<div id="help" role="dialog" aria-modal="true" aria-label="Ajuda">
+ <div class="hbox glass">
+  <button class="hx" aria-label="Tancar">×</button>
+  <div class="htabs"><button data-t="com" class="on">Com funciona</button><button data-t="guia">Guia del mestre</button><button data-t="res">Resultats</button></div>
+  <div class="hpage" data-p="com">
+   <h2>Benvinguts al laboratori de l'univers</h2>
+   <p class="hsub">Coneixement del Medi · 6è · Unitat 4: «La Terra, el nostre planeta»</p>
+   <div class="hcards">
+    <div class="hc"><svg viewBox="0 0 64 64"><circle cx="32" cy="30" r="16"/><path d="M12 30a20 20 0 0 1 20-20M52 30a20 20 0 0 1-20 20" stroke-dasharray="3 4"/><path d="M26 52l6 6 6-6"/></svg><b>Gira i apropa't</b><p>Arrossega per girar, roda o dos dits per fer zoom. Doble toc: t'hi apropes.</p></div>
+    <div class="hc"><svg viewBox="0 0 64 64"><circle cx="30" cy="30" r="14"/><path d="M38 44l12 12M30 20v10l6 4"/><circle cx="30" cy="30" r="22" stroke-dasharray="2 5"/></svg><b>Toca i descobreix</b><p>Cada cosa amb nom té una fitxa. Les que trobis es guarden a la teva col·lecció de dalt a la dreta.</p></div>
+    <div class="hc"><svg viewBox="0 0 64 64"><rect x="8" y="26" width="48" height="8" rx="4"/><circle cx="24" cy="30" r="7" fill="rgba(0,229,255,.3)"/><path d="M24 44l4 6 4-6M24 16l4-6 4 6"/></svg><b>Fes-ho funcionar</b><p>A baix: Univers, Sistema solar, La Terra, Climes i Paisatges. Amb ⏸ atures el moviment i amb el temps veus estacions i eclipsis.</p></div>
+    <div class="hc"><svg viewBox="0 0 64 64"><path d="M20 54h24M32 44v10M18 10h28v14a14 14 0 0 1-28 0V10zM18 14h-8a8 8 0 0 0 8 10M46 14h8a8 8 0 0 1-8 10"/><path d="M32 18l2 5 5 .5-4 3.5 1 5-4-2.5-4 2.5 1-5-4-3.5 5-.5z"/></svg><b>Posa't a prova</b><p>Al Repte guanyes estrelles. T'equivoques? Tens una segona oportunitat amb pista.</p></div>
+   </div>
+   <div class="row" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="big htour">▶ Fes la guia de 30 segons</button><span style="color:var(--mu);font-size:13px">Dreceres: <b>1-6</b> seccions · <b>espai</b> pausa · <b>P</b> pissarra · <b>D</b> dibuixa · <b>T</b> amaga text · <b>F</b> pantalla completa</span></div>
+   <button class="hgo">Comença!</button>
+  </div>
+  <div class="hpage" data-p="guia" style="display:none">
+   <h2>Guia per a la classe</h2><p class="hsub" style="color:var(--li)">A la pissarra: toca 👩‍🏫 (a dalt) per tenir text gran, pausa, dibuixar a sobre i pantalla completa. A «Resultats» veuràs les notes dels reptes fets en aquest dispositiu.</p>
+   <p class="hsub">Propostes de 10–15 minuts per apartat i activitats del llibre relacionades.</p>
+   <details open><summary>🌌 Univers</summary><p><b>Objectiu:</b> diferenciar estrella, galàxia i constel·lació i situar el sistema solar a la Via Làctia (braç d'Orió).</p>
+    <ol><li><i>Via Làctia</i>: busqueu on és el sistema solar. Són més juntes les estrelles al centre o als braços?</li><li><i>Estrelles</i>: compareu color, mida i brillantor.</li><li><i>Constel·lacions</i>: amaga les línies i que busquin l'Ossa Major.</li><li><i>Big bang</i>: mireu l'animació i expliqueu-la amb les vostres paraules.</li></ol>
+    <p class="lib">Llibre: activitats 1 i 2 i «Pensa» de la pàg. 65. Nota per al mestre: el llibre diu «uns quinze mil milions d'anys»; la xifra actual és d'uns 13.800 milions.</p></details>
+   <details><summary>☀️ Sistema solar</summary><p><b>Objectiu:</b> conèixer els astres del sistema solar i l'ordre dels planetes.</p>
+    <ol><li>Resoleu l'«Observa» del llibre amb el model: entre quins planetes és la Terra? Quin és el més gran i el més petit? On és el cinturó d'asteroides?</li><li>Activa <i>Mides reals</i>: per què el Sol és tan gran?</li><li>Mireu el cometa quan s'apropa al Sol.</li></ol>
+    <p class="lib">Llibre: activitats 3, 4 i 5 (pàg. 66-67).</p></details>
+   <details><summary>🌍 La Terra</summary><p><b>Objectiu:</b> entendre rotació (dia i nit), translació (any i estacions) i les fases de la Lluna.</p>
+    <ol><li><i>Rotació</i>: a quina hora es fa de dia a Barcelona?</li><li><i>Translació</i>: atura la Terra el 21 de juny i el 21 de desembre i compareu les hores de llum.</li><li><i>La Lluna</i>: digueu el nom de cada fase abans que surti.</li></ol>
+    <p class="lib">Llibre: activitats 6, 7 i 8, «Investiga» (eclipsis i marees) i el taller «Construïm un model astronòmic».</p></details>
+   <details><summary>🌡️ Climes</summary><p><b>Objectiu:</b> reconèixer les zones climàtiques i els tipus de clima, i interpretar un climograma.</p>
+    <ol><li>Activa <i>Zones</i> i localitzeu l'equador, els tròpics i els cercles polars.</li><li>Tria cada clima a la llegenda i observa on és.</li><li>Comenteu el climograma de Colònia (taller de geografia): mesos més plujosos i més calents.</li><li><i>El futur</i>: mou el termòmetre i observa el gel àrtic.</li></ol>
+    <p class="lib">Llibre: activitats 9, 10, 11, 17, 18, 19 i el taller «Interpretem un climograma». Solucions de Colònia: 1.002 l anuals; 10,8 °C de mitjana; diferència de 16,4 °C; clima oceànic.</p></details>
+   <details><summary>🏞️ Paisatges</summary><p><b>Objectiu:</b> relacionar cada paisatge amb el seu clima i on es troba.</p>
+    <ol><li>Toca cada punt del globus i llegiu la fitxa.</li><li>Per parelles: un diu un paisatge i l'altre diu el clima i el continent.</li><li>Observa els pisos de vegetació de muntanya.</li></ol>
+    <p class="lib">Llibre: activitats 12 a 16 i l'activitat 6 de repàs (taula paisatge–continent–clima).</p></details>
+   <details><summary>🏆 Repte</summary><ul><li>Feu-lo a l'inici i al final de la unitat i compareu la nota.</li><li>Els rècords es guarden a cada tauleta.</li></ul></details>
+  </div>
+  <div class="hpage" data-p="res" style="display:none"></div>
+ </div>
+</div>
+<div id="credit">Mapa: Natural Earth (domini públic). Textures dels planetes: generades per ordinador. Mides i distàncies no són a escala real llevat que s'indiqui.</div>
+
+<script>/*UTEX*/</script>
+<script>/*UXJS*/</script>
+<script>/*TOPOJSON*/</script>
+<script>window.LAND=/*LAND*/;</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+const $=s=>document.querySelector(s);
+const D2R=Math.PI/180;
+
+/* ================= RENDER ================= */
+const canvas=$('#c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.outputColorSpace=THREE.SRGBColorSpace;
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x02050c);
+const camera=new THREE.PerspectiveCamera(45,1,0.01,5000);
+const controls=new OrbitControls(camera,canvas); controls.enableDamping=true; controls.dampingFactor=.1; controls.rotateSpeed=.55; controls.zoomSpeed=.8; controls.screenSpacePanning=true;
+function resize(){renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;
+  const side=innerWidth>860&&document.getElementById('panel')&&document.getElementById('panel').style.display!=='none'||innerWidth>860&&window.__repOpen;
+  if(side) camera.setViewOffset(innerWidth,innerHeight,-190,0,innerWidth,innerHeight); else if(innerWidth<=860) camera.setViewOffset(innerWidth,innerHeight,0,innerHeight*.2,innerWidth,innerHeight); else camera.clearViewOffset();
+  camera.updateProjectionMatrix();}
+addEventListener('resize',resize); resize();
+const amb=new THREE.AmbientLight(0x334466,.35); scene.add(amb);
+const sunLight=new THREE.PointLight(0xfff2dd,3,0,0); scene.add(sunLight);
+const dirLight=new THREE.DirectionalLight(0xffffff,2.6); scene.add(dirLight);
+
+/* ================= NOISE + TEXTURES ================= */
+function rng(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296;};}
+function noise2(seed){const R=rng(seed),P=new Float32Array(512*512);for(let i=0;i<P.length;i++)P[i]=R();
+  const f=(x,y)=>{const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi,g=(a,b)=>P[((b&511)*512)+(a&511)],u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf);
+    return g(xi,yi)*(1-u)*(1-v)+g(xi+1,yi)*u*(1-v)+g(xi,yi+1)*(1-u)*v+g(xi+1,yi+1)*u*v;};
+  return (x,y,o=4)=>{let a=0,amp=.5,fr=1;for(let i=0;i<o;i++){a+=amp*f(x*fr,y*fr);amp*=.5;fr*=2;}return a;};}
+function canvasTex(w,h,fn){const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');const im=g.createImageData(w,h);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const [r,gg,b]=fn(x/w,y/h);const i=(y*w+x)*4;im.data[i]=r;im.data[i+1]=gg;im.data[i+2]=b;im.data[i+3]=255;}
+  g.putImageData(im,0,0);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;return t;}
+const mix=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
+const PTEX={
+ sol:()=>{const n=noise2(1);return canvasTex(512,256,(u,v)=>{const k=n(u*12,v*6,5);return mix([255,170,40],[255,240,150],k);});},
+ mercuri:()=>{const n=noise2(2);return canvasTex(512,256,(u,v)=>{const k=n(u*16,v*8,5);const c=Math.pow(n(u*40,v*20,2),3)*1.4;return mix([90,88,85],[175,170,160],k-c*.6);});},
+ venus:()=>{const n=noise2(3);return canvasTex(512,256,(u,v)=>{const k=n(u*3+n(u*8,v*8)*2,v*12,4);return mix([200,150,80],[245,215,150],k);});},
+ terra:null,
+ mart:()=>{const n=noise2(4);return canvasTex(512,256,(u,v)=>{const k=n(u*10,v*5,5);let c=mix([120,50,25],[215,115,60],k);if(v<.07||v>.94)c=mix(c,[240,235,230],.85);return c;});},
+ jupiter:()=>{const n=noise2(5);return canvasTex(1024,512,(u,v)=>{const w=n(u*6,v*40,3)*.15;const b=Math.sin((v+w)*Math.PI*18)*.5+.5;let c=mix([150,105,70],[235,215,180],b);
+   const dx=(u-.62)*2.2,dy=(v-.62)*6.5;const e=dx*dx+dy*dy;if(e<1)c=mix(c,[190,80,50],(1-e)*.9);return c;});},
+ saturn:()=>{const n=noise2(6);return canvasTex(512,256,(u,v)=>{const b=Math.sin((v+n(u*4,v*20)*.05)*Math.PI*14)*.5+.5;return mix([190,160,105],[240,220,165],b);});},
+ ura:()=>{const n=noise2(7);return canvasTex(256,128,(u,v)=>mix([140,205,215],[185,235,240],n(u*2,v*10,3)));},
+ neptu:()=>{const n=noise2(8);return canvasTex(256,128,(u,v)=>{let c=mix([40,70,170],[90,130,230],n(u*3,v*12,3));const dx=(u-.4)*4,dy=(v-.6)*9;if(dx*dx+dy*dy<1)c=mix(c,[20,30,90],.7);return c;});},
+ pluto:()=>{const n=noise2(9);return canvasTex(256,128,(u,v)=>{let c=mix([140,110,85],[215,190,165],n(u*6,v*3,4));const dx=(u-.55)*5,dy=(v-.55)*5;if(dx*dx+dy*dy<1)c=mix(c,[240,230,215],.8);return c;});},
+ lluna:()=>{const n=noise2(10);return canvasTex(512,256,(u,v)=>{const k=n(u*8,v*4,5);const m=n(u*3+7,v*1.5+3,3)>.55?.45:0;return mix([175,172,165],[110,108,104],m+(1-k)*.3);});}
+};
+/* ---- Earth from Natural Earth ---- */
+const landGeo=topojson.feature(window.LAND,window.LAND.objects.land);
+const EW=2048,EH=1024;
+const landMask=(()=>{const c=document.createElement('canvas');c.width=EW;c.height=EH;const g=c.getContext('2d');g.fillStyle='#000';g.fillRect(0,0,EW,EH);g.fillStyle='#fff';
+  const P=([lon,lat])=>[(lon+180)/360*EW,(90-lat)/180*EH];
+  for(const f of landGeo.features){const polys=f.geometry.type==='Polygon'?[f.geometry.coordinates]:f.geometry.coordinates;
+    for(const poly of polys){g.beginPath();for(const ring of poly){ring.forEach((p,i)=>{const [x,y]=P(p);i?g.lineTo(x,y):g.moveTo(x,y);});g.closePath();}g.fill('evenodd');}}
+  return g.getImageData(0,0,EW,EH).data;})();
+const isLandPx=(x,y)=>landMask[((Math.min(EH-1,Math.max(0,y))*EW)+((x%EW+EW)%EW))*4]>127;
+const inBox=(lon,lat,a,b,c,d)=>lon>=a&&lon<=b&&lat>=c&&lat<=d;
+/* Clima simplificat (per a 6è), a partir de latitud i regions conegudes */
+function climateAt(lon,lat){
+  const al=Math.abs(lat);
+  if(lat<-60||inBox(lon,lat,-55,-15,59,84)||al>70) return 'polar';
+  if(inBox(lon,lat,72,103,27,37)||inBox(lon,lat,-80,-64,-35,6)&&Math.abs(lon+70+ (lat<-18?2:0)+(lat>-5?-6:0))<4||inBox(lon,lat,-116,-105,36,52)||inBox(lon,lat,6,15,45.3,47.6)) return 'muntanya';
+  if(inBox(lon,lat,-17,60,15,32)||inBox(lon,lat,40,70,12,32)||inBox(lon,lat,118,140,-31,-19)||inBox(lon,lat,13,22,-28,-17)||inBox(lon,lat,-118,-104,26,36)||inBox(lon,lat,-72,-68,-28,-17)||inBox(lon,lat,55,110,37,47)) return 'desertic';
+  if(al<10) return 'equatorial';
+  if(al<23.5) return 'tropical';
+  if(inBox(lon,lat,-10,42,30,45.5)||inBox(lon,lat,-125,-117,31,42)||inBox(lon,lat,-73,-70,-38,-30)||inBox(lon,lat,114,122,-35,-30)||inBox(lon,lat,17,22,-35,-32)||inBox(lon,lat,135,145,-38,-33)) return 'mediterrani';
+  if(inBox(lon,lat,-10,15,45.5,62)||inBox(lon,lat,-135,-120,42,60)||inBox(lon,lat,165,180,-47,-34)||inBox(lon,lat,-76,-70,-56,-38)||inBox(lon,lat,140,154,-44,-25)) return 'oceanic';
+  if(al<35) return lat>0&&lon>100?'oceanic':'tropical';
+  if(al<66) return al<40&&lon>100&&lon<125?'oceanic':'continental';
+  return 'polar';
+}
+const CLIM={
+ equatorial:{n:'Equatorial',c:[22,140,60],z:'càlida',t:"Temperatures càlides, uns 25 °C de mitjana. No hi ha estacions.",p:"Pluges regulars i molt abundants, més de 2.000 mm l'any.",city:'Manaus (Brasil)',T:[26,26,26,26,26.5,26.5,26.5,27.5,28,28,27.5,27],P:[260,290,310,290,230,110,90,60,80,120,180,220],pais:'selva'},
+ tropical:{n:'Tropical',c:[150,190,60],z:'càlida',t:"Temperatures elevades, per sobre dels 20 °C de mitjana.",p:"Pluges per sota dels 2.000 mm, concentrades en una estació.",city:'Bamako (Mali)',T:[25,28,31,33,32,29,27,26,27,28,27,25],P:[0,0,3,16,52,135,214,260,175,50,3,0],pais:'sabana'},
+ desertic:{n:'Desèrtic',c:[235,200,120],z:'càlida',t:"Uns 20 °C de mitjana anual, amb forts contrastos entre el dia i la nit.",p:"Gairebé no plou: menys de 250 mm l'any.",city:'Assuan (Egipte)',T:[16,18,22,27,31,33,34,33,31,28,22,17],P:[0,0,0,0,1,0,0,0,0,1,0,0],pais:'desert'},
+ mediterrani:{n:'Mediterrani',c:[230,140,40],z:'temperada',t:"Hiverns suaus i estius càlids.",p:"Pluges escasses i irregulars, entre 300 i 900 mm, amb sequera a l'estiu.",city:'Barcelona',T:[9.5,10.2,12.4,14.4,17.7,21.6,24.4,24.6,21.8,18.3,13.4,10.4],P:[41,30,40,46,50,32,23,51,85,95,57,46],pais:'mediterrani'},
+ oceanic:{n:'Oceànic',c:[60,170,200],z:'temperada',t:"Temperatures suaus durant tot l'any.",p:"Pluges regulars i abundants, uns 1.000 mm l'any.",city:'Colònia (Alemanya) · dades del llibre',T:[2.7,3.5,6.9,10,14.4,16.8,19.1,18.7,15.5,11.3,7.8,3.9],P:[95,79,78,60,68,78,88,88,79,88,93,108],pais:'oceanic'},
+ continental:{n:'Continental',c:[150,90,180],z:'temperada',t:"Hiverns molt freds i estius càlids.",p:"Més pluja a l'estiu; més de 500 mm l'any.",city:'Moscou (Rússia)',T:[-6.5,-6.7,-1,6.5,13,17,19,17,11,5,-1,-5],P:[52,41,35,37,49,80,85,82,68,71,55,52],pais:'continental'},
+ polar:{n:'Polar',c:[235,245,255],z:'freda',t:"Les temperatures més fredes del planeta: poden baixar de -80 °C.",p:"Gairebé no hi plou.",city:'Utqiaġvik (Alaska)',T:[-25,-27,-26,-18,-6,2,5,4,-1,-9,-18,-23],P:[4,4,3,3,4,8,25,25,16,10,6,5],pais:'polar'},
+ muntanya:{n:"D'alta muntanya",c:[130,110,95],z:'freda',t:"Hiverns molt freds i estius frescos.",p:"Pluges abundants, sovint en forma de neu.",city:'La Paz (Bolívia, 3.600 m)',T:[9,9,9,8,6,5,4,6,7,9,10,10],P:[115,105,70,35,10,5,8,15,30,40,50,90],pais:'muntanya'}
+};
+const ZONEC={'càlida':[240,90,60],'temperada':[120,200,90],'freda':[120,180,255]};
+function earthTex(kind,sel){
+  const n=noise2(21),n2=noise2(22);
+  return canvasTex(EW,EH,(u,v)=>{
+    const lon=u*360-180, lat=90-v*180, x=Math.floor(u*EW), y=Math.floor(v*EH), land=isLandPx(x,y);
+    if(kind==='real'){
+      if(!land){ const d=n(u*30,v*15,3); let c=mix([8,30,80],[20,70,140],d); if(Math.abs(lat)>72) c=mix(c,[220,235,245],Math.min(1,(Math.abs(lat)-72)/6)); return c; }
+      const cl=climateAt(lon+(n(u*40,v*20,3)-.5)*9,lat+(n2(u*40+5,v*20,3)-.5)*6), k=n2(u*60,v*30,4);
+      const base={equatorial:[30,100,40],tropical:[120,140,60],desertic:[210,180,120],mediterrani:[120,130,70],oceanic:[70,120,60],continental:[80,105,60],polar:[240,245,250],muntanya:[130,115,95]}[cl];
+      return mix(base,[base[0]*.7,base[1]*.7,base[2]*.7],k);
+    }
+    if(kind==='zones'){
+      const al=Math.abs(lat), z= al<23.44?'càlida':al<66.56?'temperada':'freda';
+      const c=ZONEC[z]; return land? mix(c,[255,255,255],.1) : mix([10,25,60],c,.28);
+    }
+    /* climes */
+    if(!land) return [12,32,72];
+    const cl=climateAt(lon+(n(u*40,v*20,3)-.5)*9,lat+(n2(u*40+5,v*20,3)-.5)*6); let c=CLIM[cl].c; if(sel&&sel!==cl) c=mix(c,[40,50,60],.75); return c;
+  });
+}
+
+/* ================= DATA ================= */
+const PL=[
+ {id:'mercuri',n:'Mercuri',tipus:'Planeta rocós',r:.38,d:7,per:88,col:0xaaaaaa,f:{'Diàmetre':'4.879 km','Distància al Sol':'58 milions de km','Un any dura':'88 dies','Un dia dura':'59 dies terrestres','Satèl·lits':'cap','Temperatura':'de -180 a 430 °C'},t:"És el planeta més petit i el més proper al Sol.",c:"Com que gairebé no té atmosfera, de dia crema i de nit es glaça."},
+ {id:'venus',n:'Venus',tipus:'Planeta rocós',r:.95,d:10,per:225,f:{'Diàmetre':'12.104 km','Distància al Sol':'108 milions de km','Un any dura':'225 dies','Un dia dura':'243 dies terrestres','Satèl·lits':'cap','Temperatura':'uns 465 °C'},t:"És el planeta més calent: el seu aire gruixut atrapa la calor.",c:"Es veu brillar al capvespre o a l'alba. És l'astre més brillant del cel després de la Lluna."},
+ {id:'terra',n:'La Terra',tipus:'Planeta rocós',r:1,d:13.5,per:365,f:{'Diàmetre':'12.742 km','Distància al Sol':'150 milions de km','Un any dura':'365 dies','Un dia dura':'24 hores','Satèl·lits':'1: la Lluna','Temperatura':'uns 15 °C de mitjana'},t:"És el tercer planeta. És l'únic on sabem que hi ha vida i aigua líquida.",c:"La llum del Sol triga uns 8 minuts a arribar a la Terra."},
+ {id:'mart',n:'Mart',tipus:'Planeta rocós',r:.53,d:17,per:687,f:{'Diàmetre':'6.779 km','Distància al Sol':'228 milions de km','Un any dura':'687 dies','Un dia dura':'24 h 37 min','Satèl·lits':'2: Fobos i Deimos','Temperatura':'uns -60 °C de mitjana'},t:"És el planeta vermell, pel color de les seves roques.",c:"Té el volcà més alt del sistema solar, l'Olympus Mons, unes tres vegades més alt que l'Everest."},
+ {id:'jupiter',n:'Júpiter',tipus:'Gegant gasós',r:3.6,d:28,per:4333,f:{'Diàmetre':'139.820 km','Distància al Sol':'778 milions de km','Un any dura':'12 anys','Un dia dura':'10 hores','Satèl·lits':'prop d\'un centenar','Temperatura':'uns -110 °C'},t:"És el planeta més gran del sistema solar. No té superfície sòlida.",c:"La Gran Taca Vermella és una tempesta més gran que la Terra."},
+ {id:'saturn',n:'Saturn',tipus:'Gegant gasós',r:3.0,d:39,per:10759,ring:1,f:{'Diàmetre':'116.460 km','Distància al Sol':'1.430 milions de km','Un any dura':'29 anys','Un dia dura':'11 hores','Satèl·lits':'més de cent','Temperatura':'uns -140 °C'},t:"És famós pels seus anells, fets de trossos de gel i roca.",c:"És tan poc dens que, si hi hagués una banyera prou gran, suraria!"},
+ {id:'ura',n:'Urà',tipus:'Gegant de gel',r:1.9,d:49,per:30687,f:{'Diàmetre':'50.724 km','Distància al Sol':'2.870 milions de km','Un any dura':'84 anys','Un dia dura':'17 hores','Satèl·lits':'més de 25','Temperatura':'uns -195 °C'},t:"Gira tombat de costat, com una pilota que rodola.",c:"Va ser el primer planeta descobert amb telescopi."},
+ {id:'neptu',n:'Neptú',tipus:'Gegant de gel',r:1.85,d:57,per:60190,f:{'Diàmetre':'49.244 km','Distància al Sol':'4.500 milions de km','Un any dura':'165 anys','Un dia dura':'16 hores','Satèl·lits':'més de 14','Temperatura':'uns -200 °C'},t:"És el planeta més llunyà del Sol.",c:"Hi bufen els vents més forts del sistema solar."},
+ {id:'pluto',n:'Plutó',tipus:'Planeta nan',r:.25,d:64,per:90560,dwarf:1,f:{'Diàmetre':'2.377 km','Distància al Sol':'5.900 milions de km','Un any dura':'248 anys','Satèl·lits':'5','Situació':'cinturó de Kuiper'},t:"És un planeta nan: gira al voltant del Sol però és més petit que els planetes.",c:"Fins al 2006 es considerava el novè planeta."}
+];
+const REALR={sol:109,mercuri:.38,venus:.95,terra:1,mart:.53,jupiter:11.2,saturn:9.45,ura:4,neptu:3.9,pluto:.19};
+const SUNINFO={id:'sol',n:'El Sol',tipus:'Estrella',f:{'Diàmetre':'1,4 milions de km','Mida':'109 vegades la Terra','Superfície':'uns 5.500 °C','Distància a la Terra':'150 milions de km'},t:"És l'estrella al voltant de la qual giren tots els astres del sistema solar. És una esfera gegant de gas que emet llum i calor.",c:"Hi cabrien més d'un milió de Terres a dins."};
+const MOONINFO={id:'lluna',n:'La Lluna',tipus:'Satèl·lit',f:{'Diàmetre':'3.474 km','Distància a la Terra':'384.400 km','Volta a la Terra':'uns 28 dies','Llum':'reflectida del Sol'},t:"És l'únic satèl·lit natural de la Terra. No té llum pròpia: la veiem perquè reflecteix la llum del Sol.",c:"Sempre ens mostra la mateixa cara, perquè tarda el mateix a girar sobre si mateixa que a fer la volta a la Terra."};
+const MISC={
+ asteroides:{n:"Cinturó d'asteroides",tipus:'Asteroides',f:{'On':'entre Mart i Júpiter'},t:"Els asteroides són fragments de roca que giren al voltant del Sol.",c:"Els meteorits són asteroides petits que xoquen amb altres astres i hi fan cràters."},
+ kuiper:{n:'Cinturó de Kuiper',tipus:'Asteroides i planetes nans',f:{'On':'més enllà de Neptú'},t:"És una zona plena de cossos gelats i planetes nans, com Plutó.",c:"És molt més gran que el cinturó d'asteroides."},
+ cometa:{n:'Cometa',tipus:'Cometa',f:{'Òrbita':'ovalada'},t:"Els cometes són astres gelats. Quan s'apropen al Sol, la calor n'evapora una part i es forma una cua de gas i pols.",c:"La cua sempre apunta en direcció contrària al Sol."}
+};
+
+/* ================= STATE ================= */
+let mode='univers', sub={univers:'galaxia',terra:'rotacio',climes:'tipus',paisatges:'mapa'}, paused=false, speed=1;
+const groups={}; const pickables=[]; const pins=[];
+function grp(name){const g=new THREE.Group(); g.visible=false; scene.add(g); groups[name]=g; return g;}
+function pin(group,obj,txt,cls,col,onclick){const b=document.createElement('button'); b.className='pin '+(cls||''); b.style.setProperty('--c',col||'#00e5ff'); b.innerHTML='<i></i><span></span>'; b.querySelector('span').textContent=txt; if(onclick) b.onclick=e=>{e.stopPropagation();onclick();}; else b.style.pointerEvents='none'; $('#pins').appendChild(b); const p={el:b,obj,group,pos:null}; pins.push(p); return p;}
+const tv=new THREE.Vector3(), tw=new THREE.Vector3();
+function updatePins(){ for(const p of pins){ let vis=p.group.visible&&!p.hidden; if(vis&&p.obj){let o=p.obj;while(o){if(!o.visible){vis=false;break;}o=o.parent;}} if(vis){ if(p.pos) tv.copy(p.pos); else p.obj.getWorldPosition(tv); if(p.off) tv.add(p.off); if(p.globe){ const gc=globe.getWorldPosition(tw); if(tv.clone().sub(gc).dot(camera.position.clone().sub(tv))<0){p.el.classList.add('hide');continue;} } tv.project(camera); vis=tv.z<1&&Math.abs(tv.x)<1.05&&Math.abs(tv.y)<1.05; if(vis) p.el.style.transform=`translate(${(tv.x*.5+.5)*innerWidth-5}px,${(-tv.y*.5+.5)*innerHeight-5}px)`; } p.el.classList.toggle('hide',!vis); } }
+
+/* ---- starfield ---- */
+(()=>{const N=6000,pos=new Float32Array(N*3),col=new Float32Array(N*3),R=rng(77);for(let i=0;i<N;i++){const u=R()*2-1,t=R()*Math.PI*2,r=1500;pos.set([Math.sqrt(1-u*u)*Math.cos(t)*r,u*r,Math.sqrt(1-u*u)*Math.sin(t)*r],i*3);const k=.5+R()*.5,w=R();col.set(w<.15?[k*.8,k*.85,1]:w<.3?[1,k*.85,k*.6]:[k,k,k],i*3);}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setAttribute('color',new THREE.BufferAttribute(col,3));
+ const m=new THREE.Points(g,new THREE.PointsMaterial({size:1.6,sizeAttenuation:false,vertexColors:true,depthWrite:false}));scene.add(m);})();
+function glowSprite(color,size){const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d');const gr=g.createRadialGradient(64,64,0,64,64,64);gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(.25,'rgba(255,255,255,.55)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,0,128,128);
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),color,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));s.scale.set(size,size,1);return s;}
+
+/* ================= SISTEMA SOLAR ================= */
+const SS=grp('solar'); const ssObjs={};
+const sunMesh=new THREE.Mesh(new THREE.SphereGeometry(4,48,32),new THREE.MeshBasicMaterial({map:PTEX.sol()})); sunMesh.userData.info=SUNINFO; SS.add(sunMesh); pickables.push(sunMesh); sunMesh.add(glowSprite(0xffaa33,22)); const corona=glowSprite(0xff6a10,34); sunMesh.add(corona);
+pin(SS,sunMesh,'Sol','big','#ffd23f',()=>showCard(SUNINFO));
+let earthTexReal; const TL=new THREE.TextureLoader(); function loadTex(src,srgb=true){ const t=TL.load(src); if(srgb) t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=8; return t; } const earthN=loadTex(UTEX.earthN,false), earthRough=loadTex(UTEX.earthR,false), moonTex=loadTex(UTEX.moon);
+for(const p of PL){
+  const holder=new THREE.Group(); SS.add(holder);
+  const tex= p.id==='terra' ? (earthTexReal=loadTex(UTEX.earth)) : p.id==='lluna' ? loadTex(UTEX.moon) : PTEX[p.id]();
+  const m=new THREE.Mesh(new THREE.SphereGeometry(1,40,28),new THREE.MeshStandardMaterial({map:tex,roughness:.9,metalness:0}));
+  m.scale.setScalar(p.r*.55); m.position.x=p.d; m.userData.info=p; holder.add(m); pickables.push(m);
+  if(p.ring){ const rg=new THREE.RingGeometry(1.25,2.3,96); const pos=rg.attributes.position, uv=rg.attributes.uv, v=new THREE.Vector3(); for(let i=0;i<pos.count;i++){v.fromBufferAttribute(pos,i); uv.setXY(i,(v.length()-1.25)/1.05,.5);}
+    const rc=document.createElement('canvas');rc.width=256;rc.height=4;const g=rc.getContext('2d');for(let x=0;x<256;x++){const a=(Math.sin(x*.35)*.25+.55)*(x<20?x/20:1)*(x>180&&x<192?.2:1);g.fillStyle=`rgba(225,205,160,${a})`;g.fillRect(x,0,1,4);}
+    const ring=new THREE.Mesh(rg,new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(rc),side:THREE.DoubleSide,transparent:true,depthWrite:false})); ring.rotation.x=-Math.PI/2+.45; m.add(ring); }
+  if(p.id==='ura') m.rotation.z=1.7;
+  const orb=new THREE.Mesh(new THREE.RingGeometry(p.d-.03,p.d+.03,160),new THREE.MeshBasicMaterial({color:p.dwarf?0x8866aa:0x2a6fa0,side:THREE.DoubleSide,transparent:true,opacity:.55})); orb.rotation.x=-Math.PI/2; SS.add(orb);
+  const ang=Math.random()*Math.PI*2; holder.rotation.y=ang;
+  ssObjs[p.id]={holder,mesh:m,orb,p}; pin(SS,m,p.n,p.dwarf?'':'', p.dwarf?'#c08bff':'#00e5ff',()=>showCard(p));
+  if(p.id==='terra'){ const moon=new THREE.Mesh(new THREE.SphereGeometry(.16,24,16),new THREE.MeshStandardMaterial({map:moonTex,roughness:1})); const mh=new THREE.Group(); mh.position.copy(m.position); holder.add(mh); moon.position.x=1.1; mh.add(moon); moon.userData.info=MOONINFO; pickables.push(moon); ssObjs.lluna={holder:mh,mesh:moon}; }
+}
+function belt(r0,r1,n,col,size,info){const pos=new Float32Array(n*3),R=rng(r0*100|0);for(let i=0;i<n;i++){const a=R()*Math.PI*2,r=r0+(r1-r0)*R();pos.set([Math.cos(a)*r,(R()-.5)*.6,Math.sin(a)*r],i*3);}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));const pts=new THREE.Points(g,new THREE.PointsMaterial({color:col,size,sizeAttenuation:true}));SS.add(pts);return pts;}
+const ast=belt(20.5,23.5,2500,0x9a8a78,.12); const kui=belt(61,72,3000,0x8aa0c8,.14);
+const astPin=pin(SS,null,"Cinturó d'asteroides",'','#c8b49a',()=>showCard(MISC.asteroides)); astPin.pos=new THREE.Vector3(0,0,22);
+const kuiPin=pin(SS,null,'Cinturó de Kuiper','','#8aa0c8',()=>showCard(MISC.kuiper)); kuiPin.pos=new THREE.Vector3(-48,0,48);
+/* cometa */
+const comet=new THREE.Group(); SS.add(comet);
+const cHead=new THREE.Mesh(new THREE.SphereGeometry(.25,16,12),new THREE.MeshBasicMaterial({color:0xddeeff})); comet.add(cHead); cHead.userData.info=MISC.cometa; pickables.push(cHead); cHead.add(glowSprite(0x99ccff,2.2));
+const tailN=60, tail=new THREE.Points(new THREE.BufferGeometry(),new THREE.PointsMaterial({color:0x99ddff,size:.35,transparent:true,opacity:.7,blending:THREE.AdditiveBlending,depthWrite:false}));
+tail.geometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(tailN*3),3)); SS.add(tail);
+pin(SS,cHead,'Cometa','','#99ddff',()=>showCard(MISC.cometa));
+let cometT=0;
+function updateComet(dt){ cometT+=dt*.05*speed; const a=Math.cos(cometT), e=.85, A=40, B=A*Math.sqrt(1-e*e); const x=A*a-A*e, z=B*Math.sin(cometT); cHead.position.set(x,2,z);
+  const d=Math.hypot(x,z), dir=new THREE.Vector3(x,0,z).normalize(), len=Math.max(0,(30-d)/30)*8; const arr=tail.geometry.attributes.position.array, R=rng(5);
+  for(let i=0;i<tailN;i++){const t=i/tailN*len;arr.set([x+dir.x*t+(R()-.5)*t*.15,2+(R()-.5)*t*.15,z+dir.z*t+(R()-.5)*t*.15],i*3);} tail.geometry.attributes.position.needsUpdate=true; tail.material.opacity=Math.min(.8,len/4); }
+let realSizes=false, showOrbits=true;
+function applySizes(){ for(const p of PL){ const o=ssObjs[p.id]; o.mesh.scale.setScalar(realSizes? Math.max(.06,REALR[p.id]*.12) : p.r*.55); } sunMesh.scale.setScalar(realSizes? REALR.sol*.12/4 : 1); }
+
+/* ================= LA TERRA ================= */
+const T=grp('terra');
+const earthMat=()=>new THREE.MeshStandardMaterial({map:earthTexReal,normalMap:earthN,normalScale:new THREE.Vector2(.6,.6),roughnessMap:earthRough,roughness:1,metalness:.05});
+function lonLatToVec(lon,lat,r){const phi=(lon+180)/360*Math.PI*2, th=(90-lat)/180*Math.PI; return new THREE.Vector3(-r*Math.cos(phi)*Math.sin(th), r*Math.cos(th), r*Math.sin(phi)*Math.sin(th));}
+function makeAtmo(r){return new THREE.Mesh(new THREE.SphereGeometry(r*1.04,48,32),new THREE.ShaderMaterial({transparent:true,depthWrite:false,side:THREE.BackSide,blending:THREE.AdditiveBlending,
+  vertexShader:'varying vec3 vN;void main(){vN=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+  fragmentShader:'varying vec3 vN;void main(){float i=pow(.75-dot(vN,vec3(0,0,1.)),3.);gl_FragColor=vec4(.3,.6,1.,1.)*i;}'}));}
+/* núvols i llums de les ciutats */
+const cloudTexU=(()=>{ const W=1024,H=512,n=noise2(41),n2=noise2(42); const cv=document.createElement('canvas'); cv.width=W; cv.height=H; const g=cv.getContext('2d'), im=g.createImageData(W,H);
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){ const u=x/W,v=y/H, lat=Math.abs(90-v*180); const F=(uu)=>{ const wx=n2(uu*5+7,v*2.5,3)*2.2, wy=n2(uu*5+3,v*2.5+9,3)*2.2; return n(uu*9+wx+50,v*4.5+wy+50,6); }; let d=F(u)*(1-u)+F(u+1)*u; const band=.07*Math.cos(lat/90*Math.PI*3); d=Math.max(0,Math.min(1,(d+band-.5)*2.6)); const i=(y*W+x)*4; im.data[i]=im.data[i+1]=im.data[i+2]=255; im.data[i+3]=d*235; }
+  g.putImageData(im,0,0); const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; return t; })();
+const cityTexU=(()=>{ const W=2048,H=1024,R=rng(9); const cv=document.createElement('canvas'); cv.width=W; cv.height=H; const g=cv.getContext('2d'); g.fillStyle='#000'; g.fillRect(0,0,W,H);
+  for(let i=0;i<26000;i++){ const x=Math.floor(R()*W), y=Math.floor(R()*H); if(!isLandPx(x,y)) continue; const lat=90-y/H*180; const dens=lat>62||lat<-50?0:lat>20&&lat<58?1:.45; if(R()>dens) continue; const a=.35+R()*.65; g.fillStyle=`rgba(255,${190+R()*50|0},${110+R()*60|0},${a})`; g.fillRect(x,y,R()<.15?2:1,1); }
+  const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; return t; })();
+const nightMats=[];
+function addSkin(earth,r){ const cl=new THREE.Mesh(new THREE.SphereGeometry(r*1.012,64,48),new THREE.MeshStandardMaterial({map:cloudTexU,transparent:true,depthWrite:false,roughness:1})); cl.userData.clouds=1; earth.add(cl);
+  const nm=new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,uniforms:{map:{value:cityTexU},sunDir:{value:new THREE.Vector3(-1,0,0)}},
+   vertexShader:'varying vec2 vUv;varying vec3 vW;void main(){vUv=uv;vW=normalize(mat3(modelMatrix)*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+   fragmentShader:'uniform sampler2D map;uniform vec3 sunDir;varying vec2 vUv;varying vec3 vW;void main(){float d=dot(normalize(vW),sunDir);float k=smoothstep(.05,-.25,d);vec3 c=texture2D(map,vUv).rgb;gl_FragColor=vec4(c*k*1.6,1.);}'});
+  const ni=new THREE.Mesh(new THREE.SphereGeometry(r*1.003,96,64),nm); earth.add(ni); nightMats.push(nm); return cl; }
+const skinClouds=[];
+/* rotació */
+const ROT=new THREE.Group(); T.add(ROT);
+const tilt=new THREE.Group(); tilt.rotation.z=-23.44*D2R; ROT.add(tilt);
+const earthR=new THREE.Mesh(new THREE.SphereGeometry(5,96,64),earthMat()); tilt.add(earthR); earthR.add(makeAtmo(5)); skinClouds.push(addSkin(earthR,5));
+const axisLine=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,13,8),new THREE.MeshBasicMaterial({color:0xffd23f})); tilt.add(axisLine);
+const bcn=new THREE.Mesh(new THREE.SphereGeometry(.12,12,8),new THREE.MeshBasicMaterial({color:0xff3b5c})); bcn.position.copy(lonLatToVec(2.17,41.39,5.02)); earthR.add(bcn);
+const bcnPin=pin(T,bcn,'Barcelona','','#ff3b5c');
+const npPin=pin(T,null,'Pol nord','','#ffd23f'); const spPin=pin(T,null,'Pol sud','','#ffd23f');
+/* translació */
+const TR=new THREE.Group(); T.add(TR);
+const trSun=new THREE.Mesh(new THREE.SphereGeometry(3,48,32),new THREE.MeshBasicMaterial({map:PTEX.sol()})); TR.add(trSun); trSun.add(glowSprite(0xffaa33,16)); trSun.userData.info=SUNINFO; pickables.push(trSun);
+const trR=22; const trOrb=new THREE.Mesh(new THREE.RingGeometry(trR-.05,trR+.05,200),new THREE.MeshBasicMaterial({color:0x2a6fa0,side:THREE.DoubleSide})); trOrb.rotation.x=-Math.PI/2; TR.add(trOrb);
+const trEarthH=new THREE.Group(); TR.add(trEarthH); const trTilt=new THREE.Group(); trTilt.rotation.z=-23.44*D2R; trEarthH.add(trTilt);
+const trEarth=new THREE.Mesh(new THREE.SphereGeometry(2,64,48),earthMat()); trTilt.add(trEarth);
+const trAxis=new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,6,8),new THREE.MeshBasicMaterial({color:0xffd23f})); trTilt.add(trAxis);
+const SEAS=[['21 de març','Primavera'],['21 de juny','Estiu'],['23 de setembre','Tardor'],['21 de desembre','Hivern']];
+/* posició d'estiu boreal: el pol nord (inclinat cap a -x) mira cap al Sol → la Terra és a +x */
+const SEASANG=[Math.PI/2,0,-Math.PI/2,Math.PI]; /* angle (des de +x, en el pla xz, sentit antihorari vist des de dalt) */
+SEAS.forEach((s,i)=>{ const p=pin(TR,null,s[0]+' · '+s[1],'','#b6ff3b'); const a=SEASANG[i]; p.pos=new THREE.Vector3(Math.cos(a)*trR,-3.2,-Math.sin(a)*trR); });
+let trAng=Math.PI*.8;
+/* lluna */
+const LL=new THREE.Group(); T.add(LL);
+const llEarth=new THREE.Mesh(new THREE.SphereGeometry(3,64,48),earthMat()); LL.add(llEarth); llEarth.add(makeAtmo(3)); skinClouds.push(addSkin(llEarth,3));
+const llR=12; const llOrb=new THREE.Mesh(new THREE.RingGeometry(llR-.04,llR+.04,160),new THREE.MeshBasicMaterial({color:0x6a7f99,side:THREE.DoubleSide})); llOrb.rotation.x=-Math.PI/2; LL.add(llOrb);
+const llMoonH=new THREE.Group(); LL.add(llMoonH); const llMoon=new THREE.Mesh(new THREE.SphereGeometry(.9,48,32),new THREE.MeshStandardMaterial({map:moonTex,roughness:1})); llMoon.position.x=llR; llMoonH.add(llMoon); llMoon.userData.info=MOONINFO; pickables.push(llMoon);
+pin(LL,llMoon,'Lluna','','#dddddd',()=>showCard(MOONINFO));
+const sunDirPin=pin(LL,null,'☀ Llum del Sol →','','#ffd23f'); sunDirPin.pos=new THREE.Vector3(-16,0,0);
+let llAng=0;
+/* planeta únic */
+const UN=new THREE.Group(); T.add(UN);
+const unEarth=new THREE.Mesh(new THREE.SphereGeometry(5,96,64),earthMat()); UN.add(unEarth); const unAtmo=makeAtmo(5); unEarth.add(unAtmo); skinClouds.push(addSkin(unEarth,5));
+const unShell=new THREE.Mesh(new THREE.SphereGeometry(5.6,64,48),new THREE.MeshBasicMaterial({color:0x66aaff,transparent:true,opacity:.12,depthWrite:false})); UN.add(unShell);
+
+/* ================= GLOBUS (climes + paisatges) ================= */
+const GL=grp('globus');
+const globe=new THREE.Mesh(new THREE.SphereGeometry(5,128,96),new THREE.MeshStandardMaterial({roughness:.95,metalness:0})); GL.add(globe); pickables.push(globe); globe.userData.globe=1;
+GL.add(makeAtmo(5));
+const latLines=new THREE.Group(); GL.add(latLines);
+const LATS=[[0,'Equador','#ffd23f'],[23.44,'Tròpic de Càncer','#ff8a5c'],[-23.44,'Tròpic de Capricorn','#ff8a5c'],[66.56,'Cercle polar àrtic','#7fd0ff'],[-66.56,'Cercle polar antàrtic','#7fd0ff']];
+const latPins=[];
+for(const [lat,n,c] of LATS){ const r=5.02*Math.cos(lat*D2R), y=5.02*Math.sin(lat*D2R); const pts=[]; for(let i=0;i<=128;i++){const a=i/128*Math.PI*2;pts.push(new THREE.Vector3(Math.cos(a)*r,y,Math.sin(a)*r));}
+  const l=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineDashedMaterial({color:c,dashSize:.25,gapSize:.15})); l.computeLineDistances(); latLines.add(l);
+  const p=pin(GL,null,n,'',c); p.pos=lonLatToVec(-30,lat,5.3); p.globe=1; latPins.push(p); }
+const iceCap=new THREE.Mesh(new THREE.SphereGeometry(5.025,96,24,0,Math.PI*2,0,22*D2R),new THREE.MeshStandardMaterial({color:0xf2f8ff,roughness:.6,transparent:true,opacity:.95})); GL.add(iceCap); iceCap.visible=false;
+const climTex={}; function getClimTex(k,sel){const key=k+(sel||''); if(!climTex[key]) climTex[key]=earthTex(k,sel); return climTex[key];}
+const LAND_P=[
+ {id:'selva',n:'La selva',lon:-62,lat:-4,cl:'equatorial',e:'🌳🦜🐒',zona:'Zona càlida',on:"Prop de l'equador: Amazònia (Amèrica del Sud), Congo (Àfrica) i el sud-est d'Àsia.",veg:"Bosc molt dens i sempre verd. Els arbres més alts superen els 40 m i tapen la llum a les plantes de sota.",pob:"Molt poc habitada: hi fa massa calor i humitat. Està en perill per la tala d'arbres.",c:"Les selves expulsen molt d'oxigen a l'atmosfera."},
+ {id:'sabana',n:'La sabana',lon:35,lat:-3,cl:'tropical',e:'🦒🦓🌾',zona:'Zona càlida',on:"Entre els tròpics, sobretot a l'Àfrica.",veg:"Herbes altes, verdes a l'estació humida i grogues a l'estació seca. Arbres aïllats, com l'acàcia i el baobab.",pob:"Agricultura i ramaderia a les costes i als rius. Els massai en són pastors.",c:"Hi viuen girafes, zebres i lleons."},
+ {id:'desert',n:'El desert',lon:10,lat:24,cl:'desertic',e:'🏜️🐪🌵',zona:'Zona càlida',on:"Àfrica (Sàhara), Àsia, Austràlia i Amèrica.",veg:"Molt poca vegetació: plantes adaptades a la sequera, com el cactus, que guarda aigua a la tija.",pob:"Pràcticament deshabitat. Hi ha deserts d'arena (dunes) i de roca.",c:"El dromedari pot passar alguns dies sense beure aigua."},
+ {id:'mediterrani',n:'El paisatge mediterrani',lon:2,lat:41.5,cl:'mediterrani',e:'🌲🫒☀️',zona:'Zona temperada',on:"Al voltant del mar Mediterrani, com Catalunya, i també a Califòrnia, Xile, Sud-àfrica i Austràlia.",veg:"Bosc mediterrani: pins, alzines i sureres (fulla perenne), i matolls com l'estepa, el romaní i la farigola.",pob:"Molt transformat per l'agricultura, la indústria i el turisme. La gent viu sobretot a les ciutats de la costa.",c:"És el paisatge on vivim nosaltres!"},
+ {id:'oceanic',n:'El paisatge oceànic',lon:-4,lat:56.5,cl:'oceanic',e:'🌿🐄🌧️',zona:'Zona temperada',on:"Costes de l'oest d'Europa (de Portugal a Noruega) i d'Amèrica del Nord.",veg:"Prats extensos i boscos de fulla caduca. Als sòls poc fèrtils hi ha la landa (arbustos i herbes).",pob:"Molt transformat: boscos substituïts per cultius, pastures, ciutats i fàbriques.",c:"Hi plou tant que l'herba sempre és verda."},
+ {id:'continental',n:'El paisatge continental',lon:60,lat:57,cl:'continental',e:'🌲🐻❄️',zona:'Zona temperada',on:"Llocs lluny del mar: centre d'Europa, Àsia i Amèrica del Nord.",veg:"A les zones fredes, la taigà o bosc boreal (avets, pins, bedolls). A les més càlides, praderies i estepes.",pob:"Les zones de prat són les més poblades: ciutats, grans cultius i ramaderia.",c:"Entre l'hivern i l'estiu hi pot haver més de 30 °C de diferència."},
+ {id:'polar',n:'El paisatge polar',lon:20,lat:-80,cl:'polar',e:'🧊🐧🐻‍❄️',zona:'Zona freda',on:"L'Àrtic i l'Antàrtida.",veg:"No n'hi ha per culpa del fred. A prop de la zona temperada hi ha la tundra: molses i líquens.",pob:"Gairebé deshabitat: samis a Lapònia, inuit a Amèrica i, a l'Antàrtida, només bases científiques.",c:"L'Antàrtida és el lloc més fred de la Terra."},
+ {id:'muntanya',n:"El paisatge d'alta muntanya",lon:10,lat:46.5,cl:'muntanya',e:'🏔️⛷️🐐',zona:'Zona freda',on:"Als cims de les grans serralades: els Alps, els Andes, l'Himàlaia…",veg:"Canvia amb l'altura (pisos de vegetació): boscos a baix i, a mesura que pugem, arbustos, matolls i prats.",pob:"Poc habitat: ramaderia, explotació forestal i turisme d'esports de neu.",c:"Com més amunt, més fred: uns 6 °C menys per cada 1.000 m.",pisos:1}
+];
+const landPins=LAND_P.map(L=>{ const m=new THREE.Mesh(new THREE.SphereGeometry(.12,12,8),new THREE.MeshBasicMaterial({color:0xb6ff3b})); m.position.copy(lonLatToVec(L.lon,L.lat,5.03)); globe.add(m); m.visible=false; const p=pin(GL,m,L.n,'','#b6ff3b',()=>openLandscape(L.id)); p.landId=L.id; p.globe=1; return p; });
+
+/* ================= UNIVERS ================= */
+const U=grp('univers');
+const GX=new THREE.Group(); U.add(GX);
+(()=>{const N=26000,pos=new Float32Array(N*3),col=new Float32Array(N*3),R=rng(99);
+ for(let i=0;i<N;i++){ let x,y,z,c; if(i<N*.18){ const r=Math.pow(R(),2)*6; const a=R()*Math.PI*2; x=Math.cos(a)*r; z=Math.sin(a)*r*.8; y=(R()-.5)*2.4*(1-r/7); c=[1,.85,.6]; }
+   else { const arm=i%4, r=3+Math.pow(R(),.8)*34, a=arm*Math.PI/2+Math.log(r)*2.2+(R()-.5)*(.35+r*.012); x=Math.cos(a)*r+(R()-.5)*2; z=Math.sin(a)*r+(R()-.5)*2; y=(R()-.5)*1.2; const w=R(); c=w<.5?[.6,.75,1]:w<.8?[1,1,1]:[1,.7,.85]; }
+   pos.set([x,y,z],i*3); const k=.6+R()*.4; col.set([c[0]*k,c[1]*k,c[2]*k],i*3);}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setAttribute('color',new THREE.BufferAttribute(col,3));
+ GX.add(new THREE.Points(g,new THREE.PointsMaterial({size:.22,vertexColors:true,transparent:true,opacity:.9,blending:THREE.AdditiveBlending,depthWrite:false})));
+ GX.add(glowSprite(0xffcc88,22));})();
+const solarMark=new THREE.Mesh(new THREE.SphereGeometry(.35,12,8),new THREE.MeshBasicMaterial({color:0x00e5ff})); const smA=1*Math.PI/2+Math.log(20)*2.2+.08; solarMark.position.set(Math.cos(smA)*20,0,Math.sin(smA)*20); GX.add(solarMark);
+pin(U,solarMark,'Sistema solar · braç d\'Orió','big','#00e5ff');
+const gxCenter=new THREE.Object3D(); GX.add(gxCenter); pin(U,gxCenter,'Centre de la galàxia','','#ffd23f');
+/* estrelles */
+const ST=new THREE.Group(); U.add(ST);
+const STARS=[
+ {n:'Nana vermella',r:.6,col:0xff5533,x:-14,f:{'Color':'vermell','Temperatura':'freda (unes 3.000 °C)','Mida':'nana'},t:"Són les estrelles més abundants. Són petites, fredes i poc brillants.",c:"Pròxima del Centaure, l'estrella més propera després del Sol, és una nana vermella."},
+ {n:'El Sol',r:1.2,col:0xffdd66,x:-9,f:{'Color':'groc','Temperatura':'uns 5.500 °C','Mida':'mitjana'},t:"És una estrella de mida mitjana, groga, molt lluminosa i brillant per a nosaltres perquè és molt a prop.",c:"És l'estrella més propera a la Terra."},
+ {n:'Gegant blava',r:3,col:0x99bbff,x:-2,f:{'Color':'blanc-blau','Temperatura':'molt calenta (més de 20.000 °C)','Mida':'gegant'},t:"Les estrelles més calentes són blanques o blaves.",c:"Rigel, a la constel·lació d'Orió, és una gegant blava."},
+ {n:'Supergegant vermella',r:6,col:0xff6a3c,x:9,f:{'Color':'vermell-taronja','Temperatura':'freda (uns 3.500 °C)','Mida':'supergegant'},t:"Són enormes però fredes. Estan al final de la seva vida.",c:"Betelgeuse, a Orió, és una supergegant vermella: si fos al lloc del Sol, arribaria més enllà de Mart."}];
+STARS.forEach(s=>{const m=new THREE.Mesh(new THREE.SphereGeometry(s.r,48,32),new THREE.MeshBasicMaterial({color:s.col})); m.position.x=s.x+(s.r); m.add(glowSprite(s.col,s.r*4.2)); m.userData.info={n:s.n,tipus:'Estrella',f:s.f,t:s.t,c:s.c}; ST.add(m); pickables.push(m); pin(U,m,s.n,'','#'+new THREE.Color(s.col).getHexString(),()=>showCard(m.userData.info)).off=new THREE.Vector3(0,-s.r-1,0);});
+/* constel·lacions */
+const CN=new THREE.Group(); U.add(CN);
+const CONS=[
+ {n:"L'Ossa Major",s:[[165.93,61.75],[165.46,56.38],[178.46,53.69],[183.86,57.03],[193.51,55.96],[200.98,54.93],[206.89,49.31]],l:[[0,1],[1,2],[2,3],[3,0],[3,4],[4,5],[5,6]],t:"Es pot veure tot l'any des de l'hemisferi nord. Les set estrelles més brillants formen el «carro»."},
+ {n:'Orió',s:[[88.79,7.41],[81.28,6.35],[85.19,-1.94],[84.05,-1.2],[83,-.3],[86.94,-9.67],[78.63,-8.2]],l:[[0,1],[0,2],[1,4],[2,3],[3,4],[2,5],[4,6]],t:"Es veu a l'hivern. Les tres estrelles del mig són el «cinturó d'Orió»."},
+ {n:'Cassiopea',s:[[2.29,59.15],[10.13,56.54],[14.18,60.72],[21.45,60.24],[28.6,63.67]],l:[[0,1],[1,2],[2,3],[3,4]],t:"Té forma de W. Està a l'altra banda de l'estrella polar respecte de l'Ossa Major."}];
+const consLines=[];
+const raDec=(ra,dec,r)=>{const a=ra*D2R,d=dec*D2R;return new THREE.Vector3(Math.cos(d)*Math.cos(a)*r,Math.sin(d)*r,-Math.cos(d)*Math.sin(a)*r);};
+CONS.forEach(c=>{ const pts=c.s.map(([ra,dec])=>raDec(ra,dec,100)); pts.forEach(p=>{const s=glowSprite(0xffffff,4.5);s.position.copy(p);CN.add(s);});
+  const seg=[]; c.l.forEach(([a,b])=>seg.push(pts[a],pts[b])); const ln=new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(seg),new THREE.LineBasicMaterial({color:0x00e5ff,transparent:true,opacity:.7})); CN.add(ln); consLines.push(ln);
+  const ctr=pts.reduce((a,p)=>a.add(p),new THREE.Vector3()).multiplyScalar(1/pts.length); const o=new THREE.Object3D(); o.position.copy(ctr).multiplyScalar(1.02); CN.add(o); const pp=pin(U,o,c.n,'big','#00e5ff',()=>showCard({n:c.n,tipus:'Constel·lació',f:{'Estrelles principals':String(c.s.length)},t:c.t,c:"Les constel·lacions són grups d'estrelles que formen figures al cel. Com que la Terra gira, no sempre en veiem les mateixes."})); pp.cons=1; });
+const polaris=glowSprite(0xffffff,6); polaris.position.copy(raDec(37.95,89.26,100)); CN.add(polaris); const polObj=new THREE.Object3D(); polObj.position.copy(polaris.position); CN.add(polObj); const polPin=pin(U,polObj,'Estrella polar','','#ffd23f'); polPin.cons=1;
+/* big bang */
+const BB=new THREE.Group(); U.add(BB);
+const bbN=9000, bbG=new THREE.BufferGeometry(), bbDir=new Float32Array(bbN*3), bbCol=new Float32Array(bbN*3); { const R=rng(5); for(let i=0;i<bbN;i++){ const u=R()*2-1,t=R()*Math.PI*2,s=Math.pow(R(),.33); bbDir.set([Math.sqrt(1-u*u)*Math.cos(t)*s,u*s,Math.sqrt(1-u*u)*Math.sin(t)*s],i*3); const w=R(); bbCol.set(w<.33?[1,.8,.5]:w<.66?[.6,.8,1]:[1,1,1],i*3);} }
+bbG.setAttribute('position',new THREE.BufferAttribute(new Float32Array(bbN*3),3)); bbG.setAttribute('color',new THREE.BufferAttribute(bbCol,3));
+const bbPts=new THREE.Points(bbG,new THREE.PointsMaterial({size:.25,vertexColors:true,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false})); BB.add(bbPts);
+const bbFlash=glowSprite(0xffffff,1); BB.add(bbFlash);
+let bbT=0;
+function updateBB(dt){ bbT=Math.min(14,bbT+dt*1.4); const arr=bbG.attributes.position.array, k=Math.pow(bbT/14,.6)*30; for(let i=0;i<bbN;i++){ const cl=Math.sin(i*12.9898)*.5+.5; const f=k*(1+.15*Math.sin(i+bbT*.2)); arr[i*3]=bbDir[i*3]*f; arr[i*3+1]=bbDir[i*3+1]*f; arr[i*3+2]=bbDir[i*3+2]*f; } bbG.attributes.position.needsUpdate=true; bbFlash.scale.setScalar(Math.max(.01,(1-bbT/2.5))*30); bbFlash.material.opacity=Math.max(0,1-bbT/2.5);
+  const yrs=Math.round(bbT/14*13800); const el=$('#bbYr'); if(el) el.textContent= bbT>=14?'Avui':(yrs<10?'0':yrs.toLocaleString('ca'))+' milions d\'anys després'; }
+
+/* ================= CARD ================= */
+const card=$('#card');
+card.querySelector('.x').onclick=()=>card.classList.remove('show');
+function showCard(I){ if(window.UX) UX.onCard(I); card.querySelector('.tag').textContent=I.tipus||''; card.querySelector('h2').textContent=I.n;
+  card.querySelector('.facts').innerHTML=Object.entries(I.f||{}).map(([k,v])=>`<div><small>${k}</small>${v}</div>`).join('');
+  card.querySelector('.desc').textContent=I.t||''; card.querySelector('.cur').innerHTML=I.c?'<b>Saps que…?</b>':''; if(I.c) card.querySelector('.cur').appendChild(document.createTextNode(I.c));
+  card.classList.add('show'); }
+
+/* ================= PICKING ================= */
+const ray=new THREE.Raycaster(); let down=null;
+canvas.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY};canvas.style.cursor='grabbing';});
+addEventListener('pointerup',()=>canvas.style.cursor='grab');
+canvas.addEventListener('pointerup',e=>{ if(!down||Math.hypot(e.clientX-down.x,e.clientY-down.y)>6){down=null;return;} down=null;
+  ray.setFromCamera(new THREE.Vector2(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1),camera);
+  const hits=ray.intersectObjects(pickables.filter(o=>{let v=o.visible,p=o.parent;while(p){v=v&&p.visible;p=p.parent;}return v;}),false);
+  if(!hits.length) return; const h=hits[0];
+  if(mode==='repte'&&rState.onPick){ rState.onPick(h.object,h); return; }
+  if(h.object.userData.globe){ const lon=h.uv.x*360-180, lat=h.uv.y*180-90; globeClick(lon,lat); return; }
+  if(h.object.userData.info) showCard(h.object.userData.info);
+});
+
+/* ================= CAMERA ================= */
+let fly=null;
+function flyTo(target,pos,dur=1){fly={t:0,dur,ft:controls.target.clone(),tt:target.clone(),fp:camera.position.clone(),tp:pos.clone()};}
+const V3=(x,y,z)=>new THREE.Vector3(x,y,z);
+function homeView(){ const v={univers:{galaxia:[V3(0,0,0),V3(0,38,40)],estrelles:[V3(3,0,0),V3(3,5,46)],constel:[V3(0,0,0),V3(0,0,.01)],bigbang:[V3(0,0,0),V3(0,10,60)]},
+  solar:[V3(0,0,0),V3(0,40,62)], terra:{rotacio:[V3(0,0,0),V3(-9,4,15)],translacio:[V3(0,0,0),V3(0,40,50)],lluna:[V3(0,0,0),V3(0,30,13)],unic:[V3(0,0,0),V3(0,3,17)]},
+  climes:[V3(0,0,0),V3(4,5,15)], paisatges:[V3(0,0,0),V3(4,6,15)], repte:[V3(0,0,0),V3(0,40,62)]};
+  let e=v[mode]; if(!Array.isArray(e)) e=e[sub[mode]]; const asp=innerWidth/innerHeight, f=asp<1?Math.min(2,1.15/asp):1; flyTo(e[0],e[0].clone().add(e[1].clone().sub(e[0]).multiplyScalar(f))); }
+
+/* ================= PANELS ================= */
+const P=$('#panel .pbody');
+function subtabs(list,cur,cb){ const d=document.createElement('div'); d.className='sub'; list.forEach(([k,ico,n])=>{const b=document.createElement('button'); b.innerHTML=`<b>${ico}</b>${n}`; b.classList.toggle('on',k===cur); b.onclick=()=>cb(k); d.appendChild(b);}); return d; }
+function quiz(list){ const box=document.createElement('div'); box.className='sbox'; box.innerHTML='<p class="h">Comprova-ho</p>';
+  list.forEach(([q,opts,ok])=>{const d=document.createElement('div');d.className='q';d.innerHTML='<p></p>';d.querySelector('p').textContent=q;const fb=document.createElement('div');fb.className='fb';
+    opts.forEach((o,i)=>{const b=document.createElement('button');b.textContent=o;b.onclick=()=>{d.querySelectorAll('button').forEach(x=>x.classList.remove('ok','ko'));b.classList.add(i===ok?'ok':'ko');fb.textContent=i===ok?'Molt bé!':'Torna-ho a provar.';fb.style.color=i===ok?'var(--li)':'var(--rd)';};d.appendChild(b);});d.appendChild(fb);box.appendChild(d);}); return box; }
+function html(s){ const d=document.createElement('div'); d.innerHTML=s; return d; }
+function climogram(cl,w=330){ const C=CLIM[cl], W=w,H=170,l=34,r=34,t=14,b=24, iw=W-l-r, ih=H-t-b; const pmax=Math.max(100,Math.ceil(Math.max(...C.P)/50)*50), tmin=Math.min(-30,Math.floor(Math.min(...C.T)/10)*10), tmax=40;
+  const bx=i=>l+iw*(i+.5)/12, py=v=>t+ih*(1-v/pmax), ty=v=>t+ih*(1-(v-tmin)/(tmax-tmin));
+  let s=`<svg class="cg" viewBox="0 0 ${W} ${H}" font-family="Space Grotesk" font-size="10">`;
+  for(let k=0;k<=4;k++){const y=t+ih*k/4; s+=`<line x1="${l}" x2="${W-r}" y1="${y}" y2="${y}" stroke="rgba(255,255,255,.08)"/><text x="${l-4}" y="${y+3}" fill="#7fb3ff" text-anchor="end">${Math.round(pmax*(1-k/4))}</text><text x="${W-r+4}" y="${y+3}" fill="#ff8a9c">${Math.round(tmax-(tmax-tmin)*k/4)}</text>`;}
+  C.P.forEach((p,i)=>{s+=`<rect x="${bx(i)-iw/30}" y="${py(p)}" width="${iw/15}" height="${t+ih-py(p)}" fill="#2f8cff" opacity=".85"/>`;});
+  s+=`<polyline fill="none" stroke="#ff3b5c" stroke-width="2.2" points="${C.T.map((v,i)=>bx(i)+','+ty(v)).join(' ')}"/>`; C.T.forEach((v,i)=>s+=`<circle cx="${bx(i)}" cy="${ty(v)}" r="2.6" fill="#ff3b5c"/>`);
+  'GFMAMJJASOND'.split('').forEach((m,i)=>s+=`<text x="${bx(i)}" y="${H-8}" fill="#8aa0bd" text-anchor="middle">${m}</text>`);
+  s+=`<text x="2" y="10" fill="#7fb3ff">mm</text><text x="${W-2}" y="10" fill="#ff8a9c" text-anchor="end">°C</text></svg>`;
+  const sumP=C.P.reduce((a,b)=>a+b,0), avgT=C.T.reduce((a,b)=>a+b,0)/12;
+  return s+`<p style="margin:4px 0 0;font-size:12px;color:var(--mu)">${C.city} · ${Math.round(sumP).toLocaleString('ca')} mm l'any · ${avgT.toFixed(1).replace('.',',')} °C de mitjana · dades aproximades</p>`; }
+
+function renderPanel(){
+  P.innerHTML=''; $('#panel').style.display= mode==='repte'?'none':'';
+  if(mode==='univers'){
+    P.appendChild(subtabs([['galaxia','🌀','Via Làctia'],['estrelles','⭐','Estrelles'],['constel','✨','Constel·lacions'],['bigbang','💥','Big bang']],sub.univers,k=>{sub.univers=k;applyMode();}));
+    const S=sub.univers;
+    if(S==='galaxia'){ P.appendChild(html(`<h3>La Via Làctia</h3><p class="lead">La nostra galàxia</p><p class="t">L'univers és el conjunt de tots els astres i cossos celestes i de l'espai que hi ha entre ells. Les galàxies són agrupacions de milions d'estrelles, planetes, núvols de gas i fragments de roca.</p><p class="t">La Terra és en una galàxia espiral anomenada <b>Via Làctia</b> («camí de llet»), en un dels seus braços: el <b>braç d'Orió</b>.</p>`));
+      P.appendChild(html(`<div class="sbox"><p class="h">Observa</p><ul><li>On són més juntes les estrelles: al centre o als braços?</li><li>Busca el punt blau: és el sistema solar.</li></ul></div><div class="sbox"><p class="h">Activitat del llibre</p><p class="act">Activitat 2: per què els romans van anomenar la nostra galàxia «camí de llet»?</p></div>`));
+      P.appendChild(quiz([["Com es diu la nostra galàxia?",["Andròmeda","La Via Làctia","El braç d'Orió"],1],["Quina forma té la Via Làctia?",["Espiral","El·líptica","Irregular"],0]])); }
+    if(S==='estrelles'){ P.appendChild(html(`<h3>Les estrelles</h3><p class="lead">Esferes de gas gegants</p><p class="t">Les estrelles produeixen molta energia, que emeten en forma de llum i calor. Es diferencien pel:</p><div class="sbox"><ul><li><b>Color</b>: depèn de la temperatura. Les més calentes són blanques o blaves; les més fredes, taronja o vermelloses.</li><li><b>Mida</b>: nanes, gegants o supergegants.</li><li><b>Brillantor</b>: depèn de la llum que fan i de la distància. Com més a prop, més brillants les veiem.</li></ul></div><p class="t">Toca cada estrella per comparar-les.</p><div class="sbox"><p class="h">Pensa (pàg. 65)</p><p class="act">Per què quan mirem el cel a la nit algunes estrelles brillen més que d'altres?</p></div>`));
+      P.appendChild(quiz([["Quin color tenen les estrelles més calentes?",["Vermell","Blanc o blau","Taronja"],1],["Quina mena d'estrella és el Sol?",["Una nana vermella","Una estrella mitjana i groga","Una supergegant"],1]])); }
+    if(S==='constel'){ P.appendChild(html(`<h3>Les constel·lacions</h3><p class="lead">Figures al cel</p><p class="t">Són grups d'estrelles que formen figures al cel. Com que la Terra gira, durant la nit no veiem sempre les mateixes, i tampoc són iguals a cada estació ni des de l'hemisferi nord o el sud.</p><div class="row"><button class="pill on" id="cLines">Línies visibles</button><button class="pill" id="cNames">Noms visibles</button></div><p class="t" style="font-size:13px;color:var(--mu)">Arrossega per mirar el cel al teu voltant. Repte: amaga les línies i busca l'Ossa Major.</p>`));
+      P.appendChild(quiz([["Què és una constel·lació?",["Un grup d'estrelles que forma una figura","Una galàxia petita","Un planeta"],0],["Quina constel·lació es veu tot l'any des de l'hemisferi nord?",["Orió","L'Ossa Major","Cap"],1]]));
+      setTimeout(()=>{ $('#cLines').onclick=e=>{const on=e.target.classList.toggle('on'); consLines.forEach(l=>l.visible=on);}; $('#cNames').onclick=e=>{const on=!e.target.classList.contains('on'); e.target.classList.toggle('on',on); pins.filter(p=>p.cons).forEach(p=>p.hidden=!on);}; $('#cNames').classList.add('on'); }); }
+    if(S==='bigbang'){ P.appendChild(html(`<h3>Com va començar l'univers</h3><p class="lead">El big bang</p><p class="t">Fa uns 14.000 milions d'anys es va produir una gran explosió, el <b>big bang</b>. A partir d'aquell moment es van començar a formar les estrelles, les galàxies i la resta de cossos celestes.</p><div class="hud"><div style="grid-column:1/3"><small>Temps</small><b class="c" id="bbYr">0</b></div></div><button class="big" id="bbGo" style="width:100%">💥 Torna a començar</button><p class="t" style="font-size:13px;color:var(--mu)">L'univers encara s'està fent més gran.</p>`));
+      setTimeout(()=>$('#bbGo').onclick=()=>{bbT=0;}); }
+  }
+  if(mode==='solar'){
+    P.appendChild(html(`<h3>El sistema solar</h3><p class="lead">El Sol i els astres que hi giren al voltant</p><p class="t">El sistema solar és a la Via Làctia i està format per una estrella, el <b>Sol</b>, vuit <b>planetes</b>, <b>planetes nans</b> i cossos més petits com els <b>asteroides</b> i els <b>cometes</b>.</p>
+      <div class="sl"><label><span>Velocitat</span><b id="spv">×1</b></label><input type="range" id="spd" min="0" max="5" step="0.1" value="1"></div>
+      <div class="row" style="margin-top:6px"><button class="pill on" id="sOrb">Òrbites</button><button class="pill on" id="sNames">Noms</button><button class="pill" id="sReal">Mides reals</button></div>
+      <div class="sbox"><p class="h">Planetes (toca'ls)</p><div class="leg" id="plList"></div></div>
+      <div class="sbox"><p class="h">Observa (pàg. 67)</p><ul><li>Entre quins dos planetes és la Terra?</li><li>Quin és el planeta més gran? I el més petit?</li><li>Entre quins planetes és el cinturó d'asteroides?</li></ul></div>
+      <div class="sbox"><p class="h">Activitats del llibre</p><p class="act">3: explica com és el sistema solar. 4: quin tipus de cos celeste són el Sol, la Terra i la Lluna? 5: què són els meteorits i les estrelles fugaces?</p></div>`));
+    P.appendChild(quiz([["Quants planetes té el sistema solar?",["Set","Vuit","Nou"],1],["Què és Plutó?",["Un planeta nan","Un satèl·lit","Un cometa"],0]]));
+    setTimeout(()=>{ const L=$('#plList'); [SUNINFO,...PL].forEach(p=>{const b=document.createElement('button'); b.innerHTML=`<i style="background:${p.id==='sol'?'#ffd23f':p.dwarf?'#c08bff':'#00e5ff'}"></i>${p.n}<em>${p.tipus}</em>`; b.onclick=()=>{showCard(p); const m=p.id==='sol'?sunMesh:ssObjs[p.id].mesh; const w=m.getWorldPosition(new THREE.Vector3()); const s=Math.max(3,m.scale.x*6); flyTo(w,w.clone().add(V3(s*.6,s*.5,s)));}; L.appendChild(b);});
+      $('#spd').oninput=e=>{speed=+e.target.value; $('#spv').textContent='×'+speed;}; $('#spd').value=speed; $('#spv').textContent='×'+speed;
+      $('#sOrb').onclick=e=>{showOrbits=e.target.classList.toggle('on'); PL.forEach(p=>ssObjs[p.id].orb.visible=showOrbits);};
+      $('#sNames').onclick=e=>{const on=e.target.classList.toggle('on'); pins.filter(p=>p.group===SS).forEach(p=>p.hidden=!on);};
+      $('#sReal').onclick=e=>{realSizes=e.target.classList.toggle('on'); applySizes();}; $('#sReal').classList.toggle('on',realSizes); });
+  }
+  if(mode==='terra'){
+    P.appendChild(subtabs([['rotacio','🔄','Rotació'],['translacio','🗓️','Translació'],['lluna','🌙','La Lluna'],['unic','💧','Planeta únic']],sub.terra,k=>{sub.terra=k;applyMode();}));
+    const S=sub.terra;
+    if(S==='rotacio'){ P.appendChild(html(`<h3>El moviment de rotació</h3><p class="lead">El dia i la nit</p><p class="t">La Terra gira sobre si mateixa al voltant del seu <b>eix de rotació</b>. Una volta sencera dura un <b>dia</b> (24 hores). A la part que rep la llum del Sol és de dia; a l'altra, és de nit.</p>
+      <div class="hud"><div><small>A Barcelona és</small><b class="y" id="rDN">—</b></div><div><small>Hora aproximada</small><b class="c" id="rH">—</b></div></div>
+      <div class="sl"><label><span>Velocitat</span><b id="spv">×1</b></label><input type="range" id="spd" min="0" max="5" step="0.1" value="1"></div>
+      <div class="sbox"><p class="h">Activitats del llibre</p><p class="act">6: explica el moviment de rotació de la Terra. 7: per què quan a una meitat de la Terra és de dia, a l'altra és de nit?</p></div>`));
+      P.appendChild(quiz([["Quant dura una volta de rotació?",["Un any","Un dia (24 h)","Un mes"],1],["Què provoca la rotació?",["Les estacions","El dia i la nit","Les fases de la Lluna"],1]])); }
+    if(S==='translacio'){ P.appendChild(html(`<h3>El moviment de translació</h3><p class="lead">L'any i les estacions</p><p class="t">La Terra gira al voltant del Sol. Una volta dura un <b>any</b> (365 dies i 6 hores). Com que la Terra està <b>inclinada</b>, els rajos del Sol arriben diferent a cada hemisferi i això fa les <b>estacions</b>.</p>
+      <div class="hud"><div style="grid-column:1/3"><small>Data</small><b class="c" id="tD">—</b></div><div><small>Hemisferi nord</small><b class="y" id="tN">—</b></div><div><small>Hemisferi sud</small><b class="y" id="tS">—</b></div><div style="grid-column:1/3"><small>Hores de llum a Barcelona</small><b id="tL">—</b></div></div>
+      <div class="sl"><label><span>Mou la Terra al llarg de l'any</span><b id="tDay"></b></label><input type="range" id="tSl" min="0" max="365" step="1"></div>
+      <div class="sl"><label><span>Velocitat</span><b id="spv">×1</b></label><input type="range" id="spd" min="0" max="5" step="0.1" value="1"></div>
+      <div class="sbox"><p class="h">Prova-ho</p><p class="act">Atura la Terra el 21 de juny i el 21 de desembre. Quantes hores de llum hi ha a Barcelona? Per què?</p></div>`));
+      P.appendChild(quiz([["Què provoca les estacions?",["La distància al Sol","La inclinació de la Terra i la translació","La Lluna"],1],["Quan és estiu a l'hemisferi nord, què és a l'hemisferi sud?",["També estiu","Hivern","Primavera"],1]]));
+      setTimeout(()=>{ $('#tSl').oninput=e=>{ paused=true; $('#tPlay').textContent='▶'; trAng=dayToAng(+e.target.value); }; }); }
+    if(S==='lluna'){ P.appendChild(html(`<h3>La Lluna</h3><p class="lead">L'únic satèl·lit natural de la Terra</p><p class="t">La Lluna no té llum pròpia: la veiem perquè reflecteix la llum del Sol. Segons on és, en veiem il·luminada una part o una altra: són les <b>fases</b>.</p>
+      <div class="sbox" style="display:flex;gap:12px;align-items:center"><canvas id="phase" width="120" height="120" style="width:96px;height:96px;flex:none"></canvas><div><small style="color:var(--mu);font-size:11px;letter-spacing:.06em">AIXÍ LA VEIEM DES DE LA TERRA</small><div id="phN" style="font-size:20px;font-weight:600;color:#fff;margin:4px 0">—</div><div id="phD" style="font-size:13px;color:var(--mu)"></div></div></div>
+      <div class="row"><button class="pill" data-ph="0">Nova</button><button class="pill" data-ph="90">Quart creixent</button><button class="pill" data-ph="180">Plena</button><button class="pill" data-ph="270">Quart minvant</button></div>
+      <div class="sl" style="margin-top:6px"><label><span>Velocitat</span><b id="spv">×1</b></label><input type="range" id="spd" min="0" max="5" step="0.1" value="1"></div>
+      <p class="t">La Lluna tarda uns 28 dies a girar sobre si mateixa i a fer la volta a la Terra. Per això sempre en veiem la mateixa cara.</p>
+      <div class="sbox"><p class="h">Activitat del llibre</p><p class="act">8: per què la Lluna brilla a la nit si els satèl·lits no tenen llum pròpia? Investiga: què són els eclipsis i les marees?</p></div>`));
+      P.appendChild(quiz([["Per què brilla la Lluna?",["Té llum pròpia","Reflecteix la llum del Sol","És una estrella"],1],["En quina fase no veiem la Lluna?",["Plena","Nova","Quart creixent"],1]]));
+      setTimeout(()=>document.querySelectorAll('[data-ph]').forEach(b=>b.onclick=()=>{paused=true;$('#tPlay').textContent='▶';llAng=+b.dataset.ph*D2R;})); }
+    if(S==='unic'){ P.appendChild(html(`<h3>La Terra, un planeta únic</h3><p class="lead">L'únic planeta amb vida que coneixem</p><p class="t">La Terra és el tercer planeta més proper al Sol. Té forma esfèrica i està una mica aplatada pels pols. És l'únic planeta on sabem que hi ha vida gràcies a:</p>
+      <div class="sbox"><ul><li>La <b>distància al Sol</b>: no hi fa ni massa calor ni massa fred.</li><li>L'<b>aigua</b>: és imprescindible per a la vida i la substància més abundant del planeta.</li><li>L'<b>atmosfera</b>: la capa de gasos que l'envolta. Regula la temperatura i ens protegeix.</li></ul></div>
+      <div class="row"><button class="pill on" id="uAt">Atmosfera</button></div>`));
+      setTimeout(()=>$('#uAt').onclick=e=>{const on=e.target.classList.toggle('on'); unAtmo.visible=on; unShell.visible=on;}); }
+    setTimeout(()=>{ const s=$('#spd'); if(s){ s.value=speed; $('#spv').textContent='×'+speed; s.oninput=e=>{speed=+e.target.value;$('#spv').textContent='×'+speed;}; } });
+  }
+  if(mode==='climes'){
+    P.appendChild(subtabs([['tipus','🗺️','Climes'],['zones','🌐','Zones'],['futur','🔥','El futur']],sub.climes,k=>{sub.climes=k;applyMode();}));
+    const S=sub.climes;
+    if(S==='tipus'){ P.appendChild(html(`<h3>Els climes de la Terra</h3><p class="lead">Toca un clima o un lloc del globus</p><p class="t">El clima depèn sobretot de la <b>distància a l'equador</b> i de la <b>distància al mar</b>.</p><div class="sbox"><p class="h">Llegenda</p><div class="leg" id="clLeg"></div></div><div class="sbox" id="clBox" style="display:none"></div><p style="font-size:12px;color:var(--mu)">Mapa simplificat per a primària.</p>`));
+      setTimeout(()=>{ const L=$('#clLeg'); for(const [k,C] of Object.entries(CLIM)){ const b=document.createElement('button'); b.dataset.k=k; b.innerHTML=`<i style="background:rgb(${C.c})"></i>${C.n}<em>zona ${C.z}</em>`; b.onclick=()=>selectClimate(selClimate===k?null:k); L.appendChild(b);} if(selClimate) selectClimate(selClimate,true); }); }
+    if(S==='zones'){ P.appendChild(html(`<h3>Les zones climàtiques</h3><p class="lead">Cinc zones segons la distància a l'equador</p>
+      <div class="sbox"><div class="leg"><button><i style="background:rgb(240,90,60)"></i>Zona càlida<em>entre els tròpics</em></button><button><i style="background:rgb(120,200,90)"></i>Zones temperades (2)<em>entre tròpics i cercles polars</em></button><button><i style="background:rgb(120,180,255)"></i>Zones fredes (2)<em>dins dels cercles polars</em></button></div></div>
+      <div class="sbox"><ul><li><b>Zona càlida</b>: climes equatorial, tropical i desèrtic. Temperatures altes, per sobre de 20 °C.</li><li><b>Zones temperades</b>: climes mediterrani, oceànic i continental. Temperatures suaus.</li><li><b>Zones fredes</b>: climes polar i d'alta muntanya. Temperatures molt baixes.</li></ul></div>
+      <div class="sbox"><p class="h">Activitats del llibre</p><p class="act">9: quins factors determinen el clima? 10: compara les tres zones climàtiques.</p></div>`));
+      P.appendChild(quiz([["Quina zona hi ha entre els dos tròpics?",["La zona càlida","Una zona temperada","Una zona freda"],0],["Quantes zones climàtiques hi ha a la Terra?",["Tres","Cinc","Vuit"],1]])); }
+    if(S==='futur'){ P.appendChild(html(`<h3>El futur de la Terra</h3><p class="lead">El canvi climàtic</p><p class="t">Moltes activitats que fem cada dia emeten gasos d'efecte d'hivernacle, sobretot CO<sub>2</sub>. Si se n'acumulen massa, la Terra s'escalfa.</p>
+      <div class="sl"><label><span>Escalfament global</span><b id="wv">+0 °C</b></label><input type="range" id="warm" min="0" max="4" step="0.1" value="${warm}"></div>
+      <div class="sbox"><p class="h">Conseqüències</p><ul><li>El gel dels pols es desfà i el nivell del mar puja.</li><li>Més fenòmens extrems: sequeres, pluges torrencials, onades de calor.</li><li>Pèrdua de biodiversitat.</li><li>Migracions climàtiques.</li></ul></div>
+      <div class="sbox"><p class="h">Què podem fer?</p><ul><li><b>Prevenir</b>: estalviar energia, energies renovables, transport públic, bicicleta…</li><li><b>Pal·liar</b>: infraestructures més segures, restaurar paisatges, depurar l'aigua.</li></ul></div>
+      <div class="sbox"><p class="h">Activitats del llibre</p><p class="act">17, 18 i 19. Repte de la unitat: informe sobre l'augment de les temperatures a Espanya.</p></div>`));
+      setTimeout(()=>{ $('#warm').oninput=e=>{warm=+e.target.value; applyWarm();}; applyWarm(); }); }
+  }
+  if(mode==='paisatges'){
+    P.appendChild(html(`<h3>Els paisatges de la Terra</h3><p class="lead">Toca un punt verd del globus</p><p class="t">Cada clima té un paisatge propi, amb una vegetació, uns animals i una manera de viure diferents.</p><div class="sbox"><div class="leg" id="lpLeg"></div></div><div id="lpBox"></div>
+      <div class="sbox"><p class="h">Activitats del llibre</p><p class="act">12 a 16 i l'activitat 6 de repàs: a quins continents trobem cada paisatge i a quin clima correspon?</p></div>`));
+    setTimeout(()=>{ const L=$('#lpLeg'); LAND_P.forEach(l=>{const b=document.createElement('button'); b.dataset.id=l.id; b.innerHTML=`<span style="font-size:18px">${l.e.split(/(?=[\uD800-\uDBFF])/)[0]}</span>${l.n}<em>${CLIM[l.cl].n.toLowerCase()}</em>`; b.onclick=()=>openLandscape(l.id); L.appendChild(b);}); if(selLand) openLandscape(selLand,true); });
+  }
+}
+/* ---- climes helpers ---- */
+let selClimate=null, warm=0, selLand=null;
+function selectClimate(k,silent){ selClimate=k; globe.material.map=getClimTex('climes',k); globe.material.needsUpdate=true;
+  document.querySelectorAll('#clLeg button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));
+  const box=$('#clBox'); if(!box) return; if(!k){box.style.display='none';return;}
+  const C=CLIM[k]; box.style.display=''; box.innerHTML=`<p class="h">Clima ${C.n.toLowerCase()} · zona ${C.z}</p><p class="t" style="font-size:14px;margin:2px 0"><b>Temperatures:</b> ${C.t}</p><p class="t" style="font-size:14px;margin:2px 0"><b>Precipitacions:</b> ${C.p}</p><p class="h" style="margin-top:8px">Climograma</p>`+climogram(k);
+}
+function globeClick(lon,lat){
+  if(mode==='climes'&&sub.climes==='tipus'){ selectClimate(climateAt(lon,lat)); if($('#clBox')) $('#clBox').scrollIntoView({behavior:'smooth',block:'nearest'}); }
+  else if(mode==='climes'&&sub.climes==='zones'){ const al=Math.abs(lat); showCard({n: al<23.44?'Zona càlida':al<66.56?'Zona temperada':'Zona freda',tipus:'Zona climàtica',f:{'Latitud':Math.abs(lat).toFixed(0)+'° '+(lat>=0?'N':'S')},t: al<23.44?'Entre els tròpics. Climes equatorial, tropical i desèrtic.':al<66.56?'Entre els tròpics i els cercles polars. Climes mediterrani, oceànic i continental.':'Dins dels cercles polars. Clima polar.'}); }
+}
+function applyWarm(){ $('#wv').textContent='+'+warm.toFixed(1).replace('.',',')+' °C'; const k=1-warm/4; iceCap.scale.set(1,1,1); iceCap.geometry.dispose(); iceCap.geometry=new THREE.SphereGeometry(5.025,96,24,0,Math.PI*2,0,Math.max(.5,22*k)*D2R); iceCap.material.opacity=.4+.55*k; }
+function openLandscape(id,silent){ selLand=id; const L=LAND_P.find(x=>x.id===id); document.querySelectorAll('#lpLeg button').forEach(b=>b.classList.toggle('on',b.dataset.id===id)); landPins.forEach(p=>p.el.classList.toggle('on',p.landId===id));
+  const C=CLIM[L.cl], b=$('#lpBox'); if(b) b.innerHTML=`<div class="sbox"><div style="font-size:34px;letter-spacing:6px">${L.e}</div><p class="h" style="margin-top:6px">${L.n} · clima ${C.n.toLowerCase()} · ${L.zona.toLowerCase()}</p><p class="t" style="font-size:14px"><b>On és:</b> ${L.on}</p><p class="t" style="font-size:14px"><b>Vegetació i fauna:</b> ${L.veg}</p><p class="t" style="font-size:14px"><b>Població:</b> ${L.pob}</p><p class="t" style="font-size:14px;color:var(--li)">Saps que…? ${L.c}</p>${L.pisos?pisosSvg():''}<p class="h" style="margin-top:8px">Climograma</p>${climogram(L.cl)}</div>`;
+  if(!silent){ const v=lonLatToVec(L.lon,L.lat,5).applyMatrix4(globe.matrixWorld); flyTo(V3(0,0,0),v.clone().normalize().multiplyScalar(14).add(V3(0,1.5,0))); if(b) b.scrollIntoView({behavior:'smooth',block:'nearest'}); } }
+function pisosSvg(){ return `<p class="h" style="margin-top:8px">Pisos de vegetació</p><svg class="cg" viewBox="0 0 300 130" font-family="Space Grotesk" font-size="11"><polygon points="20,125 150,8 280,125" fill="#3a5a3a"/><polygon points="62,87 150,8 238,87" fill="#6a8a4a"/><polygon points="95,57 150,8 205,57" fill="#a8a070"/><polygon points="122,32 150,8 178,32" fill="#f4f8ff"/>
+ <text x="215" y="112" fill="#e6f1ff">Bosc</text><text x="200" y="80" fill="#e6f1ff">Arbustos i matolls</text><text x="186" y="52" fill="#e6f1ff">Prats</text><text x="172" y="26" fill="#e6f1ff">Neu i roca</text></svg>`; }
+
+/* ================= MODES ================= */
+function applyMode(){
+  Object.values(groups).forEach(g=>g.visible=false); card.classList.remove('show');
+  ROT.visible=TR.visible=LL.visible=UN.visible=false; GX.visible=ST.visible=CN.visible=BB.visible=false;
+  amb.intensity=.35; sunLight.intensity=0; dirLight.intensity=0; controls.enablePan=true; controls.minDistance=.01; controls.maxDistance=600; controls.enableRotate=true;
+  scene.fog=null;
+  if(mode==='univers'){ U.visible=true; const S=sub.univers; GX.visible=S==='galaxia'; ST.visible=S==='estrelles'; CN.visible=S==='constel'; BB.visible=S==='bigbang'; if(S==='bigbang') bbT=0;
+    if(S==='constel'){ controls.minDistance=.01; controls.maxDistance=.02; controls.enablePan=false; } }
+  if(mode==='solar'||mode==='repte'){ SS.visible=true; sunLight.intensity=3; sunLight.position.set(0,0,0); amb.intensity=.25; }
+  if(mode==='terra'){ T.visible=true; const S=sub.terra; ROT.visible=S==='rotacio'; TR.visible=S==='translacio'; LL.visible=S==='lluna'; UN.visible=S==='unic';
+    if(S==='translacio'){ sunLight.intensity=3; sunLight.position.set(0,0,0); amb.intensity=.15; } else { dirLight.intensity=2.8; dirLight.position.set(-30,4,10); amb.intensity=S==='unic'?.6:.12; }
+    if(S==='lluna'){ dirLight.position.set(-60,0,0); } }
+  if(mode==='climes'||mode==='paisatges'){ GL.visible=true; amb.intensity=1.6; dirLight.intensity=1.2; dirLight.position.set(10,8,15);
+    const S=sub.climes; latLines.visible= mode==='climes'; latPins.forEach(p=>p.hidden=mode!=='climes'); iceCap.visible= mode==='climes'&&S==='futur';
+    landPins.forEach(p=>{p.hidden=mode!=='paisatges'; p.obj.visible=mode==='paisatges';});
+    globe.material.map= mode==='paisatges'||S==='futur'? earthTexReal : S==='zones'? getClimTex('zones') : getClimTex('climes',selClimate); globe.material.needsUpdate=true; }
+  renderPanel(); window.__repOpen=mode==='repte'; resize(); homeView(); if(mode==='repte') repMenu(); $('#rep').style.display=mode==='repte'?'block':'none';
+}
+function setMode(m){ if(m!==mode) Vis.fade(); mode=m; document.querySelectorAll('#modes button').forEach(b=>b.classList.toggle('on',b.dataset.m===m)); repReset(); applyMode(); }
+document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+$('#tPlay').onclick=()=>{paused=!paused; $('#tPlay').textContent=paused?'▶':'⏸';};
+$('#tHome').onclick=homeView;
+const dolly=f=>{const d=camera.position.clone().sub(controls.target).multiplyScalar(f); flyTo(controls.target.clone(),controls.target.clone().add(d),.5);};
+$('#tZin').onclick=()=>dolly(.7); $('#tZout').onclick=()=>dolly(1.4);
+$('#pmin').onclick=()=>{const m=$('#panel').classList.toggle('min'); $('#pmin').textContent=m?'▴ Mostra el text':'▾ Amaga el text';};
+
+/* ================= TERRA dynamics ================= */
+const MES=['de gener','de febrer','de març',"d'abril",'de maig','de juny','de juliol',"d'agost",'de setembre',"d'octubre",'de novembre','de desembre'];
+const MD=[31,28,31,30,31,30,31,31,30,31,30,31];
+function dayToDate(d){d=((Math.round(d)%365)+365)%365;let m=0;while(d>=MD[m]){d-=MD[m];m++;}return (d+1)+' '+MES[m];}
+const JUNE=171; /* 21 de juny (dia 0 = 1 de gener) */
+function angToDay(a){ let d=JUNE+(a/(Math.PI*2))*365.25; return ((d%365)+365)%365; }
+function dayToAng(d){ return (d-JUNE)/365.25*Math.PI*2; }
+function seasonN(d){ return d>=79&&d<171?'Primavera':d>=171&&d<265?'Estiu':d>=265&&d<354?'Tardor':'Hivern'; }
+const OPP={Primavera:'Tardor',Estiu:'Hivern',Tardor:'Primavera',Hivern:'Estiu'};
+let rotAng=0;
+function updateTerra(dt){
+  const S=sub.terra;
+  if(S==='rotacio'){ if(!paused) rotAng+=dt*.35*speed; earthR.rotation.y=rotAng;
+    const n=bcn.getWorldPosition(new THREE.Vector3()).normalize(), sd=dirLight.position.clone().normalize(), c=n.dot(sd);
+    const el=$('#rDN'); if(el){ el.textContent=c>0?'☀️ De dia':'🌙 De nit'; const sunLon=Math.atan2(sd.z,sd.x), mLon=Math.atan2(n.z,n.x); let h=12+((sunLon-mLon)/(Math.PI*2))*24; h=((h%24)+24)%24; $('#rH').textContent=String(Math.floor(h)).padStart(2,'0')+':'+String(Math.floor((h%1)*60)).padStart(2,'0'); }
+    const up=new THREE.Vector3(0,6.3,0).applyQuaternion(tilt.quaternion); npPin.pos=up; spPin.pos=up.clone().negate(); npPin.group=T; spPin.group=T; npPin.hidden=spPin.hidden=false; }
+  else { npPin.hidden=spPin.hidden=true; }
+  if(S==='translacio'){ if(!paused) trAng+=dt*.12*speed; trEarthH.position.set(Math.cos(trAng)*trR,0,-Math.sin(trAng)*trR); trEarth.rotation.y+=dt*2*(paused?0:speed);
+    const d=angToDay(trAng); const sN=seasonN(d); const decl=23.44*Math.sin(2*Math.PI*(d-79)/365)*D2R, phi=41.39*D2R; const H=2*Math.acos(Math.max(-1,Math.min(1,-Math.tan(phi)*Math.tan(decl))))/Math.PI*12;
+    if($('#tD')){ $('#tD').textContent=dayToDate(d); $('#tN').textContent=sN; $('#tS').textContent=OPP[sN]; $('#tL').textContent=Math.floor(H)+' h '+Math.round((H%1)*60)+' min'; const sl=$('#tSl'); if(sl&&document.activeElement!==sl) sl.value=Math.round(d); $('#tDay').textContent=''; } }
+  if(S==='lluna'){ if(!paused) llAng+=dt*.25*speed; llMoonH.rotation.y=llAng; llEarth.rotation.y+=paused?0:dt*.6*speed; drawPhase(); }
+  if(S==='unic'){ unEarth.rotation.y+=paused?0:dt*.15*speed; }
+}
+function drawPhase(){ const c=$('#phase'); if(!c) return; const g=c.getContext('2d'), R=54, cx=60, cy=60; g.clearRect(0,0,120,120);
+  /* angle 0 = Lluna entre la Terra i el Sol (nova) */
+  const a=((llAng%(Math.PI*2))+Math.PI*2)%(Math.PI*2); const ph=(a+Math.PI)%(Math.PI*2); /* 0 = nova, π = plena (ajustat a la geometria: el Sol és a -x) */
+  g.fillStyle='#1b2230'; g.beginPath(); g.arc(cx,cy,R,0,Math.PI*2); g.fill();
+  const waxing=ph<Math.PI, k=Math.cos(ph); g.fillStyle='#f0ede4';
+  g.beginPath(); g.arc(cx,cy,R,-Math.PI/2,Math.PI/2,!waxing); g.closePath(); g.fill();
+  g.fillStyle= k>0?'#1b2230':'#f0ede4'; g.beginPath(); g.ellipse(cx,cy,Math.abs(k)*R+.5,R+.5,0,0,Math.PI*2); g.fill();
+  const deg=ph/D2R; const name= deg<22||deg>338?'Lluna nova':deg<68?'Lluna creixent':deg<112?'Quart creixent':deg<158?'Gibosa creixent':deg<202?'Lluna plena':deg<248?'Gibosa minvant':deg<292?'Quart minvant':'Lluna minvant';
+  $('#phN').textContent=name; $('#phD').textContent= name==='Lluna nova'?'Està entre la Terra i el Sol: no la veiem.':name==='Lluna plena'?'La Terra és entre la Lluna i el Sol: en veiem tota la cara.':name.includes('creixent')?'Cada dia en veiem una part més gran.':'Cada dia en veiem una part més petita.'; }
+
+/* ================= REPTE ================= */
+const GAMES={
+ ordre:{ic:'🪐',n:'Ordena els planetes',d:'Toca els planetes en ordre, del més proper al més llunyà del Sol.'},
+ troba:{ic:'🎯',n:'Troba-ho',d:'Et diem un astre i l\'has de tocar al sistema solar.',N:8},
+ clima:{ic:'🌡️',n:'Quin clima és?',d:'Mira el climograma i endevina el clima.',N:8},
+ preguntes:{ic:'❓',n:'Preguntes de la unitat',d:'Univers, Terra, Lluna, climes i paisatges.',N:10}};
+const QS=[["Què és el Sol?",["Un planeta","Una estrella","Un satèl·lit"],1],["Què és la Lluna?",["Un satèl·lit","Un planeta nan","Una estrella"],0],["Quant dura una volta de translació?",["Un dia","Un mes","Un any"],2],["Què provoca el dia i la nit?",["La translació","La rotació","La Lluna"],1],["On és el cinturó d'asteroides?",["Entre Mart i Júpiter","Entre la Terra i Mart","Més enllà de Neptú"],0],["Quin és el planeta més gran?",["Saturn","Júpiter","Neptú"],1],["En quina galàxia vivim?",["Via Làctia","Andròmeda","Orió"],0],["Quin paisatge té girafes, zebres i herbes altes?",["La selva","La sabana","La tundra"],1],["En quin clima hi ha la selva?",["Equatorial","Desèrtic","Mediterrani"],0],["Quin paisatge tenim a Catalunya?",["Oceànic","Mediterrani","Continental"],1],["Què és la tundra?",["Molses i líquens de les zones fredes","Un desert d'arena","Un bosc tropical"],0],["Quina conseqüència té l'escalfament global?",["Es desfà el gel dels pols","La Terra gira més a poc a poc","La Lluna es fa més gran"],0],["Quina fase de la Lluna no es veu?",["Plena","Nova","Quart minvant"],1],["Quines estrelles són més calentes?",["Les vermelles","Les blanques o blaves","Les taronja"],1],["Quina eina representa temperatures i precipitacions?",["Un climograma","Un telescopi","Un mapa polític"],0],["Què és Plutó?",["Un planeta","Un planeta nan","Un cometa"],1]];
+let rState={}; const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const getBest=k=>{try{return parseFloat(localStorage.getItem('medilab_u_'+k))||null;}catch(e){return null;}};
+const setBest=(k,v)=>{try{localStorage.setItem('medilab_u_'+k,String(v));}catch(e){}};
+const RP=document.createElement('aside'); RP.id='rep'; RP.className='glass'; RP.style.cssText='position:fixed;top:84px;left:12px;width:370px;max-height:calc(100% - var(--tb) - 96px);padding:14px 16px;z-index:5;display:none;overflow:auto'; document.body.appendChild(RP);
+if(matchMedia('(max-width:860px)').matches) RP.style.cssText='position:fixed;left:8px;right:8px;bottom:calc(var(--tb) + 8px);max-height:50%;padding:12px;z-index:5;display:none;overflow:auto';
+function repReset(){ rState={}; pins.forEach(p=>{ if(p.group===SS) p.hidden=false; }); }
+function repMenu(){ repReset(); RP.innerHTML='<p class="h">Tria un repte</p>'; for(const [k,g] of Object.entries(GAMES)){ const b=getBest(k); const el=document.createElement('button'); el.className='rc'; el.innerHTML=`<span class="ic">${g.ic}</span><span><b>${g.n}</b><small>${g.d}</small></span><span class="best">${b!=null?'★ '+b.toFixed(1).replace('.',','):''}</span>`; el.onclick=()=>startGame(k); RP.appendChild(el);} }
+function gameUI(){ RP.innerHTML=`<div class="rtop"><button class="mini" id="rExit">← Sortir</button><span id="rProg"></span><b id="rScore"></b></div><div class="rbar"><i id="rBar"></i></div><h3 id="rQ"></h3><p id="rSub"></p><div id="rOpts"></div><p id="rFb"></p><button class="big" id="rNext">Següent →</button>`; $('#rExit').onclick=repMenu; $('#rNext').onclick=()=>nextQ(); }
+function hud(){ const N=rState.qs.length; $('#rProg').textContent=`${Math.min(rState.i+1,N)} / ${N}`; $('#rScore').textContent='★ '+(Math.round(rState.score*10)/10).toString().replace('.',','); $('#rBar').style.width=(rState.i/N*100)+'%'; }
+function fbk(t,ok){const f=$('#rFb'); f.textContent=t; f.className=ok?'ok':'ko';}
+function startGame(g){ rState={g,i:0,score:0}; gameUI();
+  if(g==='ordre'){ rState.qs=[0]; rState.next=0; rState.mist=0; pins.filter(p=>p.group===SS).forEach(p=>p.hidden=true); $('#rQ').textContent='Toca els planetes en ordre'; $('#rSub').textContent='Comença pel més proper al Sol. Pots girar i fer zoom.'; $('#rProg').textContent=''; $('#rOpts').innerHTML='<div id="ordList" style="display:flex;flex-wrap:wrap;gap:6px"></div>';
+    rState.onPick=(o)=>{ const id=o.userData.info&&o.userData.info.id; const want=PL[rState.next]; if(!id||id==='sol'||id==='lluna') return; if(id===want.id){ rState.next++; const s=document.createElement('span'); s.className='pill on'; s.textContent=rState.next+'. '+want.n; $('#ordList').appendChild(s); fbk('Correcte!',true); if(rState.next>=8){ rState.score=Math.max(0,10-rState.mist); rState.onPick=null; finish(10);} } else { rState.mist++; fbk('No és aquest. És '+(o.userData.info.n)+'. Quin va ara?',false);} };
+    $('#rScore').textContent=''; homeView(); return; }
+  if(g==='troba'){ const pool=[SUNINFO,...PL,MOONINFO]; rState.qs=shuf(pool).slice(0,8); pins.filter(p=>p.group===SS).forEach(p=>p.hidden=true); }
+  if(g==='clima'){ rState.qs=shuf(Object.keys(CLIM).concat(shuf(Object.keys(CLIM)))).slice(0,8); }
+  if(g==='preguntes'){ rState.qs=shuf(QS).slice(0,10); }
+  nextQ(); }
+function nextQ(){ $('#rNext').style.display='none'; $('#rFb').textContent=''; const R=rState; if(R.i>=R.qs.length) return finish(R.qs.length); hud(); const q=R.qs[R.i], O=$('#rOpts'); O.innerHTML=''; R.locked=false; R.tries=0;
+  const opt=(i,t,fn)=>{const b=document.createElement('button'); b.innerHTML='<i></i><span></span>'; b.querySelector('i').textContent='ABC'[i]; b.querySelector('span').textContent=t; b.onclick=()=>{ if(!R.locked) fn(b); }; O.appendChild(b); return b;};
+  const done=(ok,right)=>{ R.locked=true; [...O.querySelectorAll('button')].forEach(b=>{ if(b.querySelector('span').textContent===right) b.classList.add('ok'); }); if(ok) R.score++; R.i++; hud(); $('#rNext').style.display='block'; $('#rNext').textContent=R.i>=R.qs.length?'Veure la nota →':'Següent →'; };
+  if(R.g==='troba'){ $('#rQ').innerHTML='Toca: <em></em>'; $('#rQ').querySelector('em').textContent=q.n; $('#rSub').textContent=q.tipus+'. Pots girar i fer zoom.';
+    R.onPick=(o)=>{ if(R.locked) return; const I=o.userData.info; if(!I) return; const ok=(I.id||I.n)===(q.id||q.n); if(ok){ R.score+= R.tries?0.5:1; fbk(R.tries?'Ara sí! Mig punt.':'Molt bé!',true); R.locked=true; R.i++; hud(); $('#rNext').style.display='block'; showCard(q);} else { R.tries++; fbk('Has tocat '+I.n+'. '+(R.tries>=2?'Era aquest:':'Torna-ho a provar.'),false); if(R.tries>=2){ R.locked=true; R.i++; hud(); $('#rNext').style.display='block'; showCard(q);} } }; }
+  if(R.g==='clima'){ $('#rQ').textContent='Quin clima mostra aquest climograma?'; $('#rSub').innerHTML=climogram(q,320).replace(/<p[^>]*>.*<\/p>/,''); const others=shuf(Object.keys(CLIM).filter(k=>k!==q)).slice(0,2); shuf([q,...others]).forEach((k,i)=>opt(i,CLIM[k].n,b=>{const ok=k===q; if(!ok) b.classList.add('ko'); fbk(ok?'Correcte! '+CLIM[q].t:'No. És el clima '+CLIM[q].n.toLowerCase()+'. '+CLIM[q].t,ok); done(ok,CLIM[q].n);})); }
+  if(R.g==='preguntes'){ $('#rQ').textContent=q[0]; $('#rSub').textContent=''; q[1].forEach((t,i)=>opt(i,t,b=>{const ok=i===q[2]; if(!ok) b.classList.add('ko'); fbk(ok?'Correcte!':'No és correcte.',ok); done(ok,q[1][q[2]]);})); }
+}
+function finish(N){ const R=rState; const nota= R.g==='ordre'? Math.max(0,10-R.mist) : Math.round(R.score/N*100)/10; const best=getBest(R.g); if(best==null||nota>best) setBest(R.g,nota); R.onPick=null; pins.forEach(p=>{if(p.group===SS)p.hidden=false;});
+  RP.innerHTML=`<div id="rBig">${nota.toFixed(1).replace('.',',')}<small>de 10</small></div><p style="text-align:center;font-size:17px">${nota>=9?'🏆 Excel·lent! Ets un expert de l\'univers.':nota>=7?'🎉 Molt bé!':nota>=5?'👍 Aprovat!':'💪 Torna-hi, segur que millores!'}</p><p style="text-align:center;color:var(--mu)">${best==null||nota>best?'Nou rècord!':'El teu rècord: '+best.toFixed(1).replace('.',',')}</p><div class="row" style="justify-content:center"><button class="big" id="rA">Torna-hi</button><button class="pill" id="rM">Altres reptes</button></div>`;
+  $('#rA').onclick=()=>startGame(R.g); $('#rM').onclick=repMenu; }
+
+/* ================= HELP ================= */
+function openHelp(t){ $('#help').classList.add('show'); document.querySelectorAll('.htabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t)); document.querySelectorAll('.hpage').forEach(p=>p.style.display=p.dataset.p===t?'':'none'); }
+function closeHelp(){ $('#help').classList.remove('show'); try{localStorage.setItem('medilab_u_seen','1');}catch(e){} }
+$('#helpBtn').onclick=()=>openHelp('com'); $('.htour').onclick=()=>{ closeHelp(); window.__tour&&window.__tour(); }; document.querySelector('.htabs [data-t=res]').addEventListener('click',()=>{ const rp=document.querySelector('.hpage[data-p=res]'); rp.innerHTML=''; rp.appendChild(UX.resultsPanel()); }); document.querySelectorAll('.htabs button').forEach(b=>b.onclick=()=>openHelp(b.dataset.t)); $('.hx').onclick=closeHelp; $('.hgo').onclick=closeHelp;
+$('#help').addEventListener('click',e=>{if(e.target.id==='help')closeHelp();}); addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp();});
+
+/* ================= LOOP ================= */
+let last=performance.now();
+function loop(now){ let dt=Math.min(.05,(now-last)/1000); last=now; if(UX.ST.paused) dt=0;
+  if(fly){ fly.t=Math.min(1,fly.t+dt/fly.dur); const k=1-Math.pow(1-fly.t,3); controls.target.lerpVectors(fly.ft,fly.tt,k); camera.position.lerpVectors(fly.fp,fly.tp,k); if(fly.t>=1) fly=null; }
+  if(mode==='solar'||mode==='repte'){ if(!paused){ for(const p of PL){ const o=ssObjs[p.id]; o.holder.rotation.y+=dt*speed*2.4/Math.sqrt(p.per)*1.4; o.mesh.rotation.y+=dt*speed*.6; } ssObjs.lluna.holder.rotation.y+=dt*speed*1.5; sunMesh.rotation.y+=dt*.05; updateComet(dt); } }
+  if(mode==='univers'){ if(!paused){ if(sub.univers==='galaxia') GX.rotation.y+=dt*.03*speed; if(sub.univers==='estrelles') ST.children.forEach(m=>m.rotation.y+=dt*.2); if(sub.univers==='bigbang') updateBB(dt*speed); } }
+  if(mode==='terra'){ updateTerra(dt); const sd=dirLight.position.clone().normalize(); nightMats.forEach(m=>m.uniforms.sunDir.value.copy(sd)); if(!paused) skinClouds.forEach(c=>c.rotation.y+=dt*.02*speed); }
+  if(mode==='solar'&&!paused){ const s=34+Math.sin(now*.0016)*2.5; corona.scale.set(s,s,1); corona.material.rotation+=dt*.05; }
+  if((mode==='climes'||mode==='paisatges')&&!paused&&!fly&&!controls.state) GL.rotation.y+=dt*.03*speed;
+  controls.update(); renderer.render(scene,camera); updatePins(); }
+renderer.setAnimationLoop(loop);
+applyMode();
+$('#loading').remove();
+let seen=null; try{seen=localStorage.getItem('medilab_u_seen');}catch(e){} if(!seen) openHelp('com');
+UX.boot({prefix:'medilab_u_',items:[{k:SUNINFO.n,n:SUNINFO.n,ic:'☀️'},...PL.map(p=>({k:p.n,n:p.n,ic:'🪐'})),{k:MOONINFO.n,n:MOONINFO.n,ic:'🌙'},...Object.values(MISC).map(m=>({k:m.n,n:m.n,ic:'✨'})),...STARS.map(s=>({k:s.n,n:s.n,ic:'⭐'})),...CONS.map(c=>({k:c.n,n:c.n,ic:'🌌'})),...Object.values(CLIM).map(c=>({k:c.n,n:c.n,ic:'🌡️'}))],title:'Astres i llocs descoberts',reset:()=>setMode('univers'),
+ tour:{intro:'Hola! Aquí tens l\'univers, el sistema solar i la Terra en 3D. En 30 segons et dic com va.',before:[{text:'Anem al Sistema solar. Toca el botó.',at:'#modes [data-m=solar]',done:()=>$('#modes button.on').dataset.m==='solar'}],tap:'Toca un planeta (o el seu nom) per veure la seva fitxa.',drag:'Arrossega per girar. Amb dos dits (o la roda) t\'hi apropes.'}});
+window.__u={cimg:()=>cloudTexU.image.toDataURL(),setMode,sub,applyMode,startGame,selectClimate,openLandscape,camera,controls,ssObjs,llAng:v=>{llAng=v},trAng:v=>{trAng=v},pause:v=>{paused=v}};
+</script>
+</body>
+</html>

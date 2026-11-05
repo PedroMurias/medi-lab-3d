@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Medi·Lab 3D · Els ecosistemes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/*BASECSS*/
+.slots{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0}
+.slot{min-width:72px;padding:6px 8px;border-radius:12px;border:1px dashed var(--mu);text-align:center;font-size:12px;color:var(--mu)}
+.slot b{display:block;font-size:24px;font-weight:400;line-height:1.2}
+.slot.f{border-style:solid;border-color:var(--li);color:#fff;background:rgba(182,255,59,.12)}
+.big2{font-family:Orbitron;font-size:30px;color:var(--li)}
+.ev{font-size:13px;color:#ff8a9c;margin:3px 0}
+.ev.g{color:var(--li)}
+.pin.sp span{font-size:11px}
+.roles{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.roles button{border:1px solid var(--gb);background:rgba(0,0,0,.25);border-radius:10px;padding:6px;font-size:13px;cursor:pointer;text-align:left;display:flex;gap:6px;align-items:center}
+.roles button.on{border-color:var(--cy);background:rgba(0,229,255,.18)}
+.roles i{width:12px;height:12px;border-radius:50%;flex:none}
+#toast{position:fixed;left:50%;top:84px;transform:translate(-50%,-20px);z-index:9;padding:9px 16px;border-radius:14px;background:rgba(10,19,36,.92);border:1px solid var(--li);color:#fff;font-size:15px;opacity:0;transition:.3s;pointer-events:none}
+#follow{position:fixed;left:50%;bottom:calc(var(--tb) + 14px);transform:translate(-50%,20px);display:flex;align-items:center;gap:10px;padding:8px 10px 8px 16px;border-radius:16px;opacity:0;pointer-events:none;transition:.3s;z-index:8;white-space:nowrap}#follow.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}#follow span{font-size:12px;color:var(--ac,#00e5ff);text-transform:uppercase;letter-spacing:.08em}#follow b{font-size:16px}#follow em{font-style:normal;color:var(--li);font-size:14px}#follow button{width:30px;height:30px;border:0;border-radius:50%;font-size:14px;background:rgba(255,255,255,.12);color:#fff;cursor:pointer}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="loading"><i></i>CARREGANT L'ECOSISTEMA…</div>
+<div id="pins"></div>
+<div id="toast"></div>
+<header id="top" class="glass">
+  <div class="logo">MEDI·LAB 3D · ECOSISTEMES<small>Coneixement del Medi · 6è · Unitat 3: «Protegim els ecosistemes»</small></div>
+  <button id="helpBtn" aria-label="Ajuda i guia">?</button>
+</header>
+<nav id="modes">
+  <button data-m="elements" class="on"><span class="e">🌳</span>Ecosistema</button>
+  <button data-m="cadenes"><span class="e">🔗</span>Cadenes</button>
+  <button data-m="relacions"><span class="e">🤝</span>Relacions</button>
+  <button data-m="bio"><span class="e">🦋</span>Biodiversitat</button>
+  <button data-m="clima"><span class="e">🌡️</span>Canvi climàtic</button>
+  <button data-m="repte"><span class="e">🏆</span>Repte</button>
+</nav>
+<aside id="panel" class="glass"><button id="pmin" class="mini">▾ Amaga el text</button><div class="pbody"></div></aside>
+<aside id="rep" class="glass" style="display:none"></aside>
+<div id="follow" class="glass"><span>📷 Seguint</span><b id="fName"></b><em id="fState"></em><button id="fX" aria-label="Deixa de seguir">✕</button></div>
+<nav id="tools" class="glass">
+  <button id="tNames" class="on" title="Noms" aria-label="Mostra o amaga els noms">🏷️</button>
+  <button id="tPlay" title="Atura / continua" aria-label="Atura o continua">⏸</button>
+  <button id="tHome" title="Vista inicial" aria-label="Vista inicial">⟲</button>
+</nav>
+<div id="card" class="glass"><button class="x" aria-label="Tancar">×</button><span class="tag"></span><h2></h2><div class="facts"></div><p class="desc"></p><p class="cur"></p></div>
+
+<div id="help" role="dialog" aria-modal="true" aria-label="Ajuda">
+ <div class="hbox glass">
+  <button class="hx" aria-label="Tancar">×</button>
+  <div class="htabs"><button data-t="com" class="on">Com funciona</button><button data-t="guia">Guia del mestre</button><button data-t="res">Resultats</button></div>
+  <div class="hpage" data-p="com">
+   <h2>Benvinguts al laboratori dels ecosistemes</h2>
+   <p class="hsub">Coneixement del Medi · 6è · Unitat 3: «Protegim els ecosistemes»</p>
+   <div class="hcards">
+    <div class="hc"><svg viewBox="0 0 64 64"><circle cx="32" cy="30" r="16"/><path d="M12 30a20 20 0 0 1 20-20M52 30a20 20 0 0 1-20 20" stroke-dasharray="3 4"/><path d="M26 52l6 6 6-6"/></svg><b>Gira i apropa't</b><p>Arrossega per girar, roda o dos dits per fer zoom. Doble toc: t'hi apropes.</p></div>
+    <div class="hc"><svg viewBox="0 0 64 64"><circle cx="30" cy="30" r="14"/><path d="M38 44l12 12M30 20v10l6 4"/><circle cx="30" cy="30" r="22" stroke-dasharray="2 5"/></svg><b>Toca i descobreix</b><p>Cada cosa amb nom té una fitxa. Les que trobis es guarden a la teva col·lecció de dalt a la dreta.</p></div>
+    <div class="hc"><svg viewBox="0 0 64 64"><rect x="8" y="26" width="48" height="8" rx="4"/><circle cx="24" cy="30" r="7" fill="rgba(0,229,255,.3)"/><path d="M24 44l4 6 4-6M24 16l4-6 4 6"/></svg><b>Fes-ho funcionar</b><p>Tria l'ecosistema a dalt. Toca un animal per seguir-lo. A Cadenes, Relacions, Biodiversitat i Clima hi ha experiments.</p></div>
+    <div class="hc"><svg viewBox="0 0 64 64"><path d="M20 54h24M32 44v10M18 10h28v14a14 14 0 0 1-28 0V10zM18 14h-8a8 8 0 0 0 8 10M46 14h8a8 8 0 0 1-8 10"/><path d="M32 18l2 5 5 .5-4 3.5 1 5-4-2.5-4 2.5 1-5-4-3.5 5-.5z"/></svg><b>Posa't a prova</b><p>Al Repte guanyes estrelles. T'equivoques? Tens una segona oportunitat amb pista.</p></div>
+   </div>
+   <div class="row" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="big htour">▶ Fes la guia de 30 segons</button><span style="color:var(--mu);font-size:13px">Dreceres: <b>1-6</b> seccions · <b>espai</b> pausa · <b>P</b> pissarra · <b>D</b> dibuixa · <b>T</b> amaga text · <b>F</b> pantalla completa</span></div>
+   <button class="hgo">Comença!</button>
+  </div>
+  <div class="hpage" data-p="guia" style="display:none">
+   <h2>Guia per a la classe</h2><p class="hsub" style="color:var(--li)">A la pissarra: toca 👩‍🏫 (a dalt) per tenir text gran, pausa, dibuixar a sobre i pantalla completa. A «Resultats» veuràs les notes dels reptes fets en aquest dispositiu.</p>
+   <p class="hsub">Propostes de 10–15 minuts per apartat i activitats del llibre relacionades.</p>
+   <details open><summary>🌳 Ecosistema</summary><p><b>Objectiu:</b> identificar els elements d'un ecosistema: éssers vius, medi físic i relacions; i els conceptes d'individu, població i comunitat.</p><ol><li>Activa «Medi físic» i enumereu els components inerts.</li><li>Toca un ésser viu: es marquen tots els de la mateixa espècie (població).</li><li>Comenta les adaptacions de cada fitxa.</li></ol><p class="lib">Llibre: activitats 1, 2 i 3 (pàg. 42-43). Solucions activitat 1: camagroc, bosc; formiga, terrestre; escopinya, aquàtic; faig, bosc.</p></details>
+   <details><summary>🔗 Cadenes</summary><p><b>Objectiu:</b> distingir productors i consumidors i construir cadenes alimentàries.</p><ol><li>Que cada alumne construeixi una cadena i la dibuixi (activitat 4).</li><li>Activa «Xarxa alimentària» i comenteu per què els ecosistemes tenen xarxes i no només cadenes.</li></ol></details>
+   <details><summary>🤝 Relacions</summary><p><b>Objectiu:</b> identificar relacions dins de la mateixa espècie i entre espècies diferents.</p><p class="lib">Llibre: activitat 5. Solucions: cocodril-ocell, comensalisme (en algunes versions, mutualisme); formigues d'un formiguer, societat; esbart d'estornells, associació; vaca-mosques, comensalisme.</p></details>
+   <details><summary>🦋 Biodiversitat</summary><p><b>Objectiu:</b> entendre què és l'extinció i per què la desaparició d'una espècie afecta les altres.</p><ol><li>Fes desaparèixer un productor i observa la reacció en cadena.</li><li>Prova les amenaces: incendi, contaminació, caça o pesca excessiva.</li><li>Debat: quines mesures de conservació evitarien cada amenaça?</li></ol><p class="lib">Llibre: activitats 6, 7 i 8 (pàg. 47).</p></details>
+   <details><summary>🌡️ Canvi climàtic i medi ambient</summary><p><b>Objectiu:</b> relacionar la contaminació amb l'efecte d'hivernacle i les seves conseqüències.</p><ol><li>Mou el termòmetre a cada ecosistema i compareu els canvis.</li><li>Interpreteu els senyals dels espais protegits (activitat 9).</li></ol><p class="lib">Llibre: activitats 9 a 13 i el taller «Comprovem la contaminació de l'aire». Reserves de la biosfera a Catalunya: el Montseny i les Terres de l'Ebre.</p></details>
+   <details><summary>🏆 Repte</summary><ul><li>Feu-lo a l'inici i al final de la unitat i compareu la nota.</li><li>Els rècords es guarden a cada tauleta.</li></ul></details>
+  </div>
+  <div class="hpage" data-p="res" style="display:none"></div>
+ </div>
+</div>
+<div id="credit">Models 3D: Quaternius (CC0) i animals low poly fets a mida. Les xarxes alimentàries estan simplificades.</div>
+
+<script>/*KIT*/</script>
+<script>/*ECOASSETS*/</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
+import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
+import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
+const {$,shuf,html,showCard,quiz,subtabs}=Kit; Kit.setPrefix('medilab_eco_');
+/* ================= RENDER ================= */
+const canvas=$('#c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.outputColorSpace=THREE.SRGBColorSpace; renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene(); setTimeout(()=>{ Vis.dust(THREE,scene,180,[40,8,40],{size:3,color:0xfff2b0,y:0}); },0);
+const camera=new THREE.PerspectiveCamera(45,1,0.1,500);
+const controls=new OrbitControls(camera,canvas); controls.enableDamping=true; controls.dampingFactor=.1; controls.rotateSpeed=.55; controls.zoomSpeed=.8; controls.minDistance=5; controls.maxDistance=60; controls.maxPolarAngle=1.5;
+function resize(){renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;
+ if(innerWidth>860) camera.setViewOffset(innerWidth,innerHeight,-190,0,innerWidth,innerHeight); else camera.setViewOffset(innerWidth,innerHeight,0,innerHeight*.2,innerWidth,innerHeight); camera.updateProjectionMatrix();}
+addEventListener('resize',resize); resize();
+const hemi=new THREE.HemisphereLight(0xeaf6ff,0x6a7a4a,1.8); scene.add(hemi);
+const sunL=new THREE.DirectionalLight(0xfff1d8,2.2); sunL.position.set(14,26,10); sunL.castShadow=true; sunL.shadow.mapSize.set(1024,1024); Object.assign(sunL.shadow.camera,{left:-18,right:18,top:18,bottom:-18,near:1,far:70}); sunL.shadow.bias=-.0005; scene.add(sunL);
+const M=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.9,metalness:0},o));
+function rnd(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296;};}
+/* emoji → sprite */
+const emoTex={};
+function emoji(e){ if(emoTex[e]) return emoTex[e]; const c=document.createElement('canvas'); c.width=c.height=128; const g=c.getContext('2d'); g.font='100px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(e,64,70); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; emoTex[e]=t; return t; }
+
+/*CRITTERS*/
+/* ================= DADES ================= */
+const ROLE={prod:['Productor','#7dffb2'],c1:['Consumidor primari (herbívor)','#ffd23f'],c2:['Consumidor secundari (carnívor)','#ff8a5c'],c3:['Consumidor terciari','#ff3b5c'],desc:['Descomponedor','#c08bff']};
+const ECOS={
+ bosc:{n:'Bosc mediterrani',medi:'terrestre',e:'🌳',sky:0x8fc6ee,fis:['☀️ Llum del Sol','🌡️ Temperatura suau','💧 Aigua de pluja i del rierol','🪨 Roques','🟫 Sòl ric en fulles','💨 Aire'],
+  sp:{alzina:{n:'Alzina',e:'🌳',r:'prod',k:0,ad:"Té fulles petites i dures que no perden aigua a l'estiu.",tree:'alzina'},pi:{n:'Pi',e:'🌲',r:'prod',k:0,ad:"Les seves fulles en forma d'agulla aguanten la sequera.",tree:'pi'},herba:{n:'Herbes i matolls',e:'🌿',r:'prod',k:7,ad:'Romaní, farigola i estepes aguanten la calor i la sequera.'},
+   cervol:{n:'Cérvol',e:'🦌',r:'c1',k:2,eats:['herba'],ad:'Les seves potes llargues li permeten córrer molt de pressa per fugir.'},eruga:{n:'Eruga',e:'🐛',r:'c1',k:4,eats:['alzina'],ad:'El seu color verd la fa passar desapercebuda entre les fulles.'},conill:{n:'Conill',e:'🐇',r:'c1',k:5,eats:['herba'],ad:'Les orelles llargues l\'ajuden a sentir els depredadors.'},esquirol:{n:'Esquirol',e:'🐿️',r:'c1',k:3,eats:['pi','alzina'],ad:'Amb la cua s\'equilibra quan salta d\'arbre en arbre.'},senglar:{n:'Senglar',e:'🐗',r:'c1',k:3,eats:['alzina','herba','bolet'],ad:'Remena la terra amb el morro per buscar arrels, glans i bolets.'},
+   formiga:{n:'Formiga',e:'🐜',r:'c1',k:6,eats:['herba','alzina'],ad:'Viuen en societat: cada formiga té una feina al formiguer.'},ocell:{n:'Mallerenga',e:'🐦',r:'c2',k:4,eats:['eruga','formiga'],ad:'El bec petit i punxegut li serveix per caçar insectes.'},serp:{n:'Serp',e:'🐍',r:'c2',k:2,eats:['conill','ocell'],ad:"Nota la calor de les preses i s'empassa animals sencers."},
+   guineu:{n:'Guineu',e:'🦊',r:'c2',k:2,eats:['conill','ocell','esquirol'],ad:'Té molt bon olfacte i oïda per caçar de nit.'},llop:{n:'Llop',e:'🐺',r:'c3',k:1,eats:['cervol','senglar','conill','guineu'],ad:'Caça en grup i pot recórrer molts quilòmetres seguint les preses.'},aguila:{n:'Àguila',e:'🦅',r:'c3',k:1,eats:['serp','conill','guineu','esquirol'],ad:'Veu les preses des de molt amunt i les agafa amb les urpes.'},
+   bolet:{n:'Bolets (fongs)',e:'🍄',r:'desc',k:5,ad:'Els fongs descomponen les fulles i restes i enriqueixen el sòl.'},cuc:{n:'Cuc de terra',e:'🪱',r:'desc',k:4,ad:'Remou la terra i la fa més fèrtil.'}}},
+ bassa:{n:'Bassa i aiguamoll',medi:'aquàtic i terrestre',e:'🪷',sky:0x9fd2f0,fis:['☀️ Llum del Sol','💧 Aigua dolça','🟫 Fang del fons','🪨 Pedres','💨 Aire','🌡️ Temperatura'],
+  sp:{algues:{n:'Algues',e:'🌱',r:'prod',k:6,aq:1,ad:'Viuen dins de l\'aigua i fan la fotosíntesi.'},canyis:{n:'Canyís',e:'🌾',r:'prod',k:7,shore:1,ad:'Les arrels creixen dins del fang humit.'},nenufar:{n:'Nenúfar',e:'🪷',r:'prod',k:4,surf:1,ad:'Les fulles suren per rebre la llum del Sol.'},
+   mosquit:{n:'Mosquit',e:'🦟',r:'c1',k:5,eats:['algues'],air:1,ad:'Les larves viuen dins l\'aigua i es mengen algues.'},cargol:{n:'Cargol d\'aigua',e:'🐌',r:'c1',k:4,eats:['algues','nenufar'],ad:'Rasca les algues de les pedres.'},peix:{n:'Peix petit',e:'🐟',r:'c1',k:6,aq:1,eats:['algues'],ad:'Té brànquies per respirar dins l\'aigua i aletes per nedar.'},anec:{n:'Ànec',e:'🦆',r:'c1',k:3,surf:1,eats:['algues','canyis','nenufar'],ad:'Té potes palmades per nedar.'},
+   granota:{n:'Granota',e:'🐸',r:'c2',k:4,shore:1,eats:['mosquit','cargol'],ad:'Viu dins i fora de l\'aigua. Té potes palmades i una llengua enganxosa.'},flamenc:{n:'Flamenc',e:'🦩',r:'c2',k:2,shore:1,eats:['cargol','algues'],ad:'Filtra l\'aigua amb el bec per menjar petits animals.'},
+   serp:{n:"Serp d'aigua",e:'🐍',r:'c3',k:2,shore:1,eats:['granota','peix'],ad:'Neda molt bé i caça granotes i peixos.'},llodriga:{n:'Llúdriga',e:'🦦',r:'c3',k:1,shore:1,eats:['peix','granota'],ad:'Té potes palmades i un pelatge que no deixa passar l\'aigua.'},
+   bacteri:{n:'Bacteris',e:'🦠',r:'desc',k:4,aq:1,ad:'Descomponen les restes del fons de la bassa.'}}},
+ mar:{n:'Mar Mediterrani',medi:'aquàtic',e:'🌊',sky:0x0d4f7a,fis:['💧 Aigua salada','☀️ Llum (només a prop de la superfície)','🏖️ Fons de sorra','🪨 Roques','🌡️ Temperatura de l\'aigua'],
+  sp:{posidonia:{n:'Posidònia',e:'🌿',r:'prod',k:8,floor:1,ad:'És una planta marina (no una alga!) que forma prats al fons i protegeix moltes espècies.'},algues:{n:'Algues',e:'🌱',r:'prod',k:6,floor:1,ad:'Viuen enganxades a les roques on arriba la llum.'},
+   escopinya:{n:'Escopinya',e:'🐚',r:'c1',k:4,floor:1,eats:['algues'],ad:'Té una closca dura que la protegeix. Filtra l\'aigua per alimentar-se.'},peix:{n:'Peix petit',e:'🐟',r:'c1',k:8,eats:['algues','posidonia'],school:1,ad:'Neda en bancs per confondre els depredadors.'},medusa:{n:'Medusa',e:'🪼',r:'c1',k:3,eats:['algues'],ad:'El seu cos és gairebé tot aigua i pica per defensar-se.'},
+   cranc:{n:'Cranc',e:'🦀',r:'c2',k:3,floor:1,eats:['escopinya'],ad:'Les pinces li serveixen per obrir closques.'},pop:{n:'Pop',e:'🐙',r:'c2',k:2,floor:1,eats:['cranc','escopinya'],ad:'Canvia de color per amagar-se.'},tortuga:{n:'Tortuga marina',e:'🐢',r:'c2',k:2,eats:['medusa'],ad:'Té aletes en lloc de potes i surt a respirar.'},peixgran:{n:'Tonyina',e:'🐠',r:'c2',k:3,eats:['peix'],ad:'Neda molt ràpid gràcies a la forma del cos.'},
+   dofi:{n:'Dofí',e:'🐬',r:'c3',k:2,eats:['peix','pop','peixgran'],ad:'És un mamífer: respira aire per un forat al cap.'},tauro:{n:'Tauró',e:'🦈',r:'c3',k:1,eats:['peixgran','tortuga','pop'],ad:'Té moltes fileres de dents i un gran olfacte.'}}}
+};
+const REL=[
+ {k:'mut',n:'Mutualisme',c:'#b6ff3b',t:"Els dos éssers vius es beneficien.",ex:"El pugó fa un líquid dolç que mengen les formigues, i les formigues el defensen dels depredadors.",e:'🐜🤝🪲'},
+ {k:'com',n:'Comensalisme',c:'#00e5ff',t:"Només una espècie en treu benefici, sense molestar l'altra.",ex:"Les rèmores acompanyen els taurons i es mengen les restes del seu menjar.",e:'🦈🐟'},
+ {k:'par',n:'Parasitisme',c:'#ff3b5c',t:"Un ésser viu en treu benefici i l'altre en surt perjudicat.",ex:"Les puces s'alimenten de la sang dels animals i els fan picor i ferides.",e:'🐕🦟'},
+ {k:'cmp',n:'Competència',c:'#ff8a5c',t:"Dues espècies necessiten el mateix i totes dues en surten perjudicades.",ex:"Les plantes que creixen molt juntes competeixen per la llum del Sol.",e:'🌳☀️🌲'},
+ {k:'fam',n:'Grups familiars',c:'#ffd23f',t:"Animals de la mateixa espècie i de la mateixa família.",ex:"Un senglar amb els seus garrins.",e:'🐗🐗🐗',same:1},
+ {k:'asso',n:'Associacions',c:'#c08bff',t:"Grups temporals per defensar-se, alimentar-se o desplaçar-se.",ex:"Els bancs de peixos o els esbarts d'estornells.",e:'🐟🐟🐟',same:1},
+ {k:'soc',n:'Societats',c:'#7dffb2',t:"Grups on cada individu té una feina.",ex:"Les formigues i les abelles.",e:'🐜🐜🐝',same:1}];
+
+/* ================= ESCENA ================= */
+let eco='bosc', world=null, beings=[], alive=new Set(), selSp=null, showNames=true, paused=false, warm=0;
+const pins=[];
+function clearWorld(){ if(world){ scene.remove(world); world.traverse(o=>{if(o.geometry)o.geometry.dispose();}); } pins.forEach(p=>p.el.remove()); pins.length=0; beings=[]; }
+function addPin(obj,txt,col,onclick,off=1.1,cls=''){ const b=document.createElement('button'); b.className='pin '+cls; b.style.setProperty('--c',col); b.innerHTML='<i></i><span></span>'; b.querySelector('span').textContent=txt; if(onclick) b.onclick=e=>{e.stopPropagation();onclick();}; else b.style.pointerEvents='none'; $('#pins').appendChild(b); const p={el:b,obj,off}; pins.push(p); return p; }
+let water=null, ground=null, fireG=null, trees=[];
+function treeMesh(kind,R){ const g=new THREE.Group(); const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.15,.25,1.6,7),M(0x6b4a2b)); trunk.position.y=.8; g.add(trunk);
+ if(kind==='pi'){ for(let i=0;i<3;i++){const c=new THREE.Mesh(new THREE.ConeGeometry(1.1-i*.25,1.3,8),M(0x2f6b3a));c.position.y=1.8+i*.7;g.add(c);} }
+ else { for(let i=0;i<3;i++){const s=new THREE.Mesh(new THREE.IcosahedronGeometry(.9+R()*.3,1),M(0x3f7a35));s.position.set((R()-.5)*.8,2.1+R()*.5,(R()-.5)*.8);g.add(s);} }
+ g.userData.kind=kind; return g; }
+function makeBeing(id,s,R,at){ const v=vis(id); let o,mixer=null,acts=null,critter=false,h=1;
+ if(v.plant){ o=modelInst(v.plant[Math.floor(R()*v.plant.length)],v.h*(.8+R()*.5)).o; h=v.h; }
+ else if(v.m){ const m=modelInst(v.m,v.h,v.len); o=m.o; mixer=m.mixer; acts=m.acts; h=v.len?.4:v.h; if(v.s){ const k=v.s*(.8+R()*.5); o.scale.setScalar(k); } }
+ else { const g=cubeCritter(id); g.scale.setScalar(v.k); o=new THREE.Group(); o.add(g); critter=true; h=id==='aguila'?1:id==='serp'?.4:id==='flamenc'?1.4:id==='canyis'?1.5:.6*v.k; }
+ const p=at||habPt(v.hab||'land'); o.position.copy(p); o.rotation.y=R()*6.28; world.add(o);
+ const b={id,sp:s,v,obj:o,home:o.position.clone(),ph:R()*6.28,mixer,acts,critter,pinOff:h+.5,mover:!v.st,amph:!!v.amph,hab:v.hab||'land'};
+ o.traverse(m=>{ if(m.isMesh){ m.userData.being=b; m.castShadow=true; } }); beings.push(b); if(b.mover) initBehav(b); else { b.state='idle'; if(mixer){ setAnim(b,'idle'); } } if(id==='eruga'){ b.lift=0; } return b; }
+function addClouds(R,n,col){ for(let i=0;i<n;i++){ const c=new THREE.Group(); for(let k=0;k<4;k++){ const m=new THREE.Mesh(new THREE.IcosahedronGeometry(1+R()*.8,1),new THREE.MeshStandardMaterial({color:col||0xffffff,roughness:1,flatShading:true})); m.position.set(k*1.3-2,R()*.5,R()*.8); c.add(m);} const a=R()*6.28; c.position.set(Math.cos(a)*22,14+R()*5,Math.sin(a)*22); c.userData.cloud=a; world.add(c); clouds.push(c);} }
+function scatter(R,list,dmin,dmax,yfn){ for(const [nm,h,n] of list) for(let i=0;i<n;i++){ if(!MODELS[nm]) continue; const o=modelInst(nm,h*(.8+R()*.5)).o; const a=R()*6.28,d=dmin+R()*(dmax-dmin), x=Math.cos(a)*d, z=Math.sin(a)*d; o.position.set(x,yfn?yfn(x,z):groundY(x,z),z); o.rotation.y=R()*6.28; world.add(o);} }
+function waveWater(r,seg,y,col,op){ const g=new THREE.CircleGeometry(r,seg,0,Math.PI*2); g.rotateX(-Math.PI/2); const m=new THREE.Mesh(g,new THREE.MeshStandardMaterial({color:col,transparent:true,opacity:op,roughness:.15,metalness:.1,flatShading:true,side:THREE.DoubleSide})); m.position.y=y; m.userData.wave=g.attributes.position.array.slice(); return m; }
+function causticTex(){ const cv=document.createElement('canvas'); cv.width=cv.height=256; const x=cv.getContext('2d'); x.fillStyle='#000'; x.fillRect(0,0,256,256); x.strokeStyle='rgba(200,240,255,.9)'; x.lineWidth=3; for(let i=0;i<40;i++){ x.beginPath(); let px=Math.random()*256,py=Math.random()*256; x.moveTo(px,py); for(let k=0;k<4;k++){ px+=(Math.random()-.5)*90; py+=(Math.random()-.5)*90; x.quadraticCurveTo(px+(Math.random()-.5)*40,py+(Math.random()-.5)*40,px,py);} x.stroke(); } const t=new THREE.CanvasTexture(cv); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(4,4); return t; }
+function coral(R,col){ const g=new THREE.Group(); const m=new THREE.MeshStandardMaterial({color:col,roughness:.8,flatShading:true}); const br=(p,len,r,d)=>{ const c=new THREE.Mesh(new THREE.CylinderGeometry(r*.7,r,len,5),m); c.position.y=len/2; p.add(c); if(d<3) for(let i=0;i<2;i++){ const q=new THREE.Group(); q.position.y=len; q.rotation.set((R()-.5)*1.2,R()*6,(R()-.5)*1.2); p.add(q); br(q,len*.75,r*.7,d+1);} else { const t=new THREE.Mesh(new THREE.IcosahedronGeometry(r*1.3,0),m); t.position.y=len; p.add(t);} }; br(g,.5,.09,0); return g; }
+let waterFx=[], caust=null, bubbles=null, snow=null;
+function buildWorld(){ if(typeof unfollow==='function') unfollow(); clearWorld(); toastT=0; $('#toast')&&$('#toast').classList.remove('show'); chain=[]; clouds=[]; puffs=[]; const E=ECOS[eco], R=rnd(eco.length*31+7); world=new THREE.Group(); scene.add(world); trees=[]; alive=new Set(Object.keys(E.sp)); selSp=null;
+ scene.background=new THREE.Color(E.sky); scene.fog=eco==='mar'?new THREE.Fog(0x0d4f7a,8,45):new THREE.Fog(E.sky,40,90);
+ hemi.intensity=eco==='mar'?1.1:1.5; sunL.intensity=eco==='mar'?1.2:2.2;
+ /* terra */
+ const gg=new THREE.CircleGeometry(16,64); gg.rotateX(-Math.PI/2); const p=gg.attributes.position; for(let i=0;i<p.count;i++){const x=p.getX(i),z=p.getZ(i),d=Math.hypot(x,z); let y=(Math.sin(x*.5)+Math.cos(z*.4))*.15; if(eco==='bassa'&&d<6.5) y-=1.2*(1-d/6.5); if(eco==='mar') y=(Math.sin(x*.3)*Math.cos(z*.35))*.5; p.setY(i,y);} gg.computeVertexNormals();
+ ground=new THREE.Mesh(gg,M(eco==='mar'?0xd8c48f:eco==='bosc'?0x7fb04f:0x6f8f45)); ground.receiveShadow=true; ground.userData.ground=1; world.add(ground);
+ const base=new THREE.Mesh(new THREE.CylinderGeometry(16,15,2.5,64,1,true),M(eco==='mar'?0xa89060:0x5a4330,{side:THREE.DoubleSide})); base.position.y=-1.3; world.add(base);
+ water=null;
+ waterFx=[]; caust=null; bubbles=null; snow=null;
+ if(eco==='bassa'){ water=waveWater(6.6,40,-.12,0x3a8fc0,.72); world.add(water);
+  if(MODELS.__ok){ for(let i=0;i<6;i++){ const t=modelInst('Willow_1',4.2).o; const a=i/6*6.28+R()*.5,d=9.5+R()*4; t.position.set(Math.cos(a)*d,groundY(Math.cos(a)*d,Math.sin(a)*d),Math.sin(a)*d); t.scale.multiplyScalar(.85+R()*.4); t.rotation.y=R()*6; world.add(t);} 
+   for(let i=0;i<4;i++){ const t=modelInst('CommonTree_'+(1+i%3),3.6).o; const a=i/4*6.28+1.2+R()*.4,d=12+R()*2.5; t.position.set(Math.cos(a)*d,groundY(Math.cos(a)*d,Math.sin(a)*d),Math.sin(a)*d); world.add(t);} 
+   scatter(R,[['Rock_Moss_1',.6,5],['Rock_Moss_2',.5,4],['Grass',.5,45],['Flowers',.45,14],['Plant_1',.5,8],['Plant_3',.6,6]],6.7,14.5);
+   scatter(R,[['Rock_1',.35,6],['Rock_2',.3,6]],1,5.5,(x,z)=>groundY(x,z)); }
+  addClouds(R,5); }
+ if(eco==='mar'){ water=waveWater(16,48,9,0x7fd0f5,.45); world.add(water);
+  if(MODELS.__ok) scatter(R,[['Rock_1',1.6,7],['Rock_2',1.3,6],['Rock_Moss_1',1.1,5],['Rock_Moss_2',1,4]],3,14.5,(x,z)=>groundY(x,z)-.2);
+  else for(let i=0;i<8;i++){const r=new THREE.Mesh(new THREE.DodecahedronGeometry(.8+R()*1.2,0),M(0x7d7468));const a=R()*6.28,d=4+R()*9;r.position.set(Math.cos(a)*d,.3,Math.sin(a)*d);world.add(r);}
+  const cc=[0xff7a7a,0xffa94d,0xf06fb0,0xffd36a,0xb68cff]; for(let i=0;i<16;i++){ const co=coral(R,cc[i%cc.length]); const a=R()*6.28,d=3+R()*11; co.position.set(Math.cos(a)*d,groundY(Math.cos(a)*d,Math.sin(a)*d)-.05,Math.sin(a)*d); co.scale.setScalar(.8+R()*.9); world.add(co); }
+  caust=new THREE.Mesh(new THREE.PlaneGeometry(32,32,24,24),new THREE.MeshBasicMaterial({map:causticTex(),transparent:true,opacity:.22,blending:THREE.AdditiveBlending,depthWrite:false})); caust.rotation.x=-Math.PI/2; { const pp=caust.geometry.attributes.position; for(let i=0;i<pp.count;i++){ const x=pp.getX(i), y=pp.getY(i); pp.setZ(i,groundY(x,-y)+.06);} } world.add(caust);
+  for(let i=0;i<6;i++){ const sh=new THREE.Mesh(new THREE.CylinderGeometry(.6,2.2,11,12,1,true),new THREE.MeshBasicMaterial({color:0xbfeaff,transparent:true,opacity:.06,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide})); const a=R()*6.28,d=2+R()*9; sh.position.set(Math.cos(a)*d,4.2,Math.sin(a)*d); sh.rotation.z=.25; sh.userData.ph=R()*6; world.add(sh); waterFx.push(sh); }
+  const nb=120, bp=new Float32Array(nb*3); bubbles=new THREE.Points(new THREE.BufferGeometry(),new THREE.PointsMaterial({color:0xe6f8ff,size:.14,transparent:true,opacity:.75,depthWrite:false})); bubbles.geometry.setAttribute('position',new THREE.BufferAttribute(bp,3)); bubbles.userData.seed=Array.from({length:nb},()=>[(Math.random()-.5)*22,(Math.random()-.5)*22,Math.random()*9,.6+Math.random()*1.2]); world.add(bubbles);
+  const ns=300, spp=new Float32Array(ns*3); for(let i=0;i<ns;i++){ spp[i*3]=(Math.random()-.5)*30; spp[i*3+1]=Math.random()*9; spp[i*3+2]=(Math.random()-.5)*30; } snow=new THREE.Points(new THREE.BufferGeometry(),new THREE.PointsMaterial({color:0xffffff,size:.05,transparent:true,opacity:.5,depthWrite:false})); snow.geometry.setAttribute('position',new THREE.BufferAttribute(spp,3)); world.add(snow); }
+ if(eco==='bosc'){ for(let i=0;i<11;i++){const kind=i%2?'pi':'alzina';const t=MODELS.__ok?modelInst((kind==='pi'?'PineTree_':'CommonTree_')+(1+i%3),kind==='pi'?4.3:3.6).o:treeMesh(kind,R);const a=i/11*6.28+R()*.4,d=9+R()*5;t.position.set(Math.cos(a)*d,0,Math.sin(a)*d);t.scale.setScalar(.9+R()*.6);t.userData.sp=kind;world.add(t);trees.push(t);}
+  if(MODELS.__ok){ const deco=[['Rock_Moss_1',.8,5],['Rock_Moss_2',.7,4],['Grass',.5,40],['Flowers',.45,18],['TreeStump_Moss',.6,3]]; for(const [nm,h,n] of deco) for(let i=0;i<n;i++){ const o=modelInst(nm,h*(.8+R()*.5)).o; const a=R()*6.28,d=1+R()*14; o.position.set(Math.cos(a)*d,groundY(Math.cos(a)*d,Math.sin(a)*d),Math.sin(a)*d); o.rotation.y=R()*6.28; world.add(o);} }
+  else for(let i=0;i<6;i++){const r=new THREE.Mesh(new THREE.DodecahedronGeometry(.5+R()*.6,0),M(0x8a857c));const a=R()*6.28,d=2+R()*12;r.position.set(Math.cos(a)*d,.2,Math.sin(a)*d);world.add(r);}
+  for(let i=0;i<5;i++){ const c=new THREE.Group(); for(let k=0;k<4;k++){ const m=new THREE.Mesh(new THREE.SphereGeometry(1+R()*.8,12,10),new THREE.MeshStandardMaterial({color:0xffffff,roughness:1})); m.position.set(k*1.3-2,R()*.5,R()*.8); c.add(m);} const a=R()*6.28; c.position.set(Math.cos(a)*22,14+R()*5,Math.sin(a)*22); c.userData.cloud=a; world.add(c); clouds.push(c);} 
+  const brook=new THREE.Mesh(new THREE.PlaneGeometry(1.4,32),new THREE.MeshStandardMaterial({color:0x3a86c0,roughness:.2,transparent:true,opacity:.8})); brook.rotation.x=-Math.PI/2; brook.rotation.z=.6; brook.position.y=.12; world.add(brook); }
+ /* éssers vius */
+ for(const [id,s] of Object.entries(E.sp)){ if(s.tree){ trees.filter(t=>t.userData.sp===id).forEach((t,i)=>{ const b={id,sp:s,obj:t,home:t.position.clone(),ph:R()*6}; beings.push(b); t.traverse(o=>{if(o.isMesh)o.userData.being=b;}); if(i===0) b.pin=addPin(t,s.n,ROLE[s.r][1],()=>spClick(id),3.6,'sp'); }); continue; }
+  if(MODELS.__ok&&vis(id)){ for(let i=0;i<s.k;i++){ const b=makeBeing(id,s,R); if(i===0) b.pin=addPin(b.obj,s.n,ROLE[s.r][1],()=>spClick(id),b.pinOff,'sp'); } continue; }
+  const sx=s.school?.9:1.25; for(let i=0;i<s.k;i++){ const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:emoji(s.e),transparent:true,depthWrite:false})); spr.scale.setScalar(sx*(s.r==='c3'?1.5:s.r==='prod'?1.2:1));
+   let x,y,z,a=R()*6.28,d;
+   if(eco==='bassa'){ if(s.aq){d=R()*5.5;y=-.7+R()*.4;} else if(s.surf){d=R()*5.5;y=0;} else if(s.shore){d=6.2+R()*2.5;y=.5;} else if(s.air){d=R()*7;y=1.5+R()*1.5;} else {d=7+R()*6;y=.5;} }
+   else if(eco==='mar'){ d=1+R()*12; y=s.floor?.4+R()*.3:1.5+R()*6; if(s.school){ const c=(R()-.5)*2; a=1.0+c*.4; d=7+R()*2; y=4+R()*1.5; } }
+   else { d=1.5+R()*12; y=s.r==='desc'?.35:id==='ocell'||id==='aguila'?3.5+R()*3:id==='esquirol'||id==='eruga'?1.5+R()*1.5:.6; if(id==='aguila') y=7; }
+   x=Math.cos(a)*d; z=Math.sin(a)*d; spr.position.set(x,y+spr.scale.y*.35,z); world.add(spr);
+   const b={id,sp:s,obj:spr,home:spr.position.clone(),ph:R()*6.28,fly:id==='ocell'||id==='aguila'||id==='mosquit'||(eco==='mar'&&!s.floor)}; spr.userData.being=b; beings.push(b);
+   if(i===0) b.pin=addPin(spr,s.n,ROLE[s.r][1],()=>spClick(id),.9,'sp'); } }
+ /* medi físic */
+ fisPins=E.fis.map((t,i)=>{ const o=new THREE.Object3D(); const a=i/E.fis.length*6.28+.3; o.position.set(Math.cos(a)*9,eco==='mar'?7:(t.includes('Llum')?8:t.includes('Aire')?5:1),Math.sin(a)*9); world.add(o); const p=addPin(o,t,'#9fe7ff',null,0,'fis'); p.fis=1; return p; });
+ webLines=new THREE.Group(); world.add(webLines);
+ fireG=null; applyWarm(); }
+let fisPins=[], webLines=null, showFis=false, showWeb=false, clouds=[];
+const tv=new THREE.Vector3();
+function updatePins(){ for(const p of pins){ let vis=showNames&&!p.hidden; if(p.fis) vis=showFis&&!p.hidden; if(vis&&p.obj){ let o=p.obj; while(o){ if(!o.visible){vis=false;break;} o=o.parent; } } if(vis){ p.obj.getWorldPosition(tv); tv.y+=p.off; tv.project(camera); vis=tv.z<1&&Math.abs(tv.x)<1.05&&Math.abs(tv.y)<1.05; if(vis) p.el.style.transform=`translate(${(tv.x*.5+.5)*innerWidth-5}px,${(-tv.y*.5+.5)*innerHeight-5}px)`; } p.el.classList.toggle('hide',!vis); } }
+
+/* ================= XARXA ================= */
+const sp=id=>ECOS[eco].sp[id];
+const predsOf=id=>Object.keys(ECOS[eco].sp).filter(k=>(sp(k).eats||[]).includes(id));
+function firstOf(id){ return beings.find(b=>b.id===id&&b.obj.visible); }
+function arrow(a,b,col){ const pa=a.obj.getWorldPosition(new THREE.Vector3()), pb=b.obj.getWorldPosition(new THREE.Vector3()); if(a.sp.tree) pa.y+=2.5; if(b.sp.tree) pb.y+=2.5; world.worldToLocal(pa); world.worldToLocal(pb);
+ const dir=pb.clone().sub(pa); const len=dir.length(); const g=new THREE.Group(); const line=new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,len-1.2,6),new THREE.MeshBasicMaterial({color:col})); line.position.y=(len-1.2)/2+.5; g.add(line);
+ const head=new THREE.Mesh(new THREE.ConeGeometry(.22,.5,10),new THREE.MeshBasicMaterial({color:col})); head.position.y=len-.6; g.add(head); g.position.copy(pa); g.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()); webLines.add(g); }
+function drawWeb(){ if(!webLines) return; webLines.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose();}); webLines.clear(); const E=ECOS[eco].sp;
+ if(mode==='cadenes'&&chain.length>1){ for(let i=0;i<chain.length-1;i++){ const a=firstOf(chain[i]),b=firstOf(chain[i+1]); if(a&&b) arrow(a,b,'#b6ff3b'); } return; }
+ const list=[]; for(const [id,s] of Object.entries(E)) if(alive.has(id)) for(const pr of (s.eats||[])) if(alive.has(pr)) list.push([pr,id]);
+ for(const [pr,id] of list){ if(!(showWeb||(selSp&&(pr===selSp||id===selSp)))) continue; const a=firstOf(pr),b=firstOf(id); if(a&&b) arrow(a,b,selSp?(id===selSp?'#ff8a5c':'#b6ff3b'):ROLE[E[id].r][1]); } }
+
+/* ================= INTERACCIÓ ================= */
+let mode='elements';
+function spCard(id){ const s=sp(id); const pr=predsOf(id).filter(k=>alive.has(k));
+ showCard({n:s.n,tipus:ROLE[s.r][0],f:{'Ecosistema':ECOS[eco].n,'Medi':s.aq||eco==='mar'?'aquàtic':s.shore||s.surf?'aquàtic i terrestre':'terrestre','Menja':s.r==='prod'?'fabrica el seu aliment (fotosíntesi)':s.r==='desc'?'restes d\'éssers vius':(s.eats||[]).map(k=>sp(k).n.toLowerCase()).join(', '),'Se\'l mengen':pr.length?pr.map(k=>sp(k).n.toLowerCase()).join(', '):'cap animal d\'aquest ecosistema'},t:'<b>Adaptació:</b> '+s.ad,c:s.k>1||s.tree?`Tots els ${s.n.toLowerCase()} d'aquest ecosistema formen una població.`:''}); }
+function spClick(id){ if(!alive.has(id)) return;
+ if(mode==='cadenes') return chainTap(id);
+ if(mode==='bio'&&bioTool==='ext') return extinguish(id,'Has fet desaparèixer');
+ selSp=selSp===id?null:id; highlight(); spCard(id); drawWeb(); }
+function highlight(){ for(const b of beings){ const on=!selSp||b.id===selSp; if(b.obj.isSprite) b.obj.material.opacity=on?1:.3; else b.obj.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.transparent=!on;o.material.opacity=on?1:.35;}}); } }
+const ray=new THREE.Raycaster(); let down=null;
+canvas.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY};});
+canvas.addEventListener('pointerup',e=>{ if(!down||Math.hypot(e.clientX-down.x,e.clientY-down.y)>6){down=null;return;} down=null;
+ ray.setFromCamera(new THREE.Vector2(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1),camera);
+ const objs=[]; world.traverse(o=>{ if((o.isSprite||o.isMesh)&&o.userData.being&&o.visible) objs.push(o); });
+ const h=ray.intersectObjects(objs,false); if(h.length){ const b=h[0].object.userData.being; if(mode==='repte'&&RS.onPick) return RS.onPick(b.id); spClick(b.id); if(['elements','relacions','clima'].includes(mode)&&!b.obj.isSprite&&!b.sp.tree) follow(b); } });
+/* ---- segueix un animal ---- */
+let followB=null, followT=0; const fPrev=new THREE.Vector3();
+const STATE_TXT={idle:'Descansant',walk:'Passejant',eat:'Menjant',graze:'Va a menjar',chase:'Està caçant!',flee:'Fuig!',fly:'Volant'};
+function follow(b){ followB=b; followT=0; const p=b.obj.position.clone(); world.localToWorld(p); const d=Math.max(2.6,b.pinOff*2.6); const dir=camera.position.clone().sub(p).setY(0).normalize(); if(!dir.lengthSq()) dir.set(0,0,1);
+ flyTo(p.clone().add(new THREE.Vector3(0,b.pinOff*.4,0)),p.clone().add(dir.multiplyScalar(d)).add(new THREE.Vector3(0,d*.55,0)),.9); fPrev.copy(p); $('#follow').classList.add('show'); updFollowHud(); }
+function unfollow(){ if(!followB) return; followB=null; $('#follow').classList.remove('show'); }
+function updFollowHud(){ if(!followB) return; const s=followB.sp; const st=followB.hidden?"S'ha amagat… (o se l'han menjat)":!followB.mover?'És un ésser viu que no es desplaça':(STATE_TXT[followB.state]||'Volant'); $('#fName').textContent=s.e+' '+s.n; $('#fState').textContent=st; }
+function stepFollow(dt){ if(!followB) return; const b=followB; if(b.dead||b.dying){ unfollow(); return; } followT+=dt;
+ const p=b.obj.position.clone(); world.localToWorld(p);
+ if(!fly&&!b.hidden){ const d=p.clone().sub(fPrev); camera.position.add(d); controls.target.add(d); } fPrev.copy(p);
+ if(b.mover&&followT>5&&!b.hidden&&natura&&['idle','walk'].includes(b.state)&&Math.random()<dt*.25){ const S=ECOS[eco].sp; const preys=(S[b.id].eats||[]).filter(k=>alive.has(k)); if(preys.length){ const k=preys[Math.floor(Math.random()*preys.length)]; const q=MOVERS(k)?nearestAlive(k,b.obj.position):null;
+   if(q){ b.state='chase'; b.prey=q; b.timer=8; q.state='flee'; q.from=b; q.timer=8; toast(`${S[b.id].e} ${S[b.id].n} persegueix ${S[k].n.toLowerCase()}!`); }
+   else { const pl=beings.filter(x=>x.id===k&&!x.dead&&!x.dying); if(pl.length&&b.hab!=='air'){ b.state='graze'; b.target=pl[Math.floor(Math.random()*pl.length)].obj.position.clone(); b.timer=9; toast(`${S[b.id].e} ${S[b.id].n} va a menjar ${S[k].n.toLowerCase()}.`); } } followT=0; } }
+ if(Math.floor(followT*4)!==Math.floor((followT-dt)*4)) updFollowHud(); }
+
+/* ---- cadenes ---- */
+let chain=[], chainsDone=new Set();
+function chainTap(id){ const s=sp(id); const fb=$('#chFb');
+ if(!chain.length){ if(s.r!=='prod'){ fb.innerHTML=`<span style="color:#ff8a9c">Una cadena comença sempre per un <b>productor</b> (una planta o una alga). ${s.n} no ho és.</span>`; return; } chain=[id]; }
+ else { const prev=chain[chain.length-1]; if(chain.length>=4){ fb.textContent='La cadena ja és completa. Comença\'n una altra.'; return; }
+  if(!(s.eats||[]).includes(prev)){ fb.innerHTML=`<span style="color:#ff8a9c">${s.n} no menja ${sp(prev).n.toLowerCase()}. Prova amb un altre animal.</span>`; return; } chain.push(id); }
+ fb.innerHTML=chain.length>1?`<span style="color:var(--li)">Molt bé! ${sp(id).n} menja ${sp(chain[chain.length-2]).n.toLowerCase()}.</span>`:`<span style="color:var(--li)">Bon començament: ${s.n} és un productor.</span>`;
+ if(chain.length>=3) chainsDone.add(chain.join('>')); if(chain.length>=2&&MODELS.__ok) startHunt(chain[chain.length-1],chain[chain.length-2],true); renderChain(); drawWeb(); }
+function renderChain(){ const S=$('#chSlots'); if(!S) return; const lab=['Productor','Consumidor primari','Consumidor secundari','Consumidor terciari'];
+ S.innerHTML=lab.map((l,i)=>{const id=chain[i];return (i?'<span class="arr on">→</span>':'')+`<div class="slot ${id?'f':''}"><b>${id?sp(id).e:'?'}</b>${id?sp(id).n:l}</div>`;}).join(''); $('#chN').textContent=chainsDone.size;
+ const W=$('#chWhat'); if(!W) return; if(chain.length<3){ W.innerHTML=''; return; }
+ W.innerHTML=`<p class="h">I si desapareix…?</p><div class="row" style="flex-wrap:wrap;gap:4px">${chain.map(id=>`<button class="pill" data-rm="${id}">${sp(id).e} ${sp(id).n}</button>`).join('')}</div><div id="chSim"></div>`;
+ W.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>simRemove(b.dataset.rm)); }
+function simRemove(rm){ const E=ECOS[eco].sp; const pop={}; for(const id in E) pop[id]=1; pop[rm]=0; const steps=[]; let cur={...pop};
+ for(let t=0;t<6;t++){ const nx={...cur}; for(const id in E){ if(id===rm){ nx[id]=0; continue; } const s=E[id]; const food=(s.eats||[]); if(food.length){ const avail=food.reduce((a,f)=>a+cur[f],0)/food.length; nx[id]=cur[id]*(.55+.45*avail)+.0; }
+   const preds=Object.keys(E).filter(k=>(E[k].eats||[]).includes(id)); if(preds.length){ const pr=preds.reduce((a,k)=>a+cur[k],0)/preds.length; nx[id]=Math.min(2.2,nx[id]*(1.35-.35*pr)); } if(!food.length&&!preds.length) nx[id]=cur[id]; }
+   cur=nx; steps.push({...cur}); }
+ const fin=steps[steps.length-1]; const ch=Object.keys(E).filter(id=>id!==rm&&Math.abs(fin[id]-1)>.08).sort((a,b)=>Math.abs(fin[b]-1)-Math.abs(fin[a]-1)).slice(0,6);
+ const D=$('#chSim'); D.innerHTML=`<p class="t" style="font-size:13px;margin:6px 0 4px">Sense <b>${sp(rm).n.toLowerCase()}</b>, al cap d'un temps:</p>`+ch.map(id=>{ const v=fin[id], up=v>1; return `<div style="display:flex;align-items:center;gap:6px;font-size:13px;margin:3px 0"><span style="width:22px;text-align:center">${sp(id).e}</span><span style="width:84px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${sp(id).n}</span><div style="flex:1;height:10px;background:rgba(255,255,255,.1);border-radius:5px;overflow:hidden"><i class="simbar" style="display:block;height:100%;width:${Math.min(100,100/2.2)}%;background:${up?'var(--li)':'var(--rd)'};transition:width 1.2s"></i></div><b style="width:52px;text-align:right;color:${up?'var(--li)':'var(--rd)'}">${up?'▲':'▼'} ${Math.round(Math.abs(v-1)*100)}%</b></div>`; }).join('')+(ch.length?`<p class="t" style="font-size:12px;color:var(--mu);margin:6px 0 0">Els que el menjaven en tenen menys (▼) i els que es menjava s'escampen (▲). Tot està connectat!</p>`:'<p class="t">Quasi no canvia res: hi ha altres aliments.</p>');
+ requestAnimationFrame(()=>D.querySelectorAll('.simbar').forEach((b,i)=>{ b.style.width=Math.min(100,fin[ch[i]]/2.2*100)+'%'; }));
+ UX.sfx.tap(); for(const b of beings){ if(b.id===rm&&!b.dead){ b.ghost=true; b.obj.traverse(o=>{ if(o.isMesh){ o.material=o.material.clone(); o.material.transparent=true; o.material.opacity=.15; } }); } } setTimeout(()=>{ for(const b of beings){ if(b.ghost){ b.ghost=false; b.obj.traverse(o=>{ if(o.isMesh){ o.material.opacity=1; o.material.transparent=false; } }); } } },6000); }
+
+/* ---- biodiversitat ---- */
+let bioTool='ext', events=[];
+function extinguish(id,why){ if(!alive.has(id)) return; alive.delete(id); const s=sp(id); events.push([`${why} ${s.n.toLowerCase()}.`,0]); fadeOut(id); setTimeout(cascade,900); bioUI(); drawWeb(); }
+function fadeOut(id){ for(const b of beings) if(b.id===id){ b.dying=1; } }
+function cascade(){ let changed=false; for(const [id,s] of Object.entries(ECOS[eco].sp)){ if(!alive.has(id)||s.r==='prod'||s.r==='desc') continue; if(!(s.eats||[]).some(k=>alive.has(k))){ alive.delete(id); fadeOut(id); events.push([`${s.n} s'ha extingit perquè ja no té aliment.`,0]); changed=true; } }
+ /* sense depredadors: augmenta la presa */
+ for(const [id,s] of Object.entries(ECOS[eco].sp)){ if(!alive.has(id)||s.r==='prod'||s.tree) continue; const pr=predsOf(id); if(pr.length&&!pr.some(k=>alive.has(k))&&!s.boom){ s.boom=1; boom(id); events.push([`Ja no hi ha qui se'ls mengi: ara hi ha massa ${s.n.toLowerCase()}!`,1]); } }
+ bioUI(); drawWeb(); if(changed) setTimeout(cascade,900); }
+function boom(id){ const R=rnd(9); if(MODELS.__ok&&beings.some(b=>b.id===id&&b.mover)){ const b0=beings.find(b=>b.id===id); for(let i=0;i<4;i++){ const nb=makeBeing(id,ECOS[eco].sp[id],R); nb.extra=1; nb.obj.scale.setScalar(.01); nb.pop=0; } return; } const src=beings.filter(b=>b.id===id&&b.obj.isSprite); for(const b of src.slice(0,4)){ const c=b.obj.clone(); c.material=b.obj.material.clone(); c.position.x+=(R()-.5)*3; c.position.z+=(R()-.5)*3; world.add(c); const nb={...b,obj:c,home:c.position.clone(),ph:R()*6,extra:1}; c.userData.being=nb; beings.push(nb); } }
+function threat(k){ const E=ECOS[eco].sp;
+ if(k==='foc'){ events.push(["🔥 Un incendi crema el bosc.",0]); if(!fireG){ fireG=new THREE.Points(new THREE.BufferGeometry(),new THREE.PointsMaterial({color:0xff7a2a,size:.5,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false})); const n=400,a=new Float32Array(n*3); fireG.geometry.setAttribute('position',new THREE.BufferAttribute(a,3)); fireG.userData.seed=Array.from({length:n},()=>[Math.random()*6.28,2+Math.random()*12,Math.random()]); world.add(fireG);} ground.material.color.set(0x3a3228); trees.forEach(t=>t.traverse(o=>{if(o.isMesh&&o.geometry.type!=='CylinderGeometry'){o.material=o.material.clone();o.material.color.set(0x2a2420);}})); ['alzina','pi','herba'].forEach((id,i)=>setTimeout(()=>extinguish(id,'El foc ha cremat'),400+i*500)); }
+ if(k==='contam'){ events.push(["🏭 L'aigua s'ha contaminat.",0]); if(water){water.material.color.set(0x5a6a3a);} const t=eco==='mar'?['algues','posidonia']:['algues','peix']; t.forEach((id,i)=>setTimeout(()=>extinguish(id,'La contaminació ha matat'),400+i*600)); }
+ if(k==='caca'){ const top=Object.keys(E).filter(id=>E[id].r==='c3'&&alive.has(id)); events.push([eco==='mar'?"🎣 Pesca excessiva.":"🏹 Caça excessiva.",0]); top.forEach((id,i)=>setTimeout(()=>extinguish(id,eco==='mar'?'La pesca ha fet desaparèixer':'La caça ha fet desaparèixer'),400+i*500)); }
+ if(k==='const'){ events.push(["🏗️ Es construeix una urbanització.",0]); const vic=eco==='bassa'?['canyis','granota']:eco==='mar'?['posidonia']:['pi','conill']; vic.forEach((id,i)=>setTimeout(()=>extinguish(id,'La construcció ha destruït l\'hàbitat de'),400+i*600)); }
+ bioUI(); }
+function bioUI(){ const n=$('#bN'); if(!n) return; const tot=Object.keys(ECOS[eco].sp).length; n.textContent=alive.size+' / '+tot; $('#bBar').style.width=(alive.size/tot*100)+'%'; $('#bEv').innerHTML=events.slice(-7).reverse().map(([t,g])=>`<p class="ev ${g?'':''}">${t}</p>`).join('')||'<p class="ev g">Ecosistema en equilibri.</p>'; }
+
+/* ---- canvi climàtic ---- */
+function applyWarm(){ if(!world) return; const k=warm/4;
+ if(eco==='bosc'&&!fireG){ ground.material.color.setRGB(.44+k*.35,.56-k*.1,.27); }
+ if(eco==='bassa'&&water){ const s=Math.max(.25,1-k*.7); water.scale.setScalar(s); water.position.y=-.12-k*.5; wlev=k*.5; wrad=s; }
+ if(eco==='mar'){ for(const b of beings){ if(b.id==='medusa'&&!b.hidden) b.obj.scale.setScalar(1+k*1.2); if(b.id==='posidonia') b.obj.visible=!b.dead&&(b.ph/6.28)>k*.8; } }
+ const T=$('#wT'); if(T){ T.textContent='+'+warm.toFixed(1).replace('.',',')+' °C'; const ef={bosc:k>.6?"🔥 Més calor i sequera: augmenta molt el risc d'incendis. Els arbres pateixen.":k>.25?"☀️ Estius més llargs i secs: les plantes tenen menys aigua.":"Tot normal.",bassa:k>.6?"🏜️ La bassa gairebé s'asseca! Els animals aquàtics perden el seu hàbitat.":k>.25?"💧 S'evapora més aigua i el nivell baixa.":"Tot normal.",mar:k>.6?"🪼 L'aigua massa calenta fa que hi hagi moltes medusas i que la posidònia desaparegui.":k>.25?"🌡️ L'aigua s'escalfa: algunes espècies marxen a zones més fresques.":"Tot normal."}[eco]; $('#wEf').textContent=ef; } }
+
+/* ================= PANELS ================= */
+const P=$('#panel .pbody');
+function ecoSwitch(){ return subtabs(Object.entries(ECOS).map(([k,E])=>[k,E.e,E.n.split(' ')[0]==='Mar'?'Mar':E.n.split(' ')[0]]),eco,k=>{eco=k;events=[];chain=[];for(const E of Object.values(ECOS))for(const s of Object.values(E.sp))delete s.boom;buildWorld();renderPanel();home();}); }
+function renderPanel(){ P.innerHTML=''; if(mode==='repte') return; P.appendChild(ecoSwitch()); const E=ECOS[eco];
+ if(mode==='elements'){ P.appendChild(html(`<h3>${E.n}</h3><p class="lead">Ecosistema ${E.medi}</p><p class="t">Un <b>ecosistema</b> és el conjunt d'<b>éssers vius</b> que viuen en un <b>medi físic</b> i les <b>relacions</b> que s'estableixen entre ells.</p>
+  <div class="row"><button class="pill ${natura?'on':''}" id="bNat">🐾 Natura en moviment</button><button class="pill ${showFis?'on':''}" id="bFis">🪨 Medi físic</button><button class="pill" id="bAll">Totes les espècies</button></div><p class="t" style="font-size:14px;margin-top:6px">📷 <b>Toca un animal</b> per apropar-t'hi i seguir-lo mentre fa la seva vida.</p>
+  <div class="sbox"><p class="h">Individu, població, comunitat</p><ul><li>Un <b>ésser viu</b>: un sol conill.</li><li>Una <b>població</b>: tots els conills de l'ecosistema. Toca un animal per veure-la.</li><li>Una <b>comunitat</b>: totes les poblacions juntes.</li></ul></div>
+  <div class="sbox"><p class="h">Espècies (toca-les)</p><div class="leg" id="spL"></div></div>
+  <div class="sbox"><p class="h">Activitats del llibre</p><p class="act">1: descriu l'ecosistema del camagroc, la formiga, l'escopinya i el faig. 2: explica les adaptacions d'un animal. 3: tria un ecosistema terrestre i explica'n les característiques.</p></div>`));
+  const L=$('#spL'); for(const [id,s] of Object.entries(E.sp)){const b=document.createElement('button');b.innerHTML=`<span style="font-size:18px">${s.e}</span>${s.n}<em>${ROLE[s.r][0].split(' (')[0]}</em>`;b.onclick=()=>{selSp=id;highlight();spCard(id);drawWeb();};L.appendChild(b);}
+  $('#bFis').onclick=e=>{showFis=!showFis;e.target.classList.toggle('on',showFis);}; $('#bNat').onclick=e=>{natura=!natura;e.target.classList.toggle('on',natura);}; $('#bAll').onclick=()=>{selSp=null;highlight();drawWeb();$('#card').classList.remove('show');};
+  P.appendChild(quiz([["Què forma el conjunt de tots els conills d'un bosc?",["Una població","Una comunitat","Un ecosistema"],0],["Quin d'aquests és un component del medi físic?",["Les roques","Els bolets","Les formigues"],0]])); }
+ if(mode==='cadenes'){ P.appendChild(html(`<h3>Les cadenes alimentàries</h3><p class="lead">Qui menja qui?</p><p class="t">Segons com s'alimenten, els éssers vius són:</p><div class="roles">${Object.entries(ROLE).map(([k,[n,c]])=>`<button><i style="background:${c}"></i>${n}</button>`).join('')}</div>
+  <div class="sbox"><p class="h">Construeix una cadena</p><p class="t" style="font-size:14px">Toca un <b>productor</b> i després l'animal que se'l menja, i així successivament.</p><div class="slots" id="chSlots"></div><div class="sbox" id="chWhat" style="margin-top:8px"></div><div id="chFb" class="t" style="font-size:14px;min-height:20px"></div><div class="row"><button class="pill" id="chR">🔄 Nova cadena</button><span style="font-size:13px;color:var(--mu)">Cadenes fetes: <b id="chN" style="color:var(--li)">0</b></span></div></div>
+  <div class="row"><button class="pill ${showWeb?'on':''}" id="bWeb">🕸️ Xarxa alimentària</button></div>
+  <div class="sbox"><p class="h">Activitat 4 del llibre</p><p class="act">Dibuixa una cadena alimentària a la llibreta.</p></div>`));
+  $('#chR').onclick=()=>{chain=[];renderChain();drawWeb();$('#chFb').textContent='';}; $('#bWeb').onclick=e=>{showWeb=!showWeb;e.target.classList.toggle('on',showWeb);drawWeb();}; renderChain(); }
+ if(mode==='relacions'){ P.appendChild(html(`<h3>Les relacions entre els éssers vius</h3><p class="lead">No només s'alimenten els uns dels altres</p><div class="sbox"><p class="h">Dins la mateixa espècie</p><div class="leg" id="rl1"></div></div><div class="sbox"><p class="h">Entre espècies diferents</p><div class="leg" id="rl2"></div></div>
+  <div class="sbox"><p class="h">Activitat 5 del llibre</p><p class="act">Quina relació hi ha entre un cocodril i l'ocell que li neteja les dents? I entre les formigues d'un formiguer? I els estornells d'un esbart? I una vaca i les mosques?</p></div>`));
+  REL.forEach(r=>{const b=document.createElement('button');b.innerHTML=`<i style="background:${r.c}"></i>${r.n}<em>${r.e}</em>`;b.onclick=()=>showCard({n:r.n,tipus:r.same?'Relació dins la mateixa espècie':'Relació entre espècies diferents',t:r.t+'<br><br><b>Exemple:</b> '+r.ex});$(r.same?'#rl1':'#rl2').appendChild(b);});
+  P.appendChild(quiz([["Les puces i el gos: quina relació tenen?",["Parasitisme","Mutualisme","Societat"],0],["Les formigues i el pugó es beneficien tots dos. És…",["Mutualisme","Competència","Comensalisme"],0],["Un banc de peixos que neda junt és…",["Una associació","Una societat","Parasitisme"],0]])); }
+ if(mode==='bio'){ P.appendChild(html(`<h3>La biodiversitat</h3><p class="lead">La varietat d'éssers vius</p><p class="t">Quan una espècie desapareix d'un lloc diem que s'ha <b>extingit</b>. Això afecta tot l'ecosistema!</p>
+  <div class="hud"><div style="grid-column:1/3"><small>Espècies vives</small><b class="c" id="bN"></b><div class="meter" style="margin-top:6px;height:8px;border-radius:5px;background:rgba(255,255,255,.08);overflow:hidden"><i id="bBar" style="display:block;height:100%;background:linear-gradient(90deg,var(--rd),var(--li))"></i></div></div></div>
+  <p class="t" style="font-size:14px">Toca un ésser vius per fer-lo desaparèixer, o prova una amenaça:</p>
+  <div class="row">${eco==='bosc'?'<button class="pill" data-t="foc">🔥 Incendi</button>':'<button class="pill" data-t="contam">🏭 Contaminació</button>'}<button class="pill" data-t="caca">${eco==='mar'?'🎣 Pesca excessiva':'🏹 Caça excessiva'}</button><button class="pill" data-t="const">🏗️ Construcció</button><button class="pill" id="bR">🔄 Restaura</button></div>
+  <div class="sbox"><p class="h">Què ha passat?</p><div id="bEv"></div></div>
+  <div class="sbox"><p class="h">Causes d'extinció</p><ul><li>Destrucció del lloc on viu (incendis, construccions, cultius…).</li><li>Contaminació de l'aigua, el sòl o l'aire.</li><li>Caça o pesca excessiva.</li></ul><p class="t" style="font-size:14px">Els ecosistemes amb més biodiversitat són els <b>boscos tropicals</b> i els <b>esculls de corall</b>.</p></div>
+  <div class="sbox"><p class="h">Activitats del llibre</p><p class="act">6: què és l'extinció? 8: explica amb un exemple per què la desaparició d'una espècie pot provocar l'extinció d'altres.</p></div>`));
+  P.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>threat(b.dataset.t)); $('#bR').onclick=()=>{events=[];for(const s of Object.values(ECOS[eco].sp))delete s.boom;buildWorld();bioUI();}; bioUI(); }
+ if(mode==='clima'){ P.appendChild(html(`<h3>El canvi climàtic</h3><p class="lead">La Terra s'escalfa</p><p class="t">La causa principal és la <b>contaminació de l'atmosfera</b> amb fum i gasos com el diòxid de carboni (CO<sub>2</sub>). Aquests gasos atrapen la calor: és l'<b>efecte d'hivernacle</b>.</p>
+  <div class="sl"><label><span>Escalfament</span><b id="wT">+0 °C</b></label><input type="range" id="wS" min="0" max="4" step=".1" value="${warm}"></div><p class="t" id="wEf" style="font-size:14px;color:var(--ye)"></p>
+  <div class="sbox"><p class="h">Conseqüències</p><ul><li>Fenòmens extrems: inundacions, sequeres, onades de calor, ventades.</li><li>Desgel dels pols i de les glaceres.</li><li>Pèrdua de biodiversitat i menys aliments.</li><li>Migracions de persones i problemes de salut.</li></ul></div>
+  <div class="sbox"><p class="h">Problemes del medi ambient</p><ul><li><b>Desforestació</b>: desaparició dels boscos.</li><li><b>Contaminació</b> de l'aigua, l'aire i el sòl.</li><li><b>Desertificació</b>: el sòl es torna àrid.</li><li><b>Desaparició d'espècies</b>.</li></ul></div>
+  <div class="sbox"><p class="h">Com el conservem?</p><ul><li>Espais naturals protegits i reserves de la biosfera (Montseny, Terres de l'Ebre).</li><li>Estalviar aigua i energia, reduir i separar residus, respectar la natura.</li></ul><p style="font-size:24px;margin:6px 0 0">🚫🌷 🚫🎣 🚫🗑️</p><p class="t" style="font-size:13px">Activitat 9: què volen dir aquests senyals?</p></div>
+  <div class="sbox"><p class="h">Activitats del llibre</p><p class="act">11: explica com s'ha produït l'escalfament global. 12: debat sobre l'impacte del canvi climàtic. 13: enumera'n les conseqüències per a les persones.</p></div>`));
+  $('#wS').oninput=e=>{warm=+e.target.value;applyWarm();}; applyWarm(); }
+}
+
+/* ================= REPTE ================= */
+const RP=$('#rep'); let RS={};
+const ALLSP=[]; for(const [ek,E] of Object.entries(ECOS)) for(const [id,s] of Object.entries(E.sp)) ALLSP.push({...s,id,eco:ek});
+const repte=Kit.Repte(RP,{
+ troba:{ic:'🔎',n:'Troba l\'ésser viu',d:'Toca el que et demanem a l\'escena.',make:()=>shuf(Object.keys(ECOS[eco].sp)).slice(0,8),custom:(S,api)=>{ const ask=()=>{ if(S.i>=S.qs.length){RS.onPick=null;return api.done();} api.hud(); const id=S.qs[S.i]; let tries=0; $('#rQ').innerHTML=`Toca: <em>${sp(id).n}</em>`; $('#rSub').textContent=ROLE[sp(id).r][0]+'. Pots girar i fer zoom.'; $('#rOpts').innerHTML=''; $('#rNext').style.display='none';
+   RS.onPick=pid=>{ if(pid===id){ S.score+=tries?.5:1; api.fb(tries?'Ara sí! Mig punt.':'Molt bé!',true); nx(); } else { tries++; api.fb('Has tocat '+sp(pid).n.toLowerCase()+'. '+(tries>=2?'Era aquest!':'Torna-ho a provar.'),false); if(tries>=2){ selSp=id; highlight(); nx(); } } }; };
+   const nx=()=>{ RS.onPick=null; S.i++; api.hud(); const b=$('#rNext'); b.style.display='block'; b.textContent=S.i>=S.qs.length?'Veure la nota →':'Següent →'; b.onclick=()=>{ $('#rFb').textContent=''; selSp=null; highlight(); ask(); }; };
+   showNames=false; $('#tNames').classList.remove('on'); ask(); }},
+ rol:{ic:'🔗',n:'Productor o consumidor?',d:'Classifica els éssers vius.',make:()=>Kit.classify(ALLSP.filter(s=>s.r!=='desc').map(s=>({n:s.n,e:s.e,cat:ROLE[s.r][0].split(' (')[0]})),['Productor','Consumidor primari','Consumidor secundari','Consumidor terciari'],8,it=>`${it.e} <em>${it.n}</em> és un…`)},
+ menja:{ic:'🍽️',n:'Qui menja qui?',d:'Completa les cadenes alimentàries.',make:()=>shuf(ALLSP.filter(s=>s.eats)).slice(0,8).map(s=>{const E=ECOS[s.eco].sp;const right=E[shuf(s.eats)[0]].n;const others=shuf(Object.values(E).filter(o=>!s.eats.some(k=>E[k]===o)&&o.n!==s.n).map(o=>o.n)).slice(0,2);const o=shuf([right,...others]);return {q:`Què menja ${s.e} <em>${s.n.toLowerCase()}</em> (${ECOS[s.eco].n.toLowerCase()})?`,opts:o,ok:o.indexOf(right),exp:''};})},
+ relacio:{ic:'🤝',n:'Quina relació és?',d:'Mutualisme, parasitisme, societat…',make:()=>Kit.mc([["Les formigues defensen el pugó i en mengen el líquid dolç.",["Mutualisme","Parasitisme","Competència"],0],["Les rèmores mengen les restes del menjar dels taurons.",["Comensalisme","Mutualisme","Societat"],0],["Les puces xuclen la sang dels gossos.",["Parasitisme","Comensalisme","Associació"],0],["Dos arbres molt junts lluiten per la llum.",["Competència","Mutualisme","Grup familiar"],0],["Les formigues d'un formiguer es reparteixen les feines.",["Societat","Associació","Comensalisme"],0],["Els estornells volen junts en un esbart.",["Associació","Societat","Parasitisme"],0],["Una lleona amb els seus cadells.",["Grup familiar","Competència","Comensalisme"],0],["Les abelles d'un rusc.",["Societat","Mutualisme","Grup familiar"],0],["Una vaca i les mosques que mengen els seus excrements.",["Comensalisme","Mutualisme","Societat"],0]],8)},
+ preguntes:{ic:'❓',n:'Preguntes de la unitat',d:'Ecosistemes, biodiversitat i canvi climàtic.',make:()=>Kit.mc([["Què és un ecosistema?",["Éssers vius, medi físic i les seves relacions","Només els animals d'un lloc","Només les plantes"],0],["Quins éssers vius són productors?",["Les plantes i les algues","Els herbívors","Els fongs"],0],["Què és una adaptació?",["Una característica que permet viure en un medi","Una malaltia","Un tipus de menjar"],0],["Quins ecosistemes tenen més biodiversitat?",["Els boscos tropicals i els esculls de corall","Els deserts","Les ciutats"],0],["Què passa si s'extingeixen els productors?",["Els consumidors es queden sense aliment","No passa res","Hi ha més animals"],0],["Quina és la causa principal del canvi climàtic?",["La contaminació de l'atmosfera","La Lluna","Els terratrèmols"],0],["Què és la desertificació?",["Un ecosistema es transforma en desert","Plantar arbres","Fer un desert artificial"],0],["Quina és una reserva de la biosfera a Catalunya?",["El Montseny","La Sagrada Família","El Camp Nou"],0],["Què fan els descomponedors?",["Transformen les restes d'éssers vius","Fan la fotosíntesi","Cacen animals"],0],["Com tenen el cos els animals de llocs molt freds?",["Amb capes de greix o pelatge espès","Sense pèl","Amb brànquies"],0]],10)}
+},{onExit:()=>{RS.onPick=null;showNames=true;$('#tNames').classList.add('on');selSp=null;highlight();}});
+
+/* ================= MODES ================= */
+let fly=null; function flyTo(t,p,d=1){fly={t:0,d,ft:controls.target.clone(),tt:t,fp:camera.position.clone(),tp:p};}
+function walkStart(){ if(mode==='repte') setMode('eco'); unfollow(); fly=null; const ec=eco; Walk.start(THREE,{camera,controls,canvas,start:[0,9],yaw:Math.PI,speed:3,eye:ec==='mar'?1.2:1.5,fov:66,
+  ground:(x,z)=>{ const d=Math.hypot(x,z); let y=(Math.sin(x*.5)+Math.cos(z*.4))*.15; if(ec==='bassa'&&d<6.5) y-=1.2*(1-d/6.5); if(ec==='mar') y=(Math.sin(x*.3)*Math.cos(z*.35))*.5; return y; },
+  radius:14.5, blocked:(x,z)=>{ if(ec==='bassa'&&Math.hypot(x,z)<6.9) return true; for(const t of trees){ if(Math.hypot(x-t.position.x,z-t.position.z)<.7) return true; } return false; },
+  onStop:()=>home()}); if(window.UX) UX.toast(ec==='mar'?'Estàs bussejant pel fons del mar':ec==='bassa'?'Passeja per la vora de la bassa':'Passeja pel bosc','🚶',2500); }
+Walk.button($('#tools'),walkStart);
+function home(){ const asp=innerWidth/innerHeight, f=asp<1?1.6:1; if(eco==='mar') flyTo(new THREE.Vector3(0,3,0),new THREE.Vector3(0,7*f,24*f)); else flyTo(new THREE.Vector3(0,1,0),new THREE.Vector3(0,12*f,21*f)); }
+function applyMode(){ $('#card').classList.remove('show'); $('#panel').style.display=mode==='repte'?'none':''; RP.style.display=mode==='repte'?'block':'none';
+ if(mode!=='clima'&&warm){ warm=0; applyWarm(); } if(mode!=='bio'&&alive.size<Object.keys(ECOS[eco].sp).length||fireG&&mode!=='bio'){ events=[]; buildWorld(); }
+ if(mode!=='cadenes') chain=[]; if(mode==='repte') repte.menu(); renderPanel(); drawWeb(); }
+function setMode(m){ if(m!==mode) Vis.fade(); mode=m; document.querySelectorAll('#modes button').forEach(b=>b.classList.toggle('on',b.dataset.m===m)); applyMode(); }
+document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+$('#tPlay').onclick=()=>{paused=!paused;$('#tPlay').textContent=paused?'▶':'⏸';}; $('#tHome').onclick=()=>{unfollow();home();}; $('#fX').onclick=()=>{unfollow();home();};
+$('#tNames').onclick=()=>{showNames=!showNames;$('#tNames').classList.toggle('on',showNames);};
+$('#pmin').onclick=()=>{const m=$('#panel').classList.toggle('min');$('#pmin').textContent=m?'▴ Mostra el text':'▾ Amaga el text';};
+
+/* ================= LOOP ================= */
+let last=performance.now(), T=0;
+function loop(now){ let dt=Math.min(.05,(now-last)/1000); last=now; if(window.UX&&UX.ST.paused) dt=0; if(!paused) T+=dt;
+ if(fly){ fly.t=Math.min(1,fly.t+dt/fly.d); const k=1-Math.pow(1-fly.t,3); controls.target.lerpVectors(fly.ft,fly.tt,k); camera.position.lerpVectors(fly.fp,fly.tp,k); if(fly.t>=1) fly=null; }
+ for(const b of beings){ if(b.dying){ b.dying+=dt; const o=b.obj; const f=Math.max(0,1-b.dying/1.2); if(o.isSprite){o.material.opacity=f; o.position.y=b.home.y-(1-f)*.5;} else o.scale.setScalar(Math.max(.001,f)*(o.userData.s0||(o.userData.s0=o.scale.x))); if(f<=0){o.visible=false;b.dead=1;b.dying=0;} continue; }
+  if(paused||b.dead||!b.obj.isSprite) continue; const t=T+b.ph;
+  if(b.fly){ b.obj.position.x=b.home.x+Math.sin(t*.5)*1.5; b.obj.position.z=b.home.z+Math.cos(t*.4)*1.5; b.obj.position.y=b.home.y+Math.sin(t*1.3)*.3; }
+  else if(b.sp.r!=='prod'&&b.sp.r!=='desc'&&!b.sp.floor) { b.obj.position.x=b.home.x+Math.sin(t*.3)*.6; b.obj.position.z=b.home.z+Math.cos(t*.25)*.6; b.obj.position.y=b.home.y+Math.abs(Math.sin(t*3))*.12; }
+  else if(b.sp.r==='prod'&&eco!=='bosc') b.obj.position.x=b.home.x+Math.sin(t*.8)*.08; }
+ if(water&&water.userData.wave&&!paused){ const a=water.geometry.attributes.position.array, o=water.userData.wave, amp=eco==='mar'?.18:.035; for(let i=0;i<a.length;i+=3) a[i+1]=o[i+1]+Math.sin(o[i]*1.3+T*1.5)*amp+Math.cos(o[i+2]*1.1+T*1.2)*amp; water.geometry.attributes.position.needsUpdate=true; water.geometry.computeVertexNormals(); }
+ if(caust&&!paused){ caust.material.map.offset.set(Math.sin(T*.1)*.3,T*.02); caust.material.opacity=.18+Math.sin(T*1.7)*.05; }
+ waterFx.forEach(s=>s.material.opacity=.04+Math.sin(T*.6+s.userData.ph)*.025);
+ if(bubbles&&!paused){ const a=bubbles.geometry.attributes.position.array; bubbles.userData.seed.forEach(([x,z,y0,s],i)=>{ const y=(y0+T*s)%9; a[i*3]=x+Math.sin(T*2+i)*.1; a[i*3+1]=y; a[i*3+2]=z; }); bubbles.geometry.attributes.position.needsUpdate=true; }
+ if(snow&&!paused) snow.rotation.y=T*.01;
+ if(!paused) stepNature(dt,T); if(!Walk.on) stepFollow(dt); clouds.forEach((c,i)=>{ c.userData.cloud+=dt*.01; c.position.x=Math.cos(c.userData.cloud)*22; c.position.z=Math.sin(c.userData.cloud)*22; });
+ if(fireG){ const a=fireG.geometry.attributes.position.array; fireG.userData.seed.forEach(([an,d,s],i)=>{const k=(s+T*.6)%1; a.set([Math.cos(an)*d+Math.sin(T+i)*.2,k*4,Math.sin(an)*d],i*3);}); fireG.geometry.attributes.position.needsUpdate=true; fireG.material.opacity=Math.max(0,1-(T%30)/30)*.9+.1; }
+ if(selSp||showWeb||chain.length>1){ if(Math.floor(T*4)!==Math.floor((T-dt)*4)) drawWeb(); }
+ Vis.tick(T,camera); if(Walk.on) Walk.tick(dt); else controls.update(); renderer.render(scene,camera); updatePins(); }
+try{ await loadModels(); MODELS.__ok=true; }catch(e){ console.warn('models',e); }
+buildWorld(); camera.position.set(0,12,21); controls.target.set(0,1,0);
+renderer.setAnimationLoop(loop);
+window.__e={chainTap:(id)=>chainTap(id)}; applyMode(); $('#loading').remove(); Kit.initHelp('seen');
+UX.boot({items:ALLSP.map(x=>({k:x.n,n:x.n+' ('+ECOS[x.eco].e+')',ic:x.e})),title:'Éssers vius descoberts',reset:()=>{ unfollow&&unfollow(); setMode('eco'); home&&home(); },
+ tour:{intro:'Hola! Aquí tens tres ecosistemes amb els seus éssers vius. En 30 segons et dic com va.',tap:'Toca un animal: el seguiràs de prop i veuràs què menja.',drag:'Arrossega per girar l\'escena. Amb dos dits (o la roda) t\'hi apropes.'}});
+window.__c={follow:id=>follow(beings.find(b=>b.id===id&&!b.obj.isSprite)),fstate:()=>followB&&[followB.id,followB.state],hunt:(a,b)=>startHunt(a,b,true),dbg:()=>beings.filter(b=>["dofi","tauro","peix","peixgran"].includes(b.id)).slice(0,4).map(b=>{const bb=new THREE.Box3().setFromObject(b.obj);return [b.id,b.obj.visible,b.hidden,b.obj.position.toArray().map(v=>+v.toFixed(2)),bb.min.toArray().map(v=>+v.toFixed(2)),bb.max.toArray().map(v=>+v.toFixed(2)),Object.keys(b.acts||{})]}),cam:(a,b,c2,x,y,z)=>{camera.position.set(a,b,c2);controls.target.set(x,y,z);},setMode,setEco:k=>{eco=k;events=[];buildWorld();renderPanel();home();},spClick,threat,setWarm:v=>{warm=v;applyWarm();},startGame:k=>repte.start(k)};
+</script>
+</body>
+</html>

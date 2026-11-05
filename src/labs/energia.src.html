@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Medi·Lab 3D · L'energia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/*BASECSS*/
+#stage{position:fixed;top:84px;left:394px;right:76px;bottom:calc(var(--tb) + 10px);z-index:4;display:none;align-items:center;justify-content:center;padding:10px}
+#stage.show{display:flex}
+#stage>div{width:100%;height:100%;display:flex;flex-direction:column;gap:10px;background:rgba(3,8,20,.82);border:1px solid var(--gb);border-radius:18px;padding:12px}
+.stbox{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+.stbox svg{max-width:100%;max-height:100%;width:100%;height:100%}
+.chain{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;min-height:60px}
+.chip{display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:14px;font-weight:600;font-size:15px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.35);opacity:.25;transition:opacity .35s,transform .35s}
+.chip.on{opacity:1;transform:scale(1.04)}
+.chip.cur{box-shadow:0 0 0 2px var(--cy),0 0 18px rgba(0,229,255,.5)}
+.arr{font-size:20px;color:var(--mu);opacity:.3;transition:opacity .35s}.arr.on{opacity:1;color:var(--cy)}
+.objs{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px;width:100%;overflow:auto;padding:2px}
+.obj{border:1px solid var(--gb);background:rgba(10,19,36,.9);border-radius:16px;padding:12px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:14px;color:#dbe8f8}
+.obj span{font-size:40px;line-height:1.1}
+.obj.on{border-color:var(--cy);background:rgba(0,60,80,.9);color:#fff}
+.bigq{font-size:20px;text-align:center;margin:0;color:#fff}
+.tools{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.tools button{border:1px solid var(--gb);background:rgba(0,0,0,.25);border-radius:12px;padding:7px 2px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:#cfe3ff}
+.tools button b{font-size:22px;font-weight:400;line-height:1}
+.tools button.on{border-color:var(--cy);background:rgba(0,229,255,.2);color:#fff}
+.mis{list-style:none;margin:0;padding:0}
+.mis li{display:flex;gap:8px;align-items:flex-start;font-size:14px;padding:5px 0;color:#d6e6fa;border-bottom:1px solid rgba(255,255,255,.05)}
+.mis li i{font-style:normal;flex:none;width:22px;height:22px;border-radius:50%;border:1px solid var(--mu);display:flex;align-items:center;justify-content:center;font-size:12px}
+.mis li.ok i{background:var(--li);border-color:var(--li);color:#173404}
+.mis li.ok{color:#fff}
+#warn{position:absolute;top:8px;left:50%;transform:translateX(-50%);padding:8px 14px;border-radius:12px;background:rgba(255,59,92,.9);color:#fff;font-weight:600;display:none;z-index:2}
+.meter{height:14px;border-radius:8px;background:rgba(255,255,255,.08);overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--li),var(--ye),var(--rd));transition:width .3s}
+.flt{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+@media (max-width:860px){
+ #stage{left:8px;right:8px;top:60px;bottom:auto;height:calc(60% - 70px);padding:4px}
+ .objs{grid-template-columns:repeat(auto-fill,minmax(88px,1fr))}
+ .obj span{font-size:30px}
+ .chip{font-size:12px;padding:5px 8px}
+ .tools{grid-template-columns:repeat(6,1fr)}
+}
+#ntoast{position:fixed;left:50%;top:84px;transform:translate(-50%,-20px);max-width:min(520px,90vw);padding:10px 16px;border-radius:14px;background:rgba(10,18,40,.88);border:1px solid rgba(0,229,255,.35);color:#e8f4ff;font-size:14px;line-height:1.4;opacity:0;pointer-events:none;transition:.35s;z-index:6;text-align:center}#ntoast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="loading"><i></i>CARREGANT…</div>
+<div id="pins"></div>
+<header id="top" class="glass">
+  <div class="logo">MEDI·LAB 3D · L'ENERGIA<small>Coneixement del Medi · 6è · Unitat 6: «L'energia a les nostres vides»</small></div>
+  <button id="helpBtn" aria-label="Ajuda i guia">?</button>
+</header>
+<nav id="modes">
+  <button data-m="formes" class="on"><span class="e">⚡</span>L'energia</button>
+  <button data-m="fonts"><span class="e">🌍</span>Fonts</button>
+  <button data-m="central"><span class="e">🏭</span>Electricitat</button>
+  <button data-m="circuits"><span class="e">🔌</span>Circuits</button>
+  <button data-m="casa"><span class="e">🏠</span>A casa</button>
+  <button data-m="repte"><span class="e">🏆</span>Repte</button>
+</nav>
+<aside id="panel" class="glass"><button id="pmin" class="mini">▾ Amaga el text</button><div class="pbody"></div></aside>
+<aside id="rep" class="glass" style="display:none"></aside>
+<div id="stage"><div></div></div>
+<nav id="tools" class="glass">
+  <button id="tPlay" title="Atura / continua" aria-label="Atura o continua">⏸</button>
+  <button id="tHome" title="Vista inicial" aria-label="Vista inicial">⟲</button>
+  <button id="tCity" title="Visita la ciutat" aria-label="Visita la ciutat">🏙️</button>
+  <button id="tNight" title="Dia / nit" aria-label="Dia o nit">🌙</button>
+</nav>
+<div id="card" class="glass"><button class="x" aria-label="Tancar">×</button><span class="tag"></span><h2></h2><div class="facts"></div><p class="desc"></p><p class="cur"></p></div>
+
+<div id="help" role="dialog" aria-modal="true" aria-label="Ajuda">
+ <div class="hbox glass">
+  <button class="hx" aria-label="Tancar">×</button>
+  <div class="htabs"><button data-t="com" class="on">Com funciona</button><button data-t="guia">Guia del mestre</button><button data-t="res">Resultats</button></div>
+  <div class="hpage" data-p="com">
+   <h2>Benvinguts al laboratori de l'energia</h2>
+   <p class="hsub">Coneixement del Medi · 6è · Unitat 6: «L'energia a les nostres vides»</p>
+   <div class="hcards">
+    <div class="hc"><svg viewBox="0 0 64 64"><circle cx="32" cy="30" r="16"/><path d="M12 30a20 20 0 0 1 20-20M52 30a20 20 0 0 1-20 20" stroke-dasharray="3 4"/><path d="M26 52l6 6 6-6"/></svg><b>Gira i apropa't</b><p>Arrossega per girar, roda o dos dits per fer zoom. Doble toc: t'hi apropes.</p></div>
+    <div class="hc"><svg viewBox="0 0 64 64"><circle cx="30" cy="30" r="14"/><path d="M38 44l12 12M30 20v10l6 4"/><circle cx="30" cy="30" r="22" stroke-dasharray="2 5"/></svg><b>Toca i descobreix</b><p>Cada cosa amb nom té una fitxa. Les que trobis es guarden a la teva col·lecció de dalt a la dreta.</p></div>
+    <div class="hc"><svg viewBox="0 0 64 64"><rect x="8" y="26" width="48" height="8" rx="4"/><circle cx="24" cy="30" r="7" fill="rgba(0,229,255,.3)"/><path d="M24 44l4 6 4-6M24 16l4-6 4 6"/></svg><b>Fes-ho funcionar</b><p>A Fonts toca cada central. A Electricitat gestiona la central. A Circuits munta'n un. A Casa, encén i apaga aparells i mira el consum.</p></div>
+    <div class="hc"><svg viewBox="0 0 64 64"><path d="M20 54h24M32 44v10M18 10h28v14a14 14 0 0 1-28 0V10zM18 14h-8a8 8 0 0 0 8 10M46 14h8a8 8 0 0 1-8 10"/><path d="M32 18l2 5 5 .5-4 3.5 1 5-4-2.5-4 2.5 1-5-4-3.5 5-.5z"/></svg><b>Posa't a prova</b><p>Al Repte guanyes estrelles. T'equivoques? Tens una segona oportunitat amb pista.</p></div>
+   </div>
+   <div class="row" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="big htour">▶ Fes la guia de 30 segons</button><span style="color:var(--mu);font-size:13px">Dreceres: <b>1-6</b> seccions · <b>espai</b> pausa · <b>P</b> pissarra · <b>D</b> dibuixa · <b>T</b> amaga text · <b>F</b> pantalla completa</span></div>
+   <button class="hgo">Comença!</button>
+  </div>
+  <div class="hpage" data-p="guia" style="display:none">
+   <h2>Guia per a la classe</h2><p class="hsub" style="color:var(--li)">A la pissarra: toca 👩‍🏫 (a dalt) per tenir text gran, pausa, dibuixar a sobre i pantalla completa. A «Resultats» veuràs les notes dels reptes fets en aquest dispositiu.</p>
+   <p class="hsub">Propostes de 10–15 minuts per apartat i activitats del llibre relacionades.</p>
+   <details open><summary>⚡ L'energia</summary><p><b>Objectiu:</b> reconèixer les formes d'energia i les seves transformacions.</p><ol><li>Abans de tocar cada objecte, que la classe digui quina transformació es produeix.</li><li>Relacioneu les quatre propietats (es transfereix, s'emmagatzema, es transporta, es transforma) amb exemples de l'aula.</li></ol><p class="lib">Llibre: activitat 1 (pàg. 109). Solucions: radiador elèctrica → tèrmica; espelma química → tèrmica i lluminosa; ventilador elèctrica → mecànica; llanterna química → lluminosa.</p></details>
+   <details><summary>🌍 Fonts</summary><p><b>Objectiu:</b> diferenciar fonts renovables i no renovables.</p><ol><li>Filtra «Renovables» i «No renovables» i compara-les.</li><li>Mou el control «Energia renovable» i observa el fum i el cel.</li><li>Debat: per què encara fem servir fonts no renovables?</li></ol><p class="lib">Llibre: activitats 2 i 3 i «Investiga» dels pèl·lets (pàg. 110-111).</p></details>
+   <details><summary>🏭 Electricitat</summary><p><b>Objectiu:</b> entendre com es produeix l'electricitat i com arriba a casa.</p><ol><li>Tria una central i segueix la cadena: font → turbina → generador → línia → casa.</li><li>Compara la central fotovoltaica amb les altres (no té turbina).</li></ol><p class="lib">Llibre: activitats 4, 5 i 6 (pàg. 113). L'electricitat no s'emmagatzema fàcilment: s'ha de produir a mesura que es consumeix.</p></details>
+   <details><summary>🔌 Circuits</summary><p><b>Objectiu:</b> muntar circuits, identificar els seus elements i distingir conductors i aïllants.</p><ol><li>Carrega el circuit del llibre i obre i tanca l'interruptor.</li><li>Feu les missions en parelles. Per què dues bombetes en sèrie fan menys llum que en paral·lel?</li><li>Prova materials: quins deixen passar el corrent?</li><li>Busca el curtcircuit (pila connectada només amb cable) i explica per què és perillós.</li></ol><p class="lib">Llibre: activitat 7 i el «Taller tecnològic» (pàg. 118-119): primer al laboratori i després amb material real.</p></details>
+   <details><summary>🏠 A casa</summary><p><b>Objectiu:</b> identificar els efectes del corrent i proposar maneres d'estalviar energia.</p><ol><li>Classifica cada aparell segons l'efecte (lluminós, calorífic, mecànic, químic).</li><li>Fes el repte d'estalvi: apaga el que no cal a les habitacions buides.</li></ol><p class="lib">Llibre: activitats 8, 9 i 10 (pàg. 115-117).</p></details>
+   <details><summary>🏆 Repte</summary><ul><li>Feu-lo a l'inici i al final de la unitat i compareu la nota.</li><li>Els rècords es guarden a cada tauleta.</li></ul></details>
+  </div>
+  <div class="hpage" data-p="res" style="display:none"></div>
+ </div>
+</div>
+<div id="credit">Il·lustracions i models generats per ordinador. Valors de consum aproximats.</div>
+
+<script>/*KIT*/</script>
+<script>/*NATKIT*/</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
+const NK=NatKit(THREE,GLTFLoader,MeshoptDecoder);
+const {$,shuf,html,showCard,quiz,subtabs}=Kit; Kit.setPrefix('medilab_e_');
+
+/* ================= 3D ================= */
+const canvas=$('#c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.outputColorSpace=THREE.SRGBColorSpace; renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene();
+const SKY=new THREE.Color(0x6fb3e8), SKYD=new THREE.Color(0x8a8f96); scene.background=SKY.clone(); scene.fog=new THREE.Fog(0x9cc8ec,90,220);
+const camera=new THREE.PerspectiveCamera(45,1,0.1,800);
+const controls=new OrbitControls(camera,canvas); controls.enableDamping=true; controls.dampingFactor=.1; controls.rotateSpeed=.55; controls.zoomSpeed=.8; controls.maxPolarAngle=1.45; controls.minDistance=8; controls.maxDistance=160; controls.screenSpacePanning=false;
+function resize(){renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;
+ if(innerWidth>860) camera.setViewOffset(innerWidth,innerHeight,-190,0,innerWidth,innerHeight); else camera.setViewOffset(innerWidth,innerHeight,0,innerHeight*.2,innerWidth,innerHeight);
+ camera.updateProjectionMatrix();}
+addEventListener('resize',resize); resize();
+const hemiL=new THREE.HemisphereLight(0xdfefff,0x4a6a3a,1.4); scene.add(hemiL);
+const sun=new THREE.DirectionalLight(0xfff3dd,2.2); sun.position.set(-40,60,30); sun.castShadow=true; sun.shadow.mapSize.set(2048,2048); Object.assign(sun.shadow.camera,{left:-100,right:100,top:80,bottom:-80,near:1,far:200}); sun.shadow.bias=-.0005; scene.add(sun);
+const M=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.8,metalness:0},o));
+const box=(w,h,d,m)=>new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);
+const cyl=(rt,rb,h,m,s=16)=>new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,s),m);
+/* terreny */
+function hgt(x,z){ let h=Math.sin(x*.06)*Math.cos(z*.05)*1.2; const d=Math.hypot(x+38,z+22); h+=Math.max(0,9-d*.35)*1.1; /* turó eòlic */
+ h+=Math.max(0,-z-46)*.7+Math.max(0,Math.abs(x)-80)*.5; /* muntanyes del fons */ if(Math.abs(x-2)<9&&z<-30&&z>-46) h+= (Math.abs(x-2)>7?3:0); const tw=Math.max(0,Math.min(1,(27-Math.max(Math.abs(x-54),Math.abs(z)))/6)); h=h*(1-tw)+.3*tw; const hw=Math.max(0,Math.min(1,(4-Math.abs(z+8))/2))*(x<34?1:0); if(hw>0){ const hr=Math.sin(x*.06)*Math.cos(-8*.05)*1.2*.5+.3; h=h*(1-hw)+Math.max(hr,h*.3)*hw; } return h; }
+const tg=new THREE.PlaneGeometry(200,140,100,70); tg.rotateX(-Math.PI/2);
+{const p=tg.attributes.position,col=new Float32Array(p.count*3);for(let i=0;i<p.count;i++){const x=p.getX(i),z=p.getZ(i),h=hgt(x,z);p.setY(i,h);const k=Math.min(1,h/9), n=(Math.sin(x*1.7)*Math.cos(z*1.3))*.03;col.set([.42+k*.22+n,.66-k*.12+n,.3+k*.06],i*3);}tg.setAttribute('color',new THREE.BufferAttribute(col,3));tg.computeVertexNormals();}
+const ground=new THREE.Mesh(tg,new THREE.MeshStandardMaterial({vertexColors:true,roughness:1,flatShading:true})); ground.receiveShadow=true; scene.add(ground);
+const ON=(x,z,o)=>{o.position.set(x,hgt(x,z),z);scene.add(o);return o;};
+/* elements */
+const mats={wall:M(0xd9d4c8),roof:M(0xb5523b),gray:M(0x8d939a),dgray:M(0x4c5258),white:M(0xf2f2f2),panel:M(0x1d3f8f,{metalness:.4,roughness:.3}),wood:M(0x7a5130),water:new THREE.MeshStandardMaterial({color:0x2f78c4,roughness:.15,metalness:.1,transparent:true,opacity:.92}),red:M(0xc8392c),coal:M(0x1c1c1c),win:new THREE.MeshStandardMaterial({color:0x333a44,emissive:0xffd36b,emissiveIntensity:0})};
+const pickables=[];
+let _sd=null; function softDot(){ if(_sd) return _sd; const cv=document.createElement('canvas'); cv.width=cv.height=64; const x=cv.getContext('2d'); const g=x.createRadialGradient(32,32,0,32,32,32); g.addColorStop(0,'rgba(255,255,255,1)'); g.addColorStop(.5,'rgba(255,255,255,.55)'); g.addColorStop(1,'rgba(255,255,255,0)'); x.fillStyle=g; x.fillRect(0,0,64,64); _sd=new THREE.CanvasTexture(cv); return _sd; }
+function smoke(n,color,size,rise,spread){const g=new THREE.BufferGeometry();const pos=new Float32Array(n*3),seed=new Float32Array(n);for(let i=0;i<n;i++)seed[i]=Math.random();g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+ const pts=new THREE.Points(g,new THREE.PointsMaterial({color,size:size*1.8,map:softDot(),transparent:true,opacity:.55,depthWrite:false})); pts.userData={seed,rise,spread,n}; return pts;}
+function updSmoke(pts,t,amount){const {seed,rise,spread,n}=pts.userData,a=pts.geometry.attributes.position.array;for(let i=0;i<n;i++){const k=(seed[i]+t*.15)%1;a[i*3]=Math.sin(seed[i]*40)*spread*k+k*spread*.8;a[i*3+1]=k*rise;a[i*3+2]=Math.cos(seed[i]*30)*spread*k;}pts.geometry.attributes.position.needsUpdate=true;pts.material.opacity=.65*amount;pts.visible=amount>.02;}
+const SRC={}; const smokes=[]; const turbines=[];
+function mk(id,g){g.userData.src=id;g.traverse(o=>{if(o.isMesh){o.userData.src=id;pickables.push(o);}});SRC[id].g=g;return g;}
+const SDATA={
+ solar:{n:'Central solar fotovoltaica',tipus:'Font renovable',renov:1,forma:'Energia lluminosa del Sol',x:-28,z:22,f:{'Font':'el Sol','Energia':'lluminosa → elèctrica','Contamina?':'no'},t:"Les plaques fotovoltaiques contenen materials que generen electricitat quan reben la llum del Sol. Quan se'n posen moltes en un camp, se'n diu <b>hort solar</b>.",c:"Els col·lectors solars tèrmics, en canvi, aprofiten la calor del Sol per escalfar aigua.",chain:[['☀️','Llum del Sol','#ffd23f'],['🟦','Plaques fotovoltaiques','#2f8cff'],['⚡','Energia elèctrica','#00e5ff']]},
+ vent:{n:'Parc eòlic',tipus:'Font renovable',renov:1,forma:'Energia mecànica del vent (eòlica)',x:-38,z:-22,f:{'Font':'el vent','Energia':'mecànica → elèctrica','Contamina?':'no'},t:"El vent fa girar les aspes dels <b>aerogeneradors</b>. Aquesta energia mecànica mou un generador que produeix electricitat.",c:"A Espanya, el primer molí de vent del qual es té constància era a Tarragona, fa uns mil anys.",chain:[['💨','Vent','#9fe7ff'],['⚙️','Energia mecànica','#b6ff3b'],['🌀','Turbina (aspes)','#b6ff3b'],['🧲','Generador','#c08bff'],['⚡','Energia elèctrica','#00e5ff']]},
+ aigua:{n:'Central hidroelèctrica',tipus:'Font renovable',renov:1,forma:'Energia mecànica de l\'aigua (hidràulica)',x:2,z:-30,f:{'Font':"l'aigua en moviment",'Energia':'mecànica → elèctrica','Contamina?':'no'},t:"Es construeixen <b>embassaments</b> amb grans salts d'aigua. L'aigua que cau fa girar una turbina, que mou el generador.",c:"Les onades i les marees també es poden fer servir per generar electricitat.",chain:[['💧','Aigua que cau','#2f8cff'],['⚙️','Energia mecànica','#b6ff3b'],['🌀','Turbina','#b6ff3b'],['🧲','Generador','#c08bff'],['⚡','Energia elèctrica','#00e5ff']]},
+ geo:{n:'Central geotèrmica',tipus:'Font renovable',renov:1,forma:'Energia tèrmica de l\'interior de la Terra',x:26,z:-26,f:{'Font':'la calor interna de la Terra','Energia':'tèrmica → elèctrica','Contamina?':'molt poc'},t:"L'interior del planeta és molt calent. Aquesta calor, l'<b>energia geotèrmica</b>, serveix per escalfar aigua, per a la calefacció i per produir electricitat.",c:"A Islàndia, gairebé totes les cases s'escalfen amb energia geotèrmica.",chain:[['🌋','Calor de la Terra','#ff8a5c'],['♨️','Vapor d\'aigua','#dddddd'],['🌀','Turbina','#b6ff3b'],['🧲','Generador','#c08bff'],['⚡','Energia elèctrica','#00e5ff']]},
+ bio:{n:'Central de biomassa',tipus:'Font renovable',renov:1,forma:'Energia química de restes d\'éssers vius',x:-10,z:30,f:{'Font':'fusta, restes de plantes, fems','Energia':'química → tèrmica → elèctrica','Contamina?':'poc'},t:"La <b>biomassa</b> són les restes d'éssers vius, com la fusta o els fems. Tenen energia química que es pot convertir en calor o en electricitat. També se'n poden fer combustibles per als cotxes.",c:"Els pèl·lets de les estufes són serradures premsades: són biomassa!",chain:[['🪵','Biomassa','#c49060'],['🔥','Energia tèrmica','#ff8a5c'],['♨️','Vapor','#dddddd'],['🌀','Turbina','#b6ff3b'],['🧲','Generador','#c08bff'],['⚡','Energia elèctrica','#00e5ff']]},
+ fossil:{n:'Central tèrmica',tipus:'Font no renovable',renov:0,forma:'Energia química dels combustibles fòssils',x:-46,z:6,f:{'Font':'carbó, petroli, gas natural','Energia':'química → tèrmica → elèctrica','Contamina?':'sí, molt'},t:"Els <b>combustibles fòssils</b> (carbó, petroli i gas natural) es cremen per escalfar aigua. El vapor mou una turbina. Del petroli també s'obtenen la gasolina i el gasoil dels cotxes.",c:"El carbó i el petroli van trigar milions d'anys a formar-se a partir de restes d'éssers vius. Si els gastem, s'acabaran.",chain:[['🛢️','Carbó, petroli o gas','#888888'],['🔥','Energia tèrmica','#ff8a5c'],['♨️','Vapor','#dddddd'],['🌀','Turbina','#b6ff3b'],['🧲','Generador','#c08bff'],['⚡','Energia elèctrica','#00e5ff']]},
+ nuclear:{n:'Central nuclear',tipus:'Font no renovable',renov:0,forma:'Energia nuclear de l\'urani i el plutoni',x:8,z:26,f:{'Font':'urani, plutoni','Energia':'nuclear → tèrmica → elèctrica','Contamina?':"no fa fum, però deixa residus perillosos"},t:"Una petita quantitat d'<b>urani</b> o <b>plutoni</b> té moltíssima energia. Escalfa aigua i el vapor mou la turbina. El núvol blanc de la torre és només vapor d'aigua.",c:"Els residus nuclears poden ser perillosos durant centenars o milers d'anys.",chain:[['⚛️','Urani','#b6ff3b'],['🔥','Energia tèrmica','#ff8a5c'],['♨️','Vapor','#dddddd'],['🌀','Turbina','#b6ff3b'],['🧲','Generador','#c08bff'],['⚡','Energia elèctrica','#00e5ff']]}
+};
+for(const [k,v] of Object.entries(SDATA)) SRC[k]=Object.assign({id:k},v);
+/* solar */
+{const g=new THREE.Group();for(let i=0;i<4;i++)for(let j=0;j<5;j++){const p=box(2.4,.1,1.4,mats.panel);p.position.set(j*2.8-5.6,1,i*2.2-3.3);p.rotation.x=-.5;g.add(p);const l=box(.12,1,.12,mats.gray);l.position.set(j*2.8-5.6,.5,i*2.2-3.3);g.add(l);}mk('solar',ON(-28,22,g));}
+/* eòlic */
+for(const [x,z] of [[-42,-26],[-36,-18],[-32,-28]]){const g=new THREE.Group();const t=cyl(.25,.45,12,mats.white);t.position.y=6;g.add(t);const n=box(1.6,.8,.8,mats.white);n.position.set(0,12.2,.2);g.add(n);
+ const rot=new THREE.Group();rot.position.set(0,12.2,.8);for(let k=0;k<3;k++){const b=box(.35,6,.12,mats.white);b.position.y=3;const a=new THREE.Group();a.add(b);a.rotation.z=k*Math.PI*2/3;rot.add(a);}g.add(rot);turbines.push(rot);mk('vent',ON(x,z,g));}
+/* embassament */
+{const g=new THREE.Group();const wall=box(16,8,1.6,mats.gray);wall.position.set(0,3,0);g.add(wall);const wat=box(15,.2,14,mats.water);wat.position.set(0,6.2,-8);g.add(wat);
+ const ph=box(5,3,4,mats.wall);ph.position.set(0,1.2,3);g.add(ph);const fall=smoke(300,0xbfe6ff,.35,-6,1.6);fall.position.set(0,6.5,1);fall.rotation.x=0;g.add(fall);smokes.push([fall,'aigua']);
+ const river=box(3,.15,30,mats.water);river.position.set(0,.2,18);g.add(river);mk('aigua',ON(2,-30,g));}
+/* geotèrmica */
+{const g=new THREE.Group();const b=box(6,3,4,mats.wall);b.position.y=1.5;g.add(b);for(let i=0;i<3;i++){const p=cyl(.3,.3,8,mats.gray,10);p.rotation.z=Math.PI/2;p.position.set(-3+i*0.1,0.5+i*.7,3+i);g.add(p);}
+ for(let i=0;i<2;i++){const s=smoke(120,0xffffff,.9,8,1.2);s.position.set(-4+i*8,0,5);g.add(s);smokes.push([s,'geo']);}mk('geo',ON(26,-26,g));}
+/* biomassa */
+{const g=new THREE.Group();const b=box(6,4,5,mats.wall);b.position.y=2;g.add(b);const ch=cyl(.5,.6,8,mats.gray);ch.position.set(2,4,0);g.add(ch);for(let i=0;i<9;i++){const l=cyl(.35,.35,3,mats.wood,8);l.rotation.z=Math.PI/2;l.position.set(-6+((i%3)*.1),.35+Math.floor(i/3)*.68,-1+(i%3)*.7);g.add(l);}
+ const s=smoke(120,0x9a9a9a,1,9,1.4);s.position.set(2,8,0);g.add(s);smokes.push([s,'bio']);mk('bio',ON(-10,30,g));}
+/* tèrmica */
+{const g=new THREE.Group();const b=box(9,5,6,mats.wall);b.position.y=2.5;g.add(b);for(const x of [-2.5,2.5]){const c=cyl(.7,1,16,mats.white);c.position.set(x,8,-4);g.add(c);const r=cyl(.72,.72,1.4,mats.red);r.position.set(x,14.5,-4);g.add(r);const s=smoke(220,0x5a5a5a,1.6,18,3);s.position.set(x,16,-4);g.add(s);smokes.push([s,'fossil']);}
+ const pile=new THREE.Mesh(new THREE.ConeGeometry(3.5,2.5,10),mats.coal);pile.position.set(-7,1.2,3);g.add(pile);mk('fossil',ON(-46,6,g));}
+/* nuclear */
+{const g=new THREE.Group();const pr=[];for(let i=0;i<=10;i++){const t=i/10;pr.push(new THREE.Vector2(3.4-2.6*Math.sin(t*Math.PI*.8)+t*0.6,t*11));}const tow=new THREE.Mesh(new THREE.LatheGeometry(pr,32),M(0xe9e6e0,{side:THREE.DoubleSide}));tow.position.set(-4,0,0);g.add(tow);
+ const dome=new THREE.Mesh(new THREE.SphereGeometry(2.6,24,12,0,Math.PI*2,0,Math.PI/2),mats.white);dome.position.set(4,3,0);g.add(dome);const cy=cyl(2.6,2.6,3,mats.white,24);cy.position.set(4,1.5,0);g.add(cy);
+ const s=smoke(260,0xffffff,2.2,14,3.5);s.position.set(-4,11,0);g.add(s);smokes.push([s,'nuclear']);mk('nuclear',ON(8,26,g));}
+/* ciutat */
+const town=new THREE.Group(); const TOWN={x:54,z:0}, TH=.3;
+const winMats=[mats.win, new THREE.MeshStandardMaterial({color:0x333a44,emissive:0xfff0c8,emissiveIntensity:0}), new THREE.MeshStandardMaterial({color:0x2c333c,emissive:0x9fd0ff,emissiveIntensity:0})];
+{let sd=7; const R=()=>{sd=(sd*16807)%2147483647; return sd/2147483647;}; const WALLS=[0xf3e3c3,0xe8c9a8,0xf5d7d0,0xd9e6c8,0xcfe0ee,0xf0e6d8,0xe9d1a4,0xd8c3b0]; const ROOFS=[0xb5523b,0xc0663f,0x9a4a3a,0x7d5a4a]; const TOWERC=[0xcfd6dc,0xbfc9d4,0xd9d2c5,0xa9b8c8,0xe2ddd3];
+ const asph=box(44,.1,44,M(0x3d4148)); asph.position.set(TOWN.x,TH+.03,TOWN.z); asph.receiveShadow=true; town.add(asph);
+ const lineM=new THREE.MeshBasicMaterial({color:0xe8e8e0});
+ for(const o of [-20,-10,0,10,20]) for(let t=-21;t<21;t+=2.4){ const d1=box(1.1,.02,.12,lineM); d1.position.set(TOWN.x+t,TH+.09,TOWN.z+o); town.add(d1); const d2=box(.12,.02,1.1,lineM); d2.position.set(TOWN.x+o,TH+.09,TOWN.z+t); town.add(d2); }
+ const walk=M(0xc9c4ba), grass=M(0x6fae4a,{flatShading:true});
+ const house=(x,z,w,d,hh,col)=>{ const h=new THREE.Group(); const b=box(w,hh,d,M(col)); b.position.y=hh/2; h.add(b); const roof=new THREE.Mesh(new THREE.ConeGeometry(Math.max(w,d)*.74,1.5,4),M(ROOFS[Math.floor(R()*4)],{flatShading:true})); roof.rotation.y=Math.PI/4; roof.position.y=hh+.75; h.add(roof);
+   const ch=box(.35,.9,.35,M(0x8a5a44)); ch.position.set(w*.22,hh+1,-d*.15); h.add(ch); const door=box(.6,1.1,.05,mats.wood); door.position.set(0,.55,d/2+.03); h.add(door);
+   for(let k=0;k<Math.floor(hh/1.7);k++) for(const sx of [-.28,.28]){ const wm=winMats[Math.floor(R()*3)]; const wd=box(.55,.55,.05,wm); wd.position.set(sx*w,1.5+k*1.5,d/2+.03); h.add(wd); const w2=wd.clone(); w2.position.z=-d/2-.03; h.add(w2);} h.position.set(x,TH+.2,z); town.add(h); };
+ const tower=(x,z,w,d,hh,col)=>{ const h=new THREE.Group(); const b=box(w,hh,d,M(col)); b.position.y=hh/2; h.add(b); const top=box(w+.25,.3,d+.25,mats.dgray); top.position.y=hh+.15; h.add(top); const ac=box(.8,.5,.8,mats.gray); ac.position.set(w*.2,hh+.5,0); h.add(ac);
+   const nf=Math.floor((hh-1)/1.4); for(let k=0;k<nf;k++){ for(const [sx,face] of [[0,1],[0,-1]]) for(let j=0;j<3;j++){ const wm=winMats[Math.floor(R()*3)]; const wd=box(w*.22,.7,.05,wm); wd.position.set((j-1)*w*.3,1.2+k*1.4,face*(d/2+.03)); h.add(wd);} for(const face of [1,-1]) for(let j=0;j<2;j++){ const wm=winMats[Math.floor(R()*3)]; const wd=box(.05,.7,d*.28,wm); wd.position.set(face*(w/2+.03),1.2+k*1.4,(j-.5)*d*.4); h.add(wd);} }
+   const ground=box(w+.04,1,d+.04,M(0x7a8794)); ground.position.y=.5; h.add(ground); h.position.set(x,TH+.2,z); town.add(h); };
+ for(let bx=0;bx<4;bx++) for(let bz=0;bz<4;bz++){ const cx=TOWN.x-15+bx*10, cz=TOWN.z-15+bz*10; const sw=box(7.4,.2,7.4,walk); sw.position.set(cx,TH+.1,cz); sw.receiveShadow=true; town.add(sw);
+  const central=(bx===1||bx===2)&&(bz===1||bz===2);
+  if(bx===2&&bz===2){ const g=box(6.6,.25,6.6,grass); g.position.set(cx,TH+.15,cz); town.add(g); const fb=cyl(1.3,1.4,.4,walk,16); fb.position.set(cx,TH+.4,cz); town.add(fb); const fw=cyl(1.1,1.1,.1,mats.water,16); fw.position.set(cx,TH+.58,cz); town.add(fw); town.userData.fountain=new THREE.Vector3(cx,TH+.6,cz); continue; }
+  if(central){ tower(cx-1.6,cz-1.6,3,3,8+R()*7,TOWERC[Math.floor(R()*5)]); tower(cx+1.7,cz+1.2,2.8,3.6,6+R()*5,TOWERC[Math.floor(R()*5)]); tower(cx+1.7,cz-2,2.6,2.2,4+R()*3,TOWERC[Math.floor(R()*5)]); tower(cx-1.8,cz+2,2.4,2.4,4+R()*4,TOWERC[Math.floor(R()*5)]); }
+  else for(const [ox,oz] of [[-1.7,-1.7],[1.7,-1.7],[-1.7,1.7],[1.7,1.7]]){ if(R()<.12) continue; house(cx+ox,cz+oz,2.6+R()*.6,2.6+R()*.6,2.4+R()*1.6,WALLS[Math.floor(R()*WALLS.length)]); } }
+ scene.add(town);}
+/* subestació i línies */
+const SUB=new THREE.Vector3(24,0,2); SUB.y=hgt(24,2);
+{const g=new THREE.Group();const b=box(5,2,5,mats.dgray);b.position.y=1;g.add(b);for(let i=0;i<4;i++){const t=cyl(.3,.3,3,mats.gray,8);t.position.set(-1.5+i,3,0);g.add(t);}g.position.copy(SUB);scene.add(g);}
+const towerGeo=new THREE.CylinderGeometry(.12,.6,7,4), armGeo=new THREE.BoxGeometry(3,.18,.18);
+const lines={};
+function addLine(id,pts){ const path=[]; const twrs=[]; for(let i=0;i<pts.length-1;i++){const a=pts[i],b=pts[i+1];const n=Math.max(1,Math.round(a.distanceTo(b)/10));for(let k=0;k<n;k++){const p=a.clone().lerp(b,k/n);twrs.push(p);}} twrs.push(pts[pts.length-1].clone());
+ const tops=twrs.map(p=>{const y=hgt(p.x,p.z);const t=new THREE.Mesh(towerGeo,mats.gray);t.position.set(p.x,y+3.5,p.z);scene.add(t);const a=new THREE.Mesh(armGeo,mats.gray);a.position.set(p.x,y+6.6,p.z);scene.add(a);return new THREE.Vector3(p.x,y+6.6,p.z);});
+ for(let i=0;i<tops.length-1;i++){const a=tops[i],b=tops[i+1];for(let k=0;k<=8;k++){const t=k/8;const p=a.clone().lerp(b,t);p.y-=Math.sin(t*Math.PI)*.9;path.push(p);}}
+ const ln=new THREE.Line(new THREE.BufferGeometry().setFromPoints(path),new THREE.LineBasicMaterial({color:0x222222}));scene.add(ln);lines[id]=new THREE.CatmullRomCurve3(path);}
+const SUBP=new THREE.Vector3(SUB.x,0,SUB.z), TOWNP=new THREE.Vector3(TOWN.x-23,0,TOWN.z+3);
+for(const [k,s] of Object.entries(SRC)){ addLine(k,[new THREE.Vector3(s.x+(k==='aigua'?0:4),0,s.z+(k==='aigua'?6:0)),SUBP]); }
+addLine('town',[SUBP,TOWNP]);
+/* flux */
+const flowN=40, flow=new THREE.Points(new THREE.BufferGeometry(),new THREE.PointsMaterial({color:0x00e5ff,size:1.1,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
+flow.geometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(flowN*2*3),3)); scene.add(flow); flow.visible=false;
+/* pins */
+const pins=[]; const tv=new THREE.Vector3();
+function pin(obj,pos,txt,col,onclick){const b=document.createElement('button');b.className='pin';b.style.setProperty('--c',col);b.innerHTML='<i></i><span></span>';b.querySelector('span').textContent=txt;b.onclick=e=>{e.stopPropagation();onclick();};$('#pins').appendChild(b);const p={el:b,pos,src:obj};pins.push(p);return p;}
+for(const [k,s] of Object.entries(SRC)){ s.pin=pin(k,new THREE.Vector3(s.x,hgt(s.x,s.z)+(k==='vent'?18:k==='fossil'?17:12),s.z),s.n,s.renov?'#b6ff3b':'#ff8a5c',()=>srcClick(k)); }
+const townPin=pin('town',new THREE.Vector3(TOWN.x,18,TOWN.z),'Ciutat (consum)','#00e5ff',()=>cityView()||showCard({n:'La ciutat',tipus:'Consum',t:"Les cases, escoles i fàbriques fan servir l'electricitat que arriba per les línies elèctriques.",c:"El corrent elèctric viatja pels cables gairebé a la velocitat de la llum: uns 300.000 km per segon."}));
+const subPin=pin('sub',new THREE.Vector3(SUB.x,SUB.y+6,SUB.z),'Subestació','#00e5ff',()=>showCard({n:'Xarxa elèctrica',tipus:'Transport',t:"Les línies elèctriques porten l'electricitat des de les centrals fins als llocs on es consumeix. Les torres elèctriques aguanten els cables.",c:"Les línies elèctriques poden ser perilloses per als ocells: hi xoquen o s'hi electrocuten."}));
+function updatePins(){const show=['fonts','central'].includes(mode);for(const p of pins){let vis=show&&!p.hidden;if(vis){tv.copy(p.pos).project(camera);vis=tv.z<1&&Math.abs(tv.x)<1.05&&Math.abs(tv.y)<1.05;if(vis)p.el.style.transform=`translate(${(tv.x*.5+.5)*innerWidth-5}px,${(-tv.y*.5+.5)*innerHeight-5}px)`;}p.el.classList.toggle('hide',!vis);}}
+
+/* ================= PAISATGE VIU ================= */
+const live={clouds:[],birds:[],cars:[],lamps:null,night:0,nightT:0};
+const busy=[...Object.values(SDATA).map(s=>[s.x,s.z,s.id==='vent'?13:s.id==='aigua'?14:10]),[TOWN.x,TOWN.z,30],[SUB.x,SUB.z,6]];
+const free=(x,z,m=0)=>busy.every(([bx,bz,r])=>Math.hypot(x-bx,z-bz)>r+m)&&Math.abs(x)<96&&Math.abs(z)<66&&!(Math.abs(z+8)<3.5&&x<34);
+/* trànsit: rutes en bucle pels carrers i una carretera */
+function loopPath(P,closed=true){ const segs=[]; let L=0; const n=closed?P.length:P.length-1; for(let i=0;i<n;i++){ const a=P[i], b=P[(i+1)%P.length]; const l=Math.hypot(b[0]-a[0],b[1]-a[1]); segs.push([a,b,l,L]); L+=l; }
+ return {L,at(s){ s=((s%L)+L)%L; for(const [a,b,l,o] of segs) if(s<=o+l){ const t=(s-o)/l; return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,(b[0]-a[0])/l,(b[1]-a[1])/l]; } const sg=segs[segs.length-1]; return [sg[1][0],sg[1][1],1,0]; }}; }
+const TX=TOWN.x, TZ=TOWN.z, rect=(x0,z0,x1,z1)=>[[TX+x0,TZ+z0],[TX+x1,TZ+z0],[TX+x1,TZ+z1],[TX+x0,TZ+z1]];
+const ROUTES=[rect(-20,-20,20,20),rect(-10,-20,10,20),rect(-20,-10,20,10),rect(0,-20,20,0),rect(-20,0,0,20),rect(-20,-20,0,0),rect(0,0,20,20)].map(p=>loopPath(p));
+for(let i=0;i<4;i++) ROUTES[i].rev=1;
+const HWY=loopPath([[-96,-8],[TX-20,-8],[TX-20,TZ-10.5]],false); 
+{ const N=180, pos=[], idx=[]; for(let i=0;i<=N;i++){ const x=-96+(TX-20+96)*i/N; pos.push(x,hgt(x,-10)+.12,-10, x,hgt(x,-6)+.12,-6); if(i<N) idx.push(i*2,i*2+1,i*2+2, i*2+1,i*2+3,i*2+2); }
+  const rg=new THREE.BufferGeometry(); rg.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); rg.setIndex(idx); rg.computeVertexNormals(); const road=new THREE.Mesh(rg,M(0x4a4e55,{side:THREE.DoubleSide})); road.receiveShadow=true; scene.add(road);
+  for(let x=-94;x<TX-21;x+=3){ const d=box(1.2,.02,.12,new THREE.MeshBasicMaterial({color:0xe8e8e0})); d.position.set(x,hgt(x,-8)+.15,-8); scene.add(d); } }
+/* fanals */
+{ const lp=[], pg=new THREE.Group(); for(let bx=0;bx<4;bx++) for(let bz=0;bz<4;bz++) for(const [ox,oz] of [[-3.4,-3.4],[3.4,3.4]]){ const x=TX-15+bx*10+ox, z=TZ-15+bz*10+oz; const post=cyl(.06,.08,2.6,mats.dgray,6); post.position.set(x,TH+1.5,z); pg.add(post); lp.push(x,TH+2.9,z); }
+  for(let x=-90;x<TX-22;x+=12){ const post=cyl(.06,.08,3,mats.dgray,6); post.position.set(x,hgt(x,-11)+1.5,-11); pg.add(post); lp.push(x,hgt(x,-11)+3.1,-11); }
+  scene.add(pg); const lg=new THREE.BufferGeometry(); lg.setAttribute('position',new THREE.Float32BufferAttribute(lp,3)); live.lamps=new THREE.Points(lg,new THREE.PointsMaterial({color:0xffe08a,size:2.2,map:softDot(),transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false})); scene.add(live.lamps); }
+const CARC=[0xe63946,0x2a9d8f,0xf4a261,0x457b9d,0xffd166,0xf1faee,0x6d597a,0x264653,0xe76f51,0x8ab17d];
+for(let i=0;i<22;i++){ const car=NK.car(CARC[i%CARC.length]); const r=ROUTES[i%ROUTES.length]; car.userData={r,s:Math.random()*r.L,v:(3+Math.random()*2.5)*(r.rev?-1:1)}; car.scale.setScalar(1); scene.add(car); live.cars.push(car); }
+for(let i=0;i<2;i++){ const bus=new THREE.Group(); const b=box(1.1,1.2,3.6,M(0xf2b632,{roughness:.5})); b.position.y=.8; bus.add(b); const w=box(1.12,.4,3.2,new THREE.MeshStandardMaterial({color:0xdfeaf2,roughness:.2})); w.position.y=1.05; bus.add(w); bus.userData={r:ROUTES[0],s:i*ROUTES[0].L/2,v:2.6}; scene.add(bus); live.cars.push(bus); }
+for(let i=0;i<8;i++){ const car=NK.car(CARC[(i*3)%CARC.length]); car.userData={hw:1,s:Math.random()*HWY.L,v:(5+Math.random()*3)*(i%2?1:-1)}; scene.add(car); live.cars.push(car); }
+/* vianants */
+live.people=[]; { const SK=[0xf1c9a5,0xd9a27a,0x9b6b48,0x6b4428], CL=[0xe63946,0x457b9d,0x2a9d8f,0xf4a261,0x6d597a,0xffd166,0x3a3a3a,0xf1faee];
+ for(let i=0;i<44;i++){ const g=new THREE.Group(); const bm=M(CL[i%CL.length],{flatShading:true}); const body=new THREE.Mesh(new THREE.CapsuleGeometry(.16,.38,3,6),bm); body.position.y=.72; g.add(body); const head=new THREE.Mesh(new THREE.IcosahedronGeometry(.15,1),M(SK[i%4],{flatShading:true})); head.position.y=1.2; g.add(head);
+  const lm=M(0x2b2d42); const legs=[]; for(const sx of [-.07,.07]){ const l=new THREE.Group(); l.position.set(sx,.42,0); const m=box(.09,.42,.1,lm); m.position.y=-.21; l.add(m); g.add(l); legs.push(l); }
+  const bx=Math.floor(Math.random()*4), bz=Math.floor(Math.random()*4), cx=TX-15+bx*10, cz=TZ-15+bz*10, e=3.45; const r=loopPath([[cx-e,cz-e],[cx+e,cz-e],[cx+e,cz+e],[cx-e,cz+e]]);
+  g.userData={r,s:Math.random()*r.L,v:(.7+Math.random()*.6)*(Math.random()<.5?-1:1),legs,ph:Math.random()*6}; g.scale.setScalar(1.15); scene.add(g); live.people.push(g); } }
+for(let i=0;i<9;i++){ const cl=NK.cloud(); const a=i/9*6.28; cl.userData={x:-150+i*34,z:-75-Math.random()*35,y:32+Math.random()*14,s:1.2+Math.random()*1.2}; cl.scale.setScalar(2+Math.random()*1.2); scene.add(cl); live.clouds.push(cl); }
+for(let i=0;i<9;i++){ const b=NK.bird(); b.userData.o=new THREE.Vector3((i%3)*1.6,Math.floor(i/3)*.4,Math.floor(i/3)*1.6+(i%3)*.8); b.scale.setScalar(1.6); scene.add(b); live.birds.push(b); }
+async function decorate(){ try{ await NK.load(); }catch(e){ console.warn(e); return; } let sd=11; const R=()=>{sd=(sd*16807)%2147483647; return sd/2147483647;};
+ const put=(name,h,n,zone,m)=>{ let k=0, tries=0; while(k<n&&tries<n*30){ tries++; const x=(R()-.5)*190, z=(R()-.5)*130; if(!free(x,z,m||0)||!zone(x,z)) continue; const o=NK.inst(name,h*(.75+R()*.6)); o.position.set(x,hgt(x,z)-.1,z); o.rotation.y=R()*6.28; scene.add(o); k++; } };
+ const any=()=>true, back=(x,z)=>z<-38||Math.abs(x)>70, mid=(x,z)=>!back(x,z);
+ put('PineTree_1',7,30,back,2); put('PineTree_2',6.5,25,back,2); put('CommonTree_1',5.5,22,mid,2); put('CommonTree_2',5,18,mid,2); put('CommonTree_3',5,16,mid,2);
+ put('Bush_1',1.6,30,mid,1); put('BushBerries_1',1.5,14,mid,1); put('Rock_Moss_1',2,14,any,1); put('Rock_1',1.6,12,back,1); put('Grass',.9,120,mid,0); put('Flowers',.8,50,mid,0);
+ { const fp=town.userData.fountain; for(const [ox,oz] of [[-2.6,-2.6],[2.6,-2.6],[-2.6,2.6],[2.6,2.6]]){ const o=NK.inst('CommonTree_'+(1+Math.floor(R()*3)),3.2); o.position.set(fp.x+ox,TH+.3,fp.z+oz); scene.add(o);} for(let i=0;i<24;i++){ const side=i%4, t=(Math.floor(i/4)/6)*44-22+3; const x=side<2?TX+t:TX+(side===2?-23.5:23.5), z=side<2?TZ+(side===0?-23.5:23.5):TZ+t; if(Math.abs(z+8)<3&&x<TX) continue; const o=NK.inst('CommonTree_'+(1+i%3),3.6); o.position.set(x,hgt(x,z),z); scene.add(o);} } }
+scene.traverse(o=>{ if(o.isMesh&&o!==ground){ o.castShadow=true; o.receiveShadow=true; } });
+const nightBox=document.createElement('div'); nightBox.id='ntoast'; document.body.appendChild(nightBox);
+function setNight(on){ live.night=on?1:0; $('#tNight').textContent=on?'☀️':'🌙'; nightBox.innerHTML=on?"🌙 És de nit: les cases encenen els llums i <b>les plaques solars no produeixen electricitat</b>. Les altres centrals continuen funcionant.":"☀️ És de dia: les plaques solars tornen a produir electricitat."; nightBox.classList.add('show'); clearTimeout(nightBox._t); nightBox._t=setTimeout(()=>nightBox.classList.remove('show'),5000); }
+const NIGHTSKY=new THREE.Color(0x0b1430);
+function updLive(dt){ const k=live.nightT+=((live.night)-live.nightT)*Math.min(1,dt*2); 
+ hemiL.intensity=1.4-k*1.15; sun.intensity=2.2-k*1.95; sun.color.setHex(0xfff3dd).lerp(new THREE.Color(0x8fa8ff),k); mats.win.emissiveIntensity=k*1.6; winMats[1].emissiveIntensity=k*1.1; winMats[2].emissiveIntensity=k*.5; live.lamps.material.opacity=k; mats.panel.emissive&&mats.panel.emissive.setHex(0x000000);
+ scene.background.lerp(NIGHTSKY,k); scene.fog.color.lerp(NIGHTSKY,k);
+ if(paused) return;
+ live.clouds.forEach(c=>{ const u=c.userData; u.x+=dt*u.s; if(u.x>160) u.x=-160; c.position.set(u.x,u.y,u.z); c.children.forEach(m=>m.material.color.setScalar(1-k*.75)); });
+ const ba=T*.12, bc=new THREE.Vector3(Math.cos(ba)*45,26+Math.sin(T*.5)*2,Math.sin(ba)*30), dir=new THREE.Vector3(-Math.sin(ba)*45,0,Math.cos(ba)*30).normalize(); const yaw=Math.atan2(dir.x,dir.z);
+ live.birds.forEach((b,i)=>{ const o=b.userData.o; b.position.set(bc.x+o.x*Math.cos(yaw)-o.z*Math.sin(yaw)*-1, bc.y+o.y, bc.z-o.x*Math.sin(yaw)-o.z*Math.cos(yaw)); b.rotation.y=yaw; NK.flap(b,T+i*.3); b.visible=k<.5; });
+ live.cars.forEach(car=>{ const u=car.userData; u.s+=u.v*dt; const P=u.hw?HWY:u.r; let s=u.s; if(u.hw){ s=((s%P.L)+P.L)%P.L; } const [x,z,dx,dz]=P.at(s); const sg=Math.sign(u.v), off=.8; const px=x-dz*off*sg, pz=z+dx*off*sg; car.position.set(px,hgt(px,pz)+.1,pz); car.rotation.y=Math.atan2(dx*sg,dz*sg); car.visible=!u.hw||(s>3&&s<P.L-3); });
+ live.people.forEach(p=>{ const u=p.userData; u.s+=u.v*dt; const [x,z,dx,dz]=u.r.at(u.s); const sg=Math.sign(u.v); p.position.set(x,TH+.2,z); p.rotation.y=Math.atan2(dx*sg,dz*sg); const a=Math.sin(T*7*Math.abs(u.v)+u.ph)*.5; u.legs[0].rotation.x=a; u.legs[1].rotation.x=-a; p.children[0].position.y=.72+Math.abs(Math.sin(T*7*Math.abs(u.v)+u.ph))*.03; }); }
+
+/* ================= STATE ================= */
+let mode='formes', paused=false, renewPct=40, filter='tots', selSrc=null, flowT=0, chainT=0;
+const P=$('#panel .pbody'), ST=$('#stage>div');
+function srcClick(k){ if(mode==='central'){ selectCentral(k); return; } const s=SRC[k]; showCard(s); fly(s); }
+function fly(s){ const t=new THREE.Vector3(s.x,hgt(s.x,s.z)+3,s.z); const f=s.id==='vent'||s.id==='fossil'?1.8:1.2; flyTo(t,t.clone().add(new THREE.Vector3(18*f,14*f,24*f))); }
+let fl=null; function flyTo(t,p,d=1){fl={t:0,d,ft:controls.target.clone(),tt:t,fp:camera.position.clone(),tp:p};}
+function walkStart(){ if(!['fonts','central'].includes(mode)) setMode('fonts'); fl=null; Walk.start(THREE,{camera,controls,canvas,start:[TOWN.x,TOWN.z],yaw:-Math.PI/2,speed:4.5,eye:1.65,
+  ground:(x,z)=>hgt(x,z)+(Math.max(Math.abs(x-TOWN.x),Math.abs(z-TOWN.z))<22?.1:.05), radius:95, center:[0,0],
+  blocked:(x,z)=>{ for(let bx=0;bx<4;bx++) for(let bz=0;bz<4;bz++){ if(bx===2&&bz===2) continue; const cx=TOWN.x-15+bx*10, cz=TOWN.z-15+bz*10; if(Math.abs(x-cx)<3.5&&Math.abs(z-cz)<3.5) return true; } for(const k in SRC){ const s=SDATA[k]; if(s&&Math.hypot(x-s.x,z-s.z)<4) return true; } return false; },
+  onStop:()=>{ cityView(); }}); }
+Walk.button($('#tools'),walkStart);
+function cityView(){ flyTo(new THREE.Vector3(54,1,0),new THREE.Vector3(32,20,38),1.2); }
+function home(){ const asp=innerWidth/innerHeight, f=asp<1?1.6:1; flyTo(new THREE.Vector3(8,0,0),new THREE.Vector3(8,70*f,95*f)); }
+const ray=new THREE.Raycaster(); let down=null;
+canvas.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY};});
+canvas.addEventListener('pointerup',e=>{ if(!down||Math.hypot(e.clientX-down.x,e.clientY-down.y)>6){down=null;return;} down=null; if(!['fonts','central'].includes(mode)) return;
+  ray.setFromCamera(new THREE.Vector2(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1),camera); const h=ray.intersectObjects(pickables,false); if(h.length) srcClick(h[0].object.userData.src); });
+function applyFilter(){ for(const [k,s] of Object.entries(SRC)){ const on=filter==='tots'||(filter==='renov')===!!s.renov; s.g.traverse(o=>{if(o.isMesh&&o.material!==mats.water){o.material=o.material.userData.orig||o.material;}}); s.pin.hidden=!on; s.g.visible=true; s.g.scale.setScalar(on?1:.0001); } }
+
+/* ================= FORMES ================= */
+const FORMS={lluminosa:['💡','Lluminosa','#ffd23f'],mecanica:['⚙️','Mecànica','#b6ff3b'],termica:['🔥','Tèrmica','#ff8a5c'],quimica:['🧪','Química','#c08bff'],electrica:['⚡','Elèctrica','#00e5ff'],nuclear:['⚛️','Nuclear','#7dffb2']};
+const OBJS=[
+ {n:'Radiador',e:'♨️',ch:['electrica','termica'],t:"L'energia elèctrica es transforma en energia tèrmica."},
+ {n:'Espelma',e:'🕯️',ch:['quimica',['termica','lluminosa']],t:"L'energia química de la cera es transforma en energia tèrmica i lluminosa."},
+ {n:'Ventilador',e:'🌬️',ch:['electrica','mecanica'],t:"L'energia elèctrica es transforma en energia mecànica."},
+ {n:'Llanterna',e:'🔦',ch:['quimica','electrica','lluminosa'],t:"L'energia química de les piles es converteix en energia lluminosa."},
+ {n:'Aerogenerador',e:'🌀',ch:['mecanica','electrica'],t:"L'energia mecànica del vent es transforma en energia elèctrica."},
+ {n:'Cotxe',e:'🚗',ch:['quimica','mecanica'],t:"L'energia química del combustible es transforma en energia mecànica."},
+ {n:'Planta',e:'🌱',ch:['lluminosa','quimica'],t:"Les plantes fan servir l'energia lluminosa del Sol per fer la fotosíntesi i la guarden com a energia química."},
+ {n:'Nen corrent',e:'🏃',ch:['quimica','mecanica'],t:"Obtenim energia química dels aliments i la transformem en moviment (energia mecànica)."},
+ {n:'Placa solar',e:'🔆',ch:['lluminosa','electrica'],t:"La placa fotovoltaica transforma l'energia lluminosa en energia elèctrica."},
+ {n:'Torradora',e:'🍞',ch:['electrica','termica'],t:"L'energia elèctrica es transforma en energia tèrmica."},
+ {n:'Foguera',e:'🔥',ch:['quimica',['termica','lluminosa']],t:"Quan la fusta crema, la seva energia química es transforma en energia tèrmica i lluminosa."},
+ {n:'Mòbil carregant',e:'📱',ch:['electrica','quimica'],t:"L'energia elèctrica es guarda a la bateria com a energia química."}];
+let selObj=null, objT=0;
+function stageFormes(){ ST.innerHTML='<p class="bigq">Toca un objecte: quina transformació d\'energia s\'hi produeix?</p><div class="chain" id="fChain"></div><div class="objs" id="fObjs"></div>';
+ OBJS.forEach((o,i)=>{const b=document.createElement('button');b.className='obj';b.innerHTML=`<span>${o.e}</span>${o.n}`;b.onclick=()=>{selObj=i;objT=0;document.querySelectorAll('.obj').forEach((x,j)=>x.classList.toggle('on',j===i));drawChain();};$('#fObjs').appendChild(b);}); drawChain(); }
+function chipHTML(k){const f=FORMS[k];return `<span class="chip" style="color:${f[2]};border-color:${f[2]}55">${f[0]} ${f[1]}</span>`;}
+function drawChain(){ const C=$('#fChain'); if(!C) return; if(selObj==null){C.innerHTML='<span style="color:var(--mu)">Formes d\'energia: '+Object.keys(FORMS).map(k=>FORMS[k][0]+' '+FORMS[k][1]).join(' · ')+'</span>';return;}
+ const o=OBJS[selObj]; let h=`<span class="chip on" style="font-size:22px">${o.e}</span><span class="arr on">:</span>`; o.ch.forEach((s,i)=>{ if(i) h+='<span class="arr">→</span>'; h+= Array.isArray(s)? '<span style="display:flex;flex-direction:column;gap:4px">'+s.map(chipHTML).join('')+'</span>' : chipHTML(s); }); h+=`<div style="width:100%;text-align:center;color:#dbe8f8;font-size:15px;margin-top:4px">${o.t}</div>`; C.innerHTML=h; }
+function animChain(dt){ const C=$('#fChain'); if(!C||selObj==null) return; objT+=dt; const parts=[...C.children].filter(x=>x.classList.contains('arr')||x.classList.contains('chip')||x.tagName==='SPAN'&&x.style.flexDirection); let idx=Math.floor(objT/0.7); parts.forEach((p,i)=>{ if(i<2) return; const on=i-2<=idx; p.classList.toggle('on',on); p.querySelectorAll&&p.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',on)); }); }
+
+/* ================= CENTRAL ================= */
+function selectCentral(k){ selSrc=k; flowT=0; chainT=0; const s=SRC[k]; fly(s); document.querySelectorAll('#cList button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));
+ const C=$('#cChain'); if(C){ let h=''; [...s.chain,['🗼','Línia elèctrica','#9fb4cc'],['🏠','Cases','#00e5ff']].forEach((c,i)=>{ if(i) h+='<span class="arr">→</span>'; h+=`<span class="chip" style="color:${c[2]};border-color:${c[2]}55">${c[0]} ${c[1]}</span>`; }); C.innerHTML=h; }
+ $('#cTxt')&&( $('#cTxt').innerHTML=`<b>${s.n}.</b> ${s.t}` ); }
+function updFlow(dt){ if(mode!=='central'||!selSrc){flow.visible=false;mats.win.emissiveIntensity=0;return;} flow.visible=true; flowT+=dt*(paused?0:1); chainT+=dt*(paused?0:1);
+ const a=flow.geometry.attributes.position.array, c1=lines[selSrc], c2=lines.town;
+ for(let i=0;i<flowN;i++){ let t=((i/flowN)+flowT*.25)%1; const p=c1.getPointAt(t); a.set([p.x,p.y+.2,p.z],i*3); const q=c2.getPointAt(((i/flowN)+flowT*.4)%1); a.set([q.x,q.y+.2,q.z],(i+flowN)*3); }
+ flow.geometry.attributes.position.needsUpdate=true; mats.win.emissiveIntensity=Math.min(1.4,Math.max(0,(chainT-2.5)*.8));
+ const C=$('#cChain'); if(C){ const k=Math.floor(chainT/0.8); [...C.children].forEach((e,i)=>{ const step=Math.floor(i/2)*1+(i%2?0:0); const on=Math.floor((i+1)/2)<=k; e.classList.toggle('on',on); e.classList.toggle('cur',e.classList.contains('chip')&&Math.floor(i/2)===Math.min(k,Math.floor(C.children.length/2))); }); } }
+
+/* ================= CIRCUITS ================= */
+const COLS=6,ROWS=4,SP=90,MG=45, W=MG*2+(COLS-1)*SP, H=MG*2+(ROWS-1)*SP;
+const PARTS={cable:{n:'Cable',e:'〰️',R:.01},pila:{n:'Pila',e:'🔋'},bombeta:{n:'Bombeta',e:'💡',R:10},motor:{n:'Motor',e:'🌀',R:8},timbre:{n:'Timbre',e:'🔔',R:12},interruptor:{n:'Interruptor',e:'🔘'},
+ clip:{n:'Clip (metall)',e:'📎',mat:1,cond:1},moneda:{n:'Moneda',e:'🪙',mat:1,cond:1},clau:{n:'Clau de ferro',e:'🔑',mat:1,cond:1},fusta:{n:'Fusta',e:'🪵',mat:1,cond:0},goma:{n:'Goma',e:'🧽',mat:1,cond:0},plastic:{n:'Regle de plàstic',e:'📏',mat:1,cond:0},vidre:{n:'Got de vidre',e:'🥛',mat:1,cond:0},esborra:{n:'Treu',e:'❌'}};
+const TOOL_ORDER=['cable','pila','bombeta','interruptor','motor','timbre','clip','moneda','clau','fusta','goma','plastic','vidre','esborra'];
+let tool='cable', edges={}, sim={}, tested={}, mission=new Set();
+const V=4.5, RINT=.3;
+const ekey=(o,x,y)=>o+','+x+','+y;
+const eNodes=k=>{const [o,x,y]=k.split(',');const X=+x,Y=+y;return [Y*COLS+X, o==='h'?Y*COLS+X+1:(Y+1)*COLS+X];};
+function solve(E){ const N=COLS*ROWS; const G=Array.from({length:N},()=>new Float64Array(N)), I=new Float64Array(N);
+ for(let i=0;i<N;i++)G[i][i]+=1e-7;
+ const add=(a,b,g)=>{G[a][a]+=g;G[b][b]+=g;G[a][b]-=g;G[b][a]-=g;};
+ for(const [k,c] of Object.entries(E)){ const [a,b]=eNodes(k); const p=PARTS[c.t];
+  if(c.t==='pila'){ const [m,pl]=c.flip?[b,a]:[a,b]; add(m,pl,1/RINT); I[pl]+=V/RINT; I[m]-=V/RINT; continue; }
+  let R=p.R; if(c.t==='interruptor') R=c.on?.01:null; if(p.mat) R=p.cond?.05:null; if(R!=null) add(a,b,1/R); }
+ /* gauss */ const A=G.map((r,i)=>[...r,I[i]]); for(let i=0;i<N;i++){let mx=i;for(let r=i+1;r<N;r++)if(Math.abs(A[r][i])>Math.abs(A[mx][i]))mx=r;[A[i],A[mx]]=[A[mx],A[i]];const d=A[i][i];for(let r=i+1;r<N;r++){const f=A[r][i]/d;if(f)for(let c=i;c<=N;c++)A[r][c]-=f*A[i][c];}}
+ const v=new Float64Array(N); for(let i=N-1;i>=0;i--){let s=A[i][N];for(let c=i+1;c<N;c++)s-=A[i][c]*v[c];v[i]=s/A[i][i];}
+ const out={}; let short=false;
+ for(const [k,c] of Object.entries(E)){ const [a,b]=eNodes(k); const p=PARTS[c.t]; let cur=0, dv=v[a]-v[b];
+  if(c.t==='pila'){ const [m,pl]=c.flip?[b,a]:[a,b]; const ii=(V-(v[pl]-v[m]))/RINT; cur=c.flip?-ii:ii; if(Math.abs(ii)>4) short=true; }
+  else { let R=p.R; if(c.t==='interruptor') R=c.on?.01:null; if(p.mat) R=p.cond?.05:null; cur=R!=null?dv/R:0; }
+  out[k]={i:cur,dv}; }
+ return {e:out,short,v}; }
+const PREF=(V/(10+RINT))**2*10;
+function bright(k){const s=sim.e&&sim.e[k];return s?(s.i*s.i*10)/PREF:0;}
+function runSim(){ sim=solve(edges);
+ for(const [k,c] of Object.entries(edges)){ const p=PARTS[c.t]; if(p.mat){ const s=sim.e[k]; if(p.cond&&Math.abs(s.i)>.05) tested[c.t]=1; if(!p.cond&&Math.abs(s.dv)>1) tested[c.t]=0; } }
+ checkMissions(); drawBoard(); }
+const MIS=[['bomb','Encén una bombeta.'],['mot','Fes girar un motor.'],['sw','Fes un circuit amb interruptor que encengui i apagui una bombeta.'],['ser','Encén dues bombetes en sèrie (una darrere l\'altra).'],['par','Encén dues bombetes en paral·lel (cadascuna en el seu camí).'],['mat','Prova 4 materials: quins condueixen i quins són aïllants?']];
+function checkMissions(){ const bul=Object.keys(edges).filter(k=>edges[k].t==='bombeta'), lit=bul.filter(k=>bright(k)>.08);
+ if(!sim.short){ if(lit.length) mission.add('bomb'); if(Object.keys(edges).some(k=>edges[k].t==='motor'&&Math.abs(sim.e[k].i)>.1)) mission.add('mot');
+  if(lit.filter(k=>bright(k)<.5).length>=2) mission.add('ser'); if(lit.filter(k=>bright(k)>.7).length>=2) mission.add('par');
+  for(const [k,c] of Object.entries(edges)) if(c.t==='interruptor'){ const E2=JSON.parse(JSON.stringify(edges)); E2[k].on=!c.on; const s2=solve(E2); if(bul.some(b=>((sim.e[b].i**2*10)/PREF>.08)!==((s2.e[b].i**2*10)/PREF>.08))) mission.add('sw'); } }
+ if(Object.keys(tested).length>=4) mission.add('mat');
+ const L=$('#misL'); if(L) L.innerHTML=MIS.map(([k,t])=>`<li class="${mission.has(k)?'ok':''}"><i>${mission.has(k)?'✓':''}</i>${t}</li>`).join('');
+ const T=$('#matL'); if(T) T.innerHTML=Object.keys(tested).length? Object.entries(tested).map(([m,c])=>`<span class="pill ${c?'on':''}">${PARTS[m].e} ${PARTS[m].n}: ${c?'condueix':'aïllant'}</span>`).join(' ') : '<span style="color:var(--mu);font-size:13px">Posa un material en un circuit amb pila i bombeta.</span>'; }
+function stageCircuits(){ ST.innerHTML=`<div class="stbox" style="position:relative"><div id="warn">⚠️ Curtcircuit! La pila s'escalfa: el corrent no passa per cap receptor.</div><svg id="board" viewBox="0 0 ${W} ${H}"></svg></div>`; drawBoard(); }
+function partSVG(c,k){ const p=PARTS[c.t], s=sim.e&&sim.e[k], cur=s?Math.abs(s.i):0; let g='';
+ const wire=(x1,x2)=>`<line x1="${x1}" y1="0" x2="${x2}" y2="0" stroke="#2f8cff" stroke-width="6" stroke-linecap="round"/>`;
+ if(c.t==='cable') return wire(4,SP-4);
+ g+=wire(4,26)+wire(SP-26,SP-4);
+ if(c.t==='pila'){ const pl=c.flip?-1:1; g+=`<rect x="26" y="-15" width="38" height="30" rx="5" fill="#2b2f36" stroke="#ffd23f" stroke-width="2"/><rect x="${pl>0?58:26}" y="-15" width="6" height="30" fill="#ffd23f"/><text x="${pl>0?49:41}" y="5" font-size="14" font-weight="700" fill="#ffd23f" text-anchor="middle">+</text><text x="${pl>0?34:56}" y="5" font-size="14" font-weight="700" fill="#9fb4cc" text-anchor="middle">−</text>`; if(sim.short&&cur>4) g+=`<circle cx="45" cy="0" r="24" fill="#ff3b5c" opacity=".35"/>`; }
+ if(c.t==='bombeta'){ const b=Math.min(1.4,bright(k)); g+=`<circle cx="45" cy="0" r="${22+b*16}" fill="#ffd23f" opacity="${b*.35}"/><circle cx="45" cy="0" r="17" fill="${b>.08?`rgb(255,${200+b*40|0},${80+b*80|0})`:'#3a4150'}" stroke="#cfd6e0" stroke-width="2"/><path d="M37 0 q4 -8 8 0 q4 8 8 0" fill="none" stroke="${b>.08?'#fff':'#8a93a3'}" stroke-width="2"/>`; }
+ if(c.t==='motor'){ const on=cur>.1; g+=`<circle cx="45" cy="0" r="17" fill="#3a4150" stroke="#b6ff3b" stroke-width="2"/><text x="45" y="5" font-size="14" font-weight="700" fill="#b6ff3b" text-anchor="middle">M</text><g class="spin" data-k="${k}" transform="translate(45,-26)"><rect x="-14" y="-2" width="28" height="4" rx="2" fill="${on?'#b6ff3b':'#8a93a3'}"/><rect x="-2" y="-14" width="4" height="28" rx="2" fill="${on?'#b6ff3b':'#8a93a3'}"/></g>`; }
+ if(c.t==='timbre'){ const on=cur>.1; g+=`<circle cx="45" cy="0" r="17" fill="#3a4150" stroke="#ffd23f" stroke-width="2"/><text class="${on?'ring':''}" x="45" y="7" font-size="20" text-anchor="middle">🔔</text>${on?'<text x="70" y="-18" font-size="13" fill="#ffd23f">ring!</text>':''}`; }
+ if(c.t==='interruptor'){ g+=`<circle cx="28" cy="0" r="5" fill="#cfd6e0"/><circle cx="62" cy="0" r="5" fill="#cfd6e0"/><line x1="28" y1="0" x2="${c.on?62:56}" y2="${c.on?0:-24}" stroke="${c.on?'#b6ff3b':'#ff8a5c'}" stroke-width="5" stroke-linecap="round"/><text x="45" y="26" font-size="11" fill="#9fb4cc" text-anchor="middle">${c.on?'tancat':'obert'}</text>`; }
+ if(p.mat){ const st=tested[c.t]; g+=`<rect x="22" y="-17" width="46" height="34" rx="8" fill="#20283a" stroke="${p.cond?'#cfd6e0':'#7a5130'}" stroke-width="2"/><text x="45" y="7" font-size="20" text-anchor="middle">${p.e}</text>${st!=null?`<text x="45" y="32" font-size="11" fill="${st?'#b6ff3b':'#ff8a9c'}" text-anchor="middle">${st?'condueix ✓':'aïllant ✗'}</text>`:''}`; }
+ return g; }
+function drawBoard(){ const S=$('#board'); if(!S) return; let h=`<rect x="6" y="6" width="${W-12}" height="${H-12}" rx="18" fill="#0d1a2e" stroke="rgba(0,229,255,.25)"/>`;
+ for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){ for(const o of ['h','v']){ if(o==='h'&&x===COLS-1||o==='v'&&y===ROWS-1) continue; const k=ekey(o,x,y), X=MG+x*SP, Y=MG+y*SP, rot=o==='v'?90:0, c=edges[k];
+   h+=`<g transform="translate(${X},${Y}) rotate(${rot})">${c?partSVG(c,k):`<line x1="12" y1="0" x2="${SP-12}" y2="0" stroke="rgba(0,229,255,.12)" stroke-width="3" stroke-dasharray="4 6"/>`}<rect class="hit" data-k="${k}" x="10" y="-22" width="${SP-20}" height="44" fill="transparent" style="cursor:pointer"/></g>`; } }
+ for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++) h+=`<circle cx="${MG+x*SP}" cy="${MG+y*SP}" r="6" fill="#1b2a44" stroke="#5d7391" stroke-width="2"/>`;
+ h+='<g id="dots"></g>'; S.innerHTML=h; S.querySelectorAll('.hit').forEach(r=>r.onclick=()=>edgeTap(r.dataset.k)); $('#warn').style.display=sim.short?'block':'none'; buildDots(); }
+function edgeTap(k){ const c=edges[k];
+ if(tool==='esborra'){ delete edges[k]; }
+ else if(c&&c.t==='interruptor'&&tool!=='interruptor'){ c.on=!c.on; }
+ else if(c&&c.t===tool){ if(tool==='interruptor') c.on=!c.on; else if(tool==='pila') c.flip=!c.flip; else delete edges[k]; }
+ else edges[k]={t:tool,on:false,flip:false};
+ runSim(); }
+let dots=[];
+function buildDots(){ dots=[]; const G=$('#dots'); if(!G||!sim.e) return; let h='';
+ for(const [k,s] of Object.entries(sim.e)){ if(Math.abs(s.i)<.02||sim.short&&false) continue; const [o,x,y]=k.split(','); for(let j=0;j<3;j++){ h+=`<circle r="3.2" fill="#ffd23f"/>`; dots.push({o,x:+x,y:+y,i:s.i,ph:j/3}); } }
+ G.innerHTML=h; [...G.children].forEach((e,i)=>dots[i].el=e); }
+let circT=0;
+function animCircuit(dt){ circT+=dt; for(const d of dots){ const sp=Math.min(1.6,Math.abs(d.i))*.9; let t=(d.ph+circT*sp*(d.i>0?1:-1))%1; if(t<0)t+=1; const X=MG+d.x*SP+(d.o==='h'?t*SP:0), Y=MG+d.y*SP+(d.o==='v'?t*SP:0); d.el.setAttribute('cx',X); d.el.setAttribute('cy',Y); }
+ document.querySelectorAll('#board .spin').forEach(g=>{const s=sim.e[g.dataset.k];const a=(circT*Math.min(2,Math.abs(s?s.i:0))*600*(s&&s.i<0?-1:1))%360;g.setAttribute('transform',`translate(45,-26) rotate(${Math.abs(s?s.i:0)>.1?a:0})`);});
+ document.querySelectorAll('#board .ring').forEach(t=>t.setAttribute('transform',`rotate(${Math.sin(circT*40)*12} 45 0)`)); }
+function loadPreset(n){ edges={}; tested={}; if(n==='llibre'){ edges[ekey('v',1,1)]={t:'pila',flip:true}; edges[ekey('h',1,1)]={t:'cable'}; edges[ekey('h',2,1)]={t:'interruptor',on:false}; edges[ekey('v',3,1)]={t:'bombeta'}; edges[ekey('h',2,2)]={t:'cable'}; edges[ekey('h',1,2)]={t:'cable'}; }
+ if(n==='mat'){ edges[ekey('v',1,1)]={t:'pila',flip:true}; edges[ekey('h',1,1)]={t:'cable'}; edges[ekey('h',2,1)]={t:'cable'}; edges[ekey('v',3,1)]={t:'bombeta'}; edges[ekey('h',2,2)]={t:'cable'}; } runSim(); }
+
+/* ================= CASA ================= */
+const ROOMS=[{id:'hab',n:'Habitació',x:60,y:110,w:240,h:130,ppl:0},{id:'bany',n:'Bany',x:300,y:110,w:240,h:130,ppl:0},{id:'cuina',n:'Cuina',x:60,y:240,w:240,h:150,ppl:1},{id:'menj',n:'Menjador',x:300,y:240,w:240,h:150,ppl:1}];
+const APPS=[
+ {id:'llumH',n:'Llum',e:'💡',r:'hab',eff:'lluminós',w:10,x:110,y:170,on:1},{id:'tauleta',n:'Tauleta (carregant)',e:'📲',r:'hab',eff:'químic',w:10,x:180,y:200,on:1},{id:'pc',n:'Ordinador',e:'🖥️',r:'hab',eff:'lluminós',w:80,x:250,y:170,on:1},
+ {id:'llumB',n:'Llum',e:'💡',r:'bany',eff:'lluminós',w:10,x:350,y:170,on:1},{id:'asse',n:'Assecador',e:'💨',r:'bany',eff:'calorífic',w:1200,x:430,y:200,on:0},{id:'rasp',n:'Raspall elèctric (carregant)',e:'🪥',r:'bany',eff:'químic',w:2,x:500,y:170,on:1},
+ {id:'nevera',n:'Nevera',e:'🧊',r:'cuina',eff:'mecànic',w:150,x:100,y:320,on:1,keep:1},{id:'forn',n:'Forn',e:'🍕',r:'cuina',eff:'calorífic',w:2000,x:170,y:330,on:0},{id:'torr',n:'Torradora',e:'🍞',r:'cuina',eff:'calorífic',w:800,x:240,y:300,on:0},{id:'bate',n:'Batedora',e:'🥤',r:'cuina',eff:'mecànic',w:300,x:240,y:360,on:0},{id:'llumC',n:'Llum',e:'💡',r:'cuina',eff:'lluminós',w:10,x:110,y:270,on:1},
+ {id:'tv',n:'Televisor',e:'📺',r:'menj',eff:'lluminós',w:100,x:360,y:320,on:1},{id:'llumM',n:'Llum',e:'💡',r:'menj',eff:'lluminós',w:10,x:350,y:270,on:1},{id:'vent',n:'Ventilador',e:'🌀',r:'menj',eff:'mecànic',w:40,x:440,y:350,on:0},{id:'rad',n:'Radiador',e:'♨️',r:'menj',eff:'calorífic',w:1500,x:510,y:320,on:0},{id:'mobil',n:'Mòbil (carregant)',e:'📱',r:'menj',eff:'químic',w:5,x:470,y:290,on:0}];
+const EFF={'lluminós':['💡','#ffd23f'],'calorífic':['🔥','#ff8a5c'],'mecànic':['⚙️','#b6ff3b'],'químic':['🧪','#c08bff']};
+let casaGame=false;
+function stageCasa(){ ST.innerHTML='<div class="stbox"><svg id="house" viewBox="0 0 600 410"></svg></div>'; drawHouse(); }
+function drawHouse(){ const S=$('#house'); if(!S) return; let h=`<polygon points="40,110 300,20 560,110" fill="#5b2b22" stroke="#b5523b" stroke-width="3"/>`;
+ for(const r of ROOMS){ const any=APPS.some(a=>a.r===r.id&&a.on); h+=`<rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="${any?'#2a3550':'#141c2c'}" stroke="#5d7391" stroke-width="3"/><text x="${r.x+10}" y="${r.y+20}" font-size="14" fill="#9fb4cc" font-family="Space Grotesk">${r.n}</text><text x="${r.x+r.w-12}" y="${r.y+24}" font-size="20" text-anchor="end">${r.ppl?'🙂🙂':'🚪 buida'}</text>`; }
+ for(const a of APPS){ const c=EFF[a.eff][1]; h+=`<g class="app" data-id="${a.id}" style="cursor:pointer"><circle cx="${a.x}" cy="${a.y}" r="24" fill="${a.on?c+'33':'#00000055'}" stroke="${a.on?c:'#5d7391'}" stroke-width="${a.on?3:1.5}"/><text x="${a.x}" y="${a.y+9}" font-size="24" text-anchor="middle" opacity="${a.on?1:.45}">${a.e}</text>${a.on?`<text x="${a.x+20}" y="${a.y-16}" font-size="13">${EFF[a.eff][0]}</text>`:''}</g>`; }
+ S.innerHTML=h; S.querySelectorAll('.app').forEach(g=>g.onclick=()=>{const a=APPS.find(x=>x.id===g.dataset.id); a.on=a.on?0:1; drawHouse(); casaInfo(a);}); casaStats(); }
+function casaStats(){ const tot=APPS.filter(a=>a.on).reduce((s,a)=>s+a.w,0); const waste=APPS.filter(a=>a.on&&!a.keep&&!ROOMS.find(r=>r.id===a.r).ppl).reduce((s,a)=>s+a.w,0);
+ const m=$('#cMeter'); if(m){ m.style.width=Math.min(100,tot/60)+'%'; $('#cW').textContent=tot.toLocaleString('ca')+' W'; $('#cWaste').textContent=waste+' W'; }
+ const ef=$('#cEff'); if(ef){ ef.innerHTML=Object.entries(EFF).map(([k,[e,c]])=>`<div><small>Efecte ${k}</small><b style="color:${c}">${e} ${APPS.filter(a=>a.on&&a.eff===k).length}</b></div>`).join(''); }
+ const g=$('#cGame'); if(g&&casaGame){ const nev=APPS.find(a=>a.id==='nevera').on; g.innerHTML= waste===0&&nev? '<span style="color:var(--li)">🏆 Molt bé! No malbarates energia i la nevera continua encesa.</span>' : !nev? '<span style="color:#ff8a9c">Compte! Si apagues la nevera, el menjar es fa malbé.</span>' : `Encara malbarates <b>${waste} W</b> a les habitacions buides.`; } }
+function casaInfo(a){ showCard({n:a.n,tipus:'Efecte '+a.eff,f:{'Consum aproximat':a.w+' W','Estat':a.on?'encès':'apagat'},t:{lluminós:"Transforma l'electricitat en llum.",calorífic:"Quan el corrent passa pel material conductor, s'escalfa.",mecànic:"El corrent fa girar un motor.",químic:"El corrent provoca canvis químics que guarden l'energia a la bateria."}[a.eff]}); }
+
+/* ================= PANELS ================= */
+function renderPanel(){ P.innerHTML='';
+ if(mode==='formes'){ P.appendChild(html(`<h3>L'energia</h3><p class="lead">La causa dels canvis</p><p class="t">L'<b>energia</b> és la causa que es produeixin canvis a la matèria: el creixement dels éssers vius, el moviment dels núvols, l'erupció d'un volcà… Pot manifestar-se de moltes maneres:</p>
+  <div class="sbox"><ul><li><b>Lluminosa</b>: la de la llum.</li><li><b>Mecànica</b>: la dels cossos en moviment o elevats.</li><li><b>Tèrmica</b>: com més en té un cos, més calent és.</li><li><b>Química</b>: als aliments, combustibles, piles…</li><li><b>Elèctrica</b>: la dels llamps i la dels cables.</li><li><b>Nuclear</b>: la de l'urani i el plutoni.</li></ul></div>
+  <div class="sbox"><p class="h">Propietats</p><ul><li>Es <b>transfereix</b>: la raqueta passa energia a la pilota.</li><li>S'<b>emmagatzema</b>: a les piles i bateries.</li><li>Es <b>transporta</b>: el combustible viatja en camions.</li><li>Es <b>transforma</b>: d'un tipus a un altre.</li></ul></div>
+  <div class="sbox"><p class="h">Activitat 1 del llibre</p><p class="act">Explica quines transformacions es produeixen en el radiador, l'espelma, el ventilador i la llanterna.</p></div>`));
+  P.appendChild(quiz([["Quina energia tenen els aliments?",["Química","Lluminosa","Nuclear"],0],["Quina propietat fa servir una pila?",["Es transfereix","S'emmagatzema","Es transporta"],1]])); }
+ if(mode==='fonts'){ P.appendChild(html(`<h3>Les fonts d'energia</h3><p class="lead">Toca les centrals del paisatge</p><p class="t">Les fonts d'energia són els recursos de la natura que fem servir per obtenir energia.</p>
+  <div class="flt"><button class="pill ${filter==='tots'?'on':''}" data-f="tots">Totes</button><button class="pill ${filter==='renov'?'on':''}" data-f="renov">🌱 Renovables</button><button class="pill ${filter==='no'?'on':''}" data-f="no">🛢️ No renovables</button></div>
+  <div class="sbox"><ul><li><b>Renovables</b>: no s'esgoten i no contaminen, però encara no basten per a tota l'energia que gastem. Sol, vent, aigua, calor de la Terra i biomassa.</li><li><b>No renovables</b>: s'esgoten i contaminen, però són fàcils de fer servir. Combustibles fòssils (carbó, petroli, gas natural) i combustibles nuclears.</li></ul></div>
+  <div class="sl"><label><span>Energia renovable que fem servir</span><b id="rpv">${renewPct}%</b></label><input type="range" id="rp" min="0" max="100" step="5" value="${renewPct}"></div><p class="t" style="font-size:13px;color:var(--mu)">Mou el control i observa el fum de la central tèrmica i el color del cel.</p>
+  <div class="sbox"><p class="h">Activitats del llibre</p><p class="act">2: per què el vent és una font renovable? 3: compara font renovable i energia renovable. Investiga: què són els pèl·lets?</p></div>`));
+  P.appendChild(quiz([["Quina d'aquestes fonts és renovable?",["El petroli","El vent","El carbó"],1],["Què és la biomassa?",["Restes d'éssers vius","Un mineral","Un gas"],0]]));
+  P.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{filter=b.dataset.f;applyFilter();renderPanel();}); $('#rp').oninput=e=>{renewPct=+e.target.value;$('#rpv').textContent=renewPct+'%';}; }
+ if(mode==='central'){ P.appendChild(html(`<h3>L'energia elèctrica</h3><p class="lead">De la central a casa</p><p class="t">La major part de l'energia que consumim és elèctrica i es produeix a les <b>centrals elèctriques</b>. A la majoria hi ha una <b>turbina</b> que fa girar un <b>generador</b>: imants i bobines de cable que produeixen electricitat quan giren.</p>
+  <div class="sbox"><p class="h">Tria una central</p><div class="leg" id="cList"></div></div>
+  <div class="sbox"><p class="h">Producció → transport → consum</p><p class="t" style="font-size:14px">L'electricitat no es pot emmagatzemar fàcilment: s'ha de produir a mesura que es gasta i viatja per cables fins a les cases.</p></div>
+  <div class="sbox"><p class="h">Activitats del llibre</p><p class="act">4: compara les centrals solars fotovoltaiques i les tèrmiques. 5: explica l'esquema corrent d'aigua → turbina → generador. 6: fes un esquema de com arriba l'electricitat a casa teva.</p></div>`));
+  const L=$('#cList'); for(const [k,s] of Object.entries(SRC)){const b=document.createElement('button');b.dataset.k=k;b.innerHTML=`<i style="background:${s.renov?'#b6ff3b':'#ff8a5c'}"></i>${s.n}`;b.onclick=()=>selectCentral(k);L.appendChild(b);}
+  P.appendChild(quiz([["Quina màquina produeix l'electricitat en una central?",["El generador","La torre elèctrica","L'embassament"],0],["Quina central no fa servir turbina?",["La hidroelèctrica","La solar fotovoltaica","La nuclear"],1]])); }
+ if(mode==='circuits'){ P.appendChild(html(`<h3>El corrent elèctric</h3><p class="lead">Munta circuits a la placa</p><p class="t">Tria una peça i toca una línia de la placa per posar-la. Toca l'<b>interruptor</b> per obrir-lo o tancar-lo. Toca la <b>pila</b> amb l'eina pila per girar-la.</p>
+  <div class="tools" id="tls"></div>
+  <div class="row" style="margin:10px 0"><button class="pill" id="pL">📘 Circuit del llibre</button><button class="pill" id="pM">🧪 Prova materials</button><button class="pill" id="pB">🧹 Buida</button></div>
+  <div class="sbox"><p class="h">Missions</p><ul class="mis" id="misL"></ul></div>
+  <div class="sbox"><p class="h">Conductors i aïllants</p><div id="matL" class="row"></div></div>
+  <div class="sbox"><p class="h">Elements d'un circuit</p><ul><li><b>Generador</b>: dona l'energia (la pila).</li><li><b>Cables</b>: condueixen l'electricitat. Són de coure tapat amb plàstic.</li><li><b>Interruptor</b>: obre i tanca el circuit.</li><li><b>Receptor</b>: transforma l'electricitat en llum, moviment, so…</li></ul></div>
+  <div class="sbox"><p class="h">Taller tecnològic (pàg. 118)</p><p class="act">Dibuixa a la llibreta el circuit que has muntat i després construeix-lo amb pila, cable, interruptor i bombeta.</p></div>`));
+  const T=$('#tls'); TOOL_ORDER.forEach(k=>{const b=document.createElement('button');b.innerHTML=`<b>${PARTS[k].e}</b>${PARTS[k].n.split(' (')[0].replace('Regle de plàstic','Plàstic').replace('Got de vidre','Vidre').replace('Clau de ferro','Clau')}`;b.classList.toggle('on',k===tool);b.onclick=()=>{tool=k;T.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');};T.appendChild(b);});
+  $('#pL').onclick=()=>loadPreset('llibre'); $('#pM').onclick=()=>{loadPreset('mat');tool='clip';renderPanel();}; $('#pB').onclick=()=>loadPreset('buida'); checkMissions(); }
+ if(mode==='casa'){ P.appendChild(html(`<h3>Els efectes del corrent</h3><p class="lead">Toca els aparells per encendre'ls</p>
+  <div class="hud" id="cEff"></div>
+  <div class="sbox"><p class="h">Consum ara</p><div class="meter"><i id="cMeter"></i></div><div class="row" style="justify-content:space-between;margin-top:6px;font-size:14px"><span>Total: <b id="cW"></b></span><span>A habitacions buides: <b id="cWaste" style="color:#ff8a9c"></b></span></div></div>
+  <button class="big" id="cGo" style="width:100%">🎯 Repte: estalvia energia</button><p id="cGame" class="t" style="font-size:14px"></p>
+  <div class="sbox"><p class="h">Problemes de l'ús de l'energia</p><ul><li>Esgotament dels combustibles fòssils.</li><li>Contaminació de l'aire, que perjudica la salut i fa la pluja tòxica.</li><li>Efecte d'hivernacle: el CO<sub>2</sub> escalfa la Terra.</li></ul></div>
+  <div class="sbox"><p class="h">Ús sostenible: com estalviem?</p><ul><li>Aprofitar la llum del Sol i apagar el que no fem servir.</li><li>Fer servir bé la calefacció i l'aire condicionat.</li><li>Electrodomèstics de baix consum.</li><li>Caminar, anar amb bici o transport públic.</li><li>Energia de fonts renovables.</li></ul></div>
+  <div class="sbox"><p class="h">Activitats del llibre</p><p class="act">8: quin efecte fa el corrent en una bateria, una pantalla, un forn i una batedora? 9 i 10: per què els combustibles fòssils escalfen la Terra? Com podem estalviar energia a l'escola?</p></div>`));
+  $('#cGo').onclick=()=>{ casaGame=true; APPS.forEach(a=>{ if(!ROOMS.find(r=>r.id===a.r).ppl) a.on=1; }); APPS.find(a=>a.id==='rad').on=1; drawHouse(); }; casaStats(); }
+}
+
+/* ================= MODES ================= */
+const RP=$('#rep');
+const repte=Kit.Repte(RP,{
+ formes:{ic:'⚡',n:'Quina transformació?',d:'Endevina en quina energia es transforma.',make:()=>shuf(OBJS).slice(0,8).map(o=>{const last=o.ch[o.ch.length-1],ans=Array.isArray(last)?last.map(k=>FORMS[k][1]).join(' i '):FORMS[last][1];const first=FORMS[Array.isArray(o.ch[0])?o.ch[0][0]:o.ch[0]][1];const others=shuf(Object.values(FORMS).map(f=>f[1]).filter(f=>!ans.includes(f))).slice(0,2);const opts=shuf([ans,...others]);return {q:`${o.e} <em>${o.n}</em>: l'energia ${first.toLowerCase()} es transforma en energia…`,opts:opts.map(x=>x.toLowerCase()),ok:opts.indexOf(ans),exp:o.t};})},
+ renov:{ic:'🌱',n:'Renovable o no?',d:'Classifica les fonts d\'energia.',make:()=>Kit.classify([['El Sol','R'],['El vent','R'],["L'aigua d'un riu",'R'],['La calor de la Terra','R'],['La fusta (biomassa)','R'],['Els pèl·lets','R'],['Les onades i les marees','R'],['El carbó','N'],['El petroli','N'],['El gas natural','N'],["L'urani",'N'],['La gasolina','N']].map(([n,c])=>({n,cat:c==='R'?'Renovable':'No renovable'})),['Renovable','No renovable'],8,it=>`<em>${it.n}</em> és una font…`,it=>it.cat==='Renovable'?"No s'esgota.":"S'esgota i es va consumint.")},
+ efecte:{ic:'🏠',n:'Quin efecte fa el corrent?',d:'Lluminós, calorífic, mecànic o químic.',make:()=>Kit.classify([...APPS.filter((a,i,arr)=>arr.findIndex(b=>b.n===a.n)===i).map(a=>({n:a.n.toLowerCase(),cat:a.eff})),{n:'una planxa',cat:'calorífic'},{n:'un robot aspirador',cat:'mecànic'},{n:'un patinet elèctric',cat:'mecànic'},{n:'la pantalla d\'un mòbil',cat:'lluminós'}],['lluminós','calorífic','mecànic','químic'],8,it=>`Quin efecte fa el corrent en <em>${it.n}</em>?`,it=>'Efecte '+it.cat+'.')},
+ materials:{ic:'📎',n:'Conductor o aïllant?',d:'Deixa passar el corrent?',make:()=>Kit.classify([['el ferro',1],['el coure',1],['la plata',1],["l'alumini",1],['un clip',1],['una moneda',1],['la fusta',0],['el plàstic',0],['la goma',0],['el vidre',0],['la ceràmica',0],['el tefló',0]].map(([n,c])=>({n,cat:c?'Conductor':'Aïllant'})),['Conductor','Aïllant'],8,it=>`<em>${it.n[0].toUpperCase()+it.n.slice(1)}</em> és…`,it=>it.cat==='Conductor'?'Els metalls són bons conductors.':'No condueix bé el corrent elèctric.')},
+ preguntes:{ic:'❓',n:'Preguntes de la unitat',d:'Tot el que has après.',make:()=>Kit.mc([["Què és l'energia?",["La causa dels canvis a la matèria","Un tipus de matèria","Un aparell elèctric"],0],["Quina energia té un cotxe en marxa?",["Mecànica","Nuclear","Lluminosa"],0],["Què fa un generador en una central?",["Produeix electricitat quan gira","Guarda l'electricitat","Refreda l'aigua"],0],["Quins són els quatre elements d'un circuit?",["Generador, cables, interruptor i receptor","Pila, aigua, imant i vidre","Turbina, torre, cable i casa"],0],["Per què els cables de coure estan tapats de plàstic?",["Perquè el plàstic és aïllant","Perquè el plàstic condueix","Perquè fa bonic"],0],["Quin gas és el principal responsable de l'escalfament global?",["El diòxid de carboni","L'oxigen","El vapor d'aigua"],0],["Per què l'electricitat s'ha de produir a mesura que es gasta?",["Perquè no es pot emmagatzemar fàcilment","Perquè s'esgota","Perquè és molt lenta"],0],["Què és un hort solar?",["Un camp ple de plaques fotovoltaiques","Un hort que creix al sol","Una central tèrmica"],0],["Quina és una manera d'estalviar energia?",["Desconnectar els aparells que no fem servir","Deixar els llums encesos","Anar sempre amb cotxe"],0],["Què produeixen les centrals nuclears que és perillós?",["Residus radioactius","Fum negre","Soroll"],0],["En un circuit en sèrie amb dues bombetes…",["fan menys llum que una de sola","fan el doble de llum","no s'encenen mai"],0]],10)}
+});
+function applyMode(){ $('#card').classList.remove('show'); const is3d=['fonts','central'].includes(mode);
+ $('#stage').classList.toggle('show',['formes','circuits','casa'].includes(mode)); canvas.style.visibility=is3d||mode==='formes'||mode==='repte'?'visible':'hidden';
+ $('#panel').style.display=mode==='repte'?'none':''; RP.style.display=mode==='repte'?'block':'none';
+ if(mode==='formes'){ stageFormes(); } if(mode==='circuits'){ stageCircuits(); if(!Object.keys(edges).length) loadPreset('llibre'); } if(mode==='casa'){ stageCasa(); }
+ if(mode==='central'&&!selSrc) setTimeout(()=>selectCentral('vent'),50);
+ if(mode==='repte') repte.menu();
+ renderPanel(); if(mode==='central'&&selSrc) selectCentral(selSrc); else if(is3d||mode==='repte'||mode==='formes') home(); }
+function setMode(m){ if(m!==mode) Vis.fade(); mode=m; document.querySelectorAll('#modes button').forEach(b=>b.classList.toggle('on',b.dataset.m===m)); applyMode(); }
+document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+$('#tPlay').onclick=()=>{paused=!paused;$('#tPlay').textContent=paused?'▶':'⏸';};
+$('#tCity').onclick=()=>{ if(!['fonts','central'].includes(mode)) setMode('fonts'); cityView(); };
+$('#tNight').onclick=()=>setNight(!live.night);
+$('#tHome').onclick=()=>{ if(mode==='central'&&selSrc) fly(SRC[selSrc]); else home(); };
+$('#pmin').onclick=()=>{const m=$('#panel').classList.toggle('min');$('#pmin').textContent=m?'▴ Mostra el text':'▾ Amaga el text';};
+
+/* ================= LOOP ================= */
+let last=performance.now(), T=0, frame=0;
+function loop(now){ let dt=Math.min(.05,(now-last)/1000); last=now; if(window.UX&&UX.ST.paused) dt=0; frame++;
+ if(mode==='circuits'){ animCircuit(dt); return; }
+ if(mode==='casa') return;
+ if(mode==='formes'){ animChain(dt); if(frame%3) return; }
+ if(!paused) T+=dt;
+ if(fl){ fl.t=Math.min(1,fl.t+dt/fl.d); const k=1-Math.pow(1-fl.t,3); controls.target.lerpVectors(fl.ft,fl.tt,k); camera.position.lerpVectors(fl.fp,fl.tp,k); if(fl.t>=1) fl=null; }
+ turbines.forEach((r,i)=>{ if(!paused) r.rotation.z-=dt*(1.2+i*.2); });
+ const ren=renewPct/100;
+ for(const [s,id] of smokes){ const amt= id==='fossil'? (mode==='fonts'?1-ren:1)*1 : 1; updSmoke(s,T+(s.id%7),amt); }
+ if(mode==='fonts'){ scene.background.copy(SKYD).lerp(SKY,ren*.85+.15); scene.fog.color.copy(scene.background); scene.fog.near=40+ren*50; } else { scene.background.copy(SKY); scene.fog.color.set(0x9cc8ec); scene.fog.near=90; }
+ updLive(dt); updFlow(dt);
+ if(Walk.on) Walk.tick(dt); else controls.update(); renderer.render(scene,camera); updatePins(); }
+renderer.setAnimationLoop(loop);
+await decorate(); scene.traverse(o=>{ if(o.isMesh&&o!==ground&&!o.castShadow){ o.castShadow=true; } });
+applyFilter(); applyMode(); $('#loading').remove(); Kit.initHelp('seen');
+UX.boot({items:[...Object.values(SDATA).map(x=>({k:x.n,n:x.n,ic:x.renov?'🌱':'🏭'})),{k:'La ciutat',n:'La ciutat',ic:'🏙️'},{k:'Xarxa elèctrica',n:'Xarxa elèctrica',ic:'⚡'},...OBJS.map(o=>({k:o.n,n:o.n,ic:o.e}))],title:'Fonts i aparells descoberts',reset:()=>{ setMode('fonts'); },
+ tour:{intro:'Hola! Aquí veuràs d\'on surt l\'energia que arriba a casa. En 30 segons et dic com va.',before:[{text:'Primer anem a les Fonts. Toca el botó.',at:'#modes [data-m=fonts]',done:()=>$('#modes button.on').dataset.m==='fonts'}],tap:'Toca una central (o un punt de color) per veure la seva fitxa.',drag:'Arrossega per girar el paisatge. Amb dos dits (o la roda) t\'hi apropes.'}});
+window.__e={cam:(a,b,c2,x,y,z)=>{fl=null;camera.position.set(a,b,c2);controls.target.set(x,y,z);},setNight,setMode,loadPreset,edges:()=>edges,sim:()=>sim,selectCentral,edgeTap,setTool:t=>tool=t};
+</script>
+</body>
+</html>

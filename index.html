@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Medi·Lab 6è</title>
+<style>
+:root{--cy:#00e5ff;--li:#b6ff3b;--bl:#2f8cff;--tx:#e6f1ff;--mu:#8aa0bd}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--tx);font-family:system-ui,"Segoe UI",sans-serif;background:#030712;
+ background-image:radial-gradient(circle at 20% 10%,rgba(0,229,255,.12),transparent 40%),radial-gradient(circle at 85% 80%,rgba(47,140,255,.14),transparent 45%),linear-gradient(rgba(0,229,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.05) 1px,transparent 1px);
+ background-size:auto,auto,40px 40px,40px 40px}
+main{max-width:1000px;margin:0 auto;padding:40px 20px 60px}
+h1{margin:0;font-size:clamp(30px,6vw,48px);letter-spacing:.06em;color:var(--cy);text-shadow:0 0 18px rgba(0,229,255,.55)}
+.sub{color:var(--mu);margin:6px 0 30px;font-size:17px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.card{display:flex;flex-direction:column;gap:8px;text-decoration:none;color:inherit;padding:20px;border-radius:18px;background:rgba(10,19,36,.9);border:1px solid rgba(0,229,255,.22);box-shadow:0 8px 24px rgba(0,0,0,.4);transition:transform .15s,border-color .15s}
+a.card:hover{transform:translateY(-3px);border-color:var(--cy)}
+.ic{font-size:44px}
+.u{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--cy)}
+.card h2{margin:0;font-size:22px}
+.card p{margin:0;color:#cfdcf0;line-height:1.45;font-size:15px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:8px}
+.tags span{font-size:12px;padding:3px 9px;border-radius:20px;background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.25)}
+.go{margin-top:6px;font-weight:600;color:var(--li)}
+.soon{opacity:.5;border-style:dashed}
+.soon .go{color:var(--mu)}
+footer{margin-top:34px;color:#5d7391;font-size:13px;line-height:1.5}
+</style>
+</head>
+<body>
+<main>
+ <h1>MEDI·LAB 6è</h1>
+ <p class="sub">Laboratoris 3D de Coneixement del Medi · 6è de Primària · totes les unitats del llibre</p>
+ <div class="grid">
+  <a class="card" href="labs/cos.html" target="_blank" rel="noopener">
+   <span class="ic">🦴</span><span class="u">Unitat 1</span><h2>El cos humà</h2>
+   <p>Esquelet, músculs, pell, òrgans, sistema nerviós i els cinc sentits. Mou les articulacions i treu capes.</p>
+   <div class="tags"><span>Explora</span><span>Moviment</span><span>Nervis</span><span>Sentits</span><span>Repte</span></div>
+   <span class="go">Obre el laboratori →</span></a>
+  <a class="card" href="labs/adolescencia.html" target="_blank" rel="noopener">
+   <span class="ic">🌱</span><span class="u">Unitat 2</span><h2>L'adolescència</h2>
+   <p>Etapes de la vida, aparells reproductors, fecundació al microscopi, embaràs mes a mes i el cicle menstrual.</p>
+   <div class="tags"><span>Etapes</span><span>Fecundació</span><span>Embaràs</span><span>Cicle</span><span>Salut</span><span>Repte</span></div>
+   <span class="go">Obre el laboratori →</span></a>
+  <a class="card" href="labs/ecosistemes.html" target="_blank" rel="noopener">
+   <span class="ic">🌳</span><span class="u">Unitat 3</span><h2>Els ecosistemes</h2>
+   <p>Bosc, bassa i mar en 3D. Cadenes alimentàries, relacions, extinció en cadena i canvi climàtic.</p>
+   <div class="tags"><span>Ecosistema</span><span>Cadenes</span><span>Relacions</span><span>Biodiversitat</span><span>Clima</span><span>Repte</span></div>
+   <span class="go">Obre el laboratori →</span></a>
+  <a class="card" href="labs/univers.html" target="_blank" rel="noopener">
+   <span class="ic">🪐</span><span class="u">Unitat 4</span><h2>L'univers i la Terra</h2>
+   <p>Via Làctia, estrelles, sistema solar, dia i nit, estacions, fases de la Lluna, climes i paisatges.</p>
+   <div class="tags"><span>Univers</span><span>Sistema solar</span><span>La Terra</span><span>Climes</span><span>Paisatges</span><span>Repte</span></div>
+   <span class="go">Obre el laboratori →</span></a>
+  <a class="card" href="labs/espanya.html" target="_blank" rel="noopener">
+   <span class="ic">⛰️</span><span class="u">Unitat 5</span><h2>Espanya i Europa</h2>
+   <p>Mapa en relleu: serralades, rius, climes, població i activitats econòmiques. També el relleu i els rius d'Europa.</p>
+   <div class="tags"><span>Territori</span><span>Relleu</span><span>Rius</span><span>Climes</span><span>Població</span><span>Repte</span></div>
+   <span class="go">Obre el laboratori →</span></a>
+  <a class="card" href="labs/energia.html" target="_blank" rel="noopener">
+   <span class="ic">⚡</span><span class="u">Unitat 6</span><h2>L'energia</h2>
+   <p>Formes d'energia, fonts renovables i no renovables, de la central a casa, circuits elèctrics i estalvi.</p>
+   <div class="tags"><span>Energia</span><span>Fonts</span><span>Electricitat</span><span>Circuits</span><span>A casa</span><span>Repte</span></div>
+   <span class="go">Obre el laboratori →</span></a>
+  <a class="card" href="labs/historia.html" target="_blank" rel="noopener">
+   <span class="ic">⏳</span><span class="u">Unitat 7</span><h2>Viatge en el temps</h2>
+   <p>L'edat contemporània de 1789 fins avui: revolucions, formes de govern, Catalunya i la vida quotidiana.</p>
+   <div class="tags"><span>Línia del temps</span><span>Revolucions</span><span>Govern</span><span>Catalunya</span><span>Societat</span><span>Repte</span></div>
+   <span class="go">Obre el laboratori →</span></a>
+  <a class="card" href="labs/ciutadania.html" target="_blank" rel="noopener">
+   <span class="ic">🏛️</span><span class="u">Unitats 8 i 9</span><h2>Ciutadania i món</h2>
+   <p>Institucions, la Unió Europea, la riquesa al món, els ODS i el consum responsable.</p>
+   <div class="tags"><span>Institucions</span><span>UE</span><span>Riquesa</span><span>ODS</span><span>Consum</span><span>Repte</span></div>
+   <span class="go">Obre el laboratori →</span></a>
+ </div>
+ <footer>Recomanat: ordinador o tauleta amb el navegador actualitzat. Cada laboratori té una guia per al mestre al botó «?».</footer>
+</main>
+</body>
+</html>
