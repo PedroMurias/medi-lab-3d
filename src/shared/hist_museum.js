@@ -75,7 +75,7 @@ window.HistMuseum=function(THREE,scene,{PER,EV,FORMS,origin}){ const PROPS=HistP
  /* la paret de la sala 2 cap a la sala Catalunya: tallem la paret (substituïm per dues peces) */
  { const R=HALLS[1].group; const wall=R.children.find(o=>o.geometry&&o.geometry.parameters&&o.geometry.parameters.width===HW&&o.geometry.parameters.height===WH&&o.position.z<0); if(wall){ R.remove(wall); R.add(bx(HW/2-3,WH,.4,HALLS[1].wall,-HW/4-1.5,0,-HD/2)); R.add(bx(HW/2-3,WH,.4,HALLS[1].wall,HW/4+1.5,0,-HD/2)); R.add(bx(6,1.6,.4,HALLS[1].wall,0,WH-1.6,-HD/2)); R.add(bx(6.2,.2,.6,0xffd23f,0,WH-1.8,-HD/2)); } }
  /* visitants (figures quietes mirant vitrines) */
- const person=(c)=>{ const g=new THREE.Group(); const b=new THREE.Mesh(new THREE.CapsuleGeometry(.26,.8,4,8),fm(c)); b.position.y=.85; g.add(b); const h=new THREE.Mesh(new THREE.SphereGeometry(.24,10,8),fm(0xf2c7a5)); h.position.y=1.62; g.add(h); return g; };
+ const person=(c)=>{ const g=new THREE.Group(); g.userData.person={h:1.7,anim:'Idle',tint:c}; const b=new THREE.Mesh(new THREE.CapsuleGeometry(.26,.8,4,8),fm(c)); b.position.y=.85; g.add(b); const h=new THREE.Mesh(new THREE.SphereGeometry(.24,10,8),fm(0xf2c7a5)); h.position.y=1.62; g.add(h); return g; };
  [[0,-4,2],[1,5,3],[2,-6,-2],[3,2,4]].forEach(([i,x,z],k)=>{ const p=person([0x3a86ff,0xf15bb5,0x2ec4b6,0xff6b35][k]); p.position.set(x,0,z); HALLS[i].group.add(p); });
  const heroes=[]; G.traverse(o=>{ if(o.userData&&o.userData.anim) heroes.push(o.userData.anim); });
  const inRect=(r,x,z)=>x>r.x0&&x<r.x1&&z>r.z0&&z<r.z1;
