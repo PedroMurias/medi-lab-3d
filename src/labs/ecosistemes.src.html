@@ -155,7 +155,7 @@ function treeMesh(kind,R){ const g=new THREE.Group(); const trunk=new THREE.Mesh
  g.userData.kind=kind; return g; }
 function makeBeing(id,s,R,at){ const v=vis(id); let o,mixer=null,acts=null,critter=false,h=1;
  if(v.plant){ o=modelInst(v.plant[Math.floor(R()*v.plant.length)],v.h*(.8+R()*.5)).o; h=v.h; }
- else if(v.m){ const m=modelInst(v.m,v.h,v.len); o=m.o; mixer=m.mixer; acts=m.acts; h=v.len?.4:v.h; if(v.s){ const k=v.s*(.8+R()*.5); o.scale.setScalar(k); } }
+ else if(v.m){ const m=modelInst(v.m,v.h,v.len); o=m.o; mixer=m.mixer; acts=m.acts; h=v.len?.4:v.h; if(v.tint) o.traverse(q=>{ if(q.isMesh){ q.material=q.material.clone(); q.material.color.set(v.tint); } }); if(v.s){ const k=v.s*(.8+R()*.5); o.scale.setScalar(k); } }
  else { const g=cubeCritter(id); g.scale.setScalar(v.k); o=new THREE.Group(); o.add(g); critter=true; h=id==='aguila'?1:id==='serp'?.4:id==='flamenc'?1.4:id==='canyis'?1.5:.6*v.k; }
  const p=at||habPt(v.hab||'land'); o.position.copy(p); o.rotation.y=R()*6.28; world.add(o);
  const b={id,sp:s,v,obj:o,home:o.position.clone(),ph:R()*6.28,mixer,acts,critter,pinOff:h+.5,mover:!v.st,amph:!!v.amph,hab:v.hab||'land'};
@@ -249,7 +249,7 @@ function unfollow(){ if(!followB) return; followB=null; $('#follow').classList.r
 function updFollowHud(){ if(!followB) return; const s=followB.sp; const st=followB.hidden?"S'ha amagat… (o se l'han menjat)":!followB.mover?'És un ésser viu que no es desplaça':(STATE_TXT[followB.state]||'Volant'); $('#fName').textContent=s.e+' '+s.n; $('#fState').textContent=st; }
 function stepFollow(dt){ if(!followB) return; const b=followB; if(b.dead||b.dying){ unfollow(); return; } followT+=dt;
  const p=b.obj.position.clone(); world.localToWorld(p);
- if(!fly&&!b.hidden){ const d=p.clone().sub(fPrev); camera.position.add(d); controls.target.add(d); } fPrev.copy(p);
+ if(!b.hidden){ const d=p.clone().sub(fPrev); if(fly){ fly.tt.add(d); fly.tp.add(d); } else { camera.position.add(d); controls.target.add(d); } } fPrev.copy(p);
  if(b.mover&&followT>5&&!b.hidden&&natura&&['idle','walk'].includes(b.state)&&Math.random()<dt*.25){ const S=ECOS[eco].sp; const preys=(S[b.id].eats||[]).filter(k=>alive.has(k)); if(preys.length){ const k=preys[Math.floor(Math.random()*preys.length)]; const q=MOVERS(k)?nearestAlive(k,b.obj.position):null;
    if(q){ b.state='chase'; b.prey=q; b.timer=8; q.state='flee'; q.from=b; q.timer=8; toast(`${S[b.id].e} ${S[b.id].n} persegueix ${S[k].n.toLowerCase()}!`); }
    else { const pl=beings.filter(x=>x.id===k&&!x.dead&&!x.dying); if(pl.length&&b.hab!=='air'){ b.state='graze'; b.target=pl[Math.floor(Math.random()*pl.length)].obj.position.clone(); b.timer=9; toast(`${S[b.id].e} ${S[b.id].n} va a menjar ${S[k].n.toLowerCase()}.`); } } followT=0; } }
