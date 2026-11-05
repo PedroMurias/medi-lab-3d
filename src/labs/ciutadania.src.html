@@ -92,6 +92,7 @@
 
 <script>/*KIT*/</script>
 <script>/*PEOPLE*/</script>
+<script>/*ECOLAND*/</script>
 <script>window.WORLD=/*WORLD*/;</script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
 <script type="module">
@@ -176,7 +177,8 @@ function building(kind,zone){ const g=new THREE.Group(); const stone=0xe8e0cc, r
 function lowTree(x,z,s=1){ const g=new THREE.Group(); const t=new THREE.Mesh(new THREE.CylinderGeometry(.25,.35,2,6),fm(0x6b4a2b)); t.position.y=1; g.add(t); const c=new THREE.Mesh(new THREE.IcosahedronGeometry(1.8,1),fm([0x3f8f3f,0x4faa44,0x2f7f3a][Math.floor(Math.random()*3)])); c.position.y=3; c.scale.set(1,1.2,1); g.add(c); g.position.set(x,0,z); g.scale.setScalar(s); g.traverse(o=>{ if(o.isMesh) o.castShadow=true; }); return g; }
 function person(c){ const g=new THREE.Group(); const b=new THREE.Mesh(new THREE.CapsuleGeometry(.32,.9,4,8),fm(c)); b.position.y=.95; g.add(b); const h=new THREE.Mesh(new THREE.SphereGeometry(.3,10,8),fm(0xf2c7a5)); h.position.y=1.85; g.add(h); g.traverse(o=>{ if(o.isMesh) o.castShadow=true; }); return g; }
 const walkers=[];
-{ const ground=new THREE.Mesh(new THREE.CircleGeometry(95,64),fm(0x6a9a4a,{roughness:1})); ground.rotation.x=-Math.PI/2; ground.position.y=-.02; ground.receiveShadow=true; TOWN.add(ground);
+{ const LAND=EcoLand(THREE,{scene,groundY:()=>0}); const gt=LAND.groundTex(256,6,0x7fb055,0x5a8a3c); gt.repeat.set(30,30); const ground=new THREE.Mesh(new THREE.CircleGeometry(95,64),new THREE.MeshStandardMaterial({map:gt,roughness:1})); ground.rotation.x=-Math.PI/2; ground.position.y=-.02; ground.receiveShadow=true; TOWN.add(ground);
+  const skyD=LAND.sky(TOWN,{skyTop:0x3f8fe0,skyHor:0xd6ecff,radius:700}); let sd=5; const R=()=>{sd=(sd*16807)%2147483647; return sd/2147483647;}; LAND.grass(TOWN,R,{n:5000,rMin:0,rMax:92,h:1.2,color:0x8cc455,skip:(x,z)=>Math.abs(z-14)<3.5||[-46,0,46].some(cx=>Math.hypot(x-cx,z+6)<19.5)}); TOWN.userData.land=LAND;
   const road=new THREE.Mesh(new THREE.PlaneGeometry(150,6),fm(0x4a4f57,{roughness:.9})); road.rotation.x=-Math.PI/2; road.position.set(0,0,14); road.receiveShadow=true; TOWN.add(road);
   for(let i=0;i<24;i++){ const l=new THREE.Mesh(new THREE.PlaneGeometry(2.4,.25),fm(0xffffff)); l.rotation.x=-Math.PI/2; l.position.set(-72+i*6.2,.02,14); TOWN.add(l); }
   for(const [k,Z] of Object.entries(ZONES)){ const plaza=new THREE.Mesh(new THREE.CylinderGeometry(19,19,.3,48),fm(0xbfb8a8,{roughness:.95})); plaza.position.set(Z.x,.15,-6); plaza.receiveShadow=true; TOWN.add(plaza);
@@ -286,7 +288,7 @@ $('#pmin').onclick=()=>{const m=$('#panel').classList.toggle('min');$('#pmin').t
 /* ================= LOOP ================= */
 let last=performance.now();
 function loop(now){ let dt=Math.min(.05,(now-last)/1000); last=now; if(window.UX&&UX.ST.paused) dt=0; if(!['ue','idh','inst'].includes(mode)) return;
- if(mode==='inst') townUpdate(dt,now/1000);
+ if(mode==='inst'){ townUpdate(dt,now/1000); TOWN.userData.land.tick(now/1000); }
  if(fl){ fl.t=Math.min(1,fl.t+dt/fl.d); const k=1-Math.pow(1-fl.t,3); controls.target.lerpVectors(fl.ft,fl.tt,k); camera.position.lerpVectors(fl.fp,fl.tp,k); if(fl.t>=1) fl=null; }
  for(const c of countries){ c.h+=(c.ht-c.h)*Math.min(1,dt*6); c.mesh.scale.y=c.h; }
  Vis.tick(now/1000,camera); if(Walk.on) Walk.tick(dt); else controls.update(); renderer.render(scene,camera); updatePins(); }

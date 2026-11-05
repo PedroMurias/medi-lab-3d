@@ -89,6 +89,7 @@
 
 <script>/*KIT*/</script>
 <script>/*PEOPLE*/</script>
+<script>/*ECOLAND*/</script>
 <script>/*HISTSCENES*/</script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
 <script type="module">
@@ -164,6 +165,7 @@ function resize(){renderer.setSize(innerWidth,innerHeight,false);camera.aspect=i
 addEventListener('resize',resize); resize();
 scene.add(new THREE.HemisphereLight(0xcfe6ff,0x202030,1.3)); const dl=new THREE.DirectionalLight(0xffffff,1.8); dl.position.set(20,40,30); scene.add(dl); Vis.shadows(THREE,renderer,dl,2048,40); dl.target.position.set(60,0,-40); scene.add(dl.target);
 const HS=HistScenes(THREE,scene,{x:60,y:0,z:-45});
+const HLAND=EcoLand(THREE,{scene,groundY:()=>0}); { let sd=9; const R=()=>{sd=(sd*16807)%2147483647; return sd/2147483647;}; const gt=HLAND.groundTex(256,6,0x7fb055,0x5a8a3c); gt.repeat.set(8,8); for(const k of ['revol','soc']){ const G=HS.S[k]; G.traverse(o=>{ if(o.isMesh&&o.geometry.type==='CircleGeometry'&&o.geometry.parameters.radius>=20){ o.material=new THREE.MeshStandardMaterial({map:gt,roughness:1}); } }); if(k==='revol') HLAND.grass(G,R,{n:1600,rMin:0,rMax:25,h:.9,color:0x8cc455,skip:(x,z)=>(Math.abs(x+11)<4&&Math.abs(z)<3)||(Math.abs(x-10)<6.5&&Math.abs(z)<4)||Math.abs(z-9.5)<2||Math.abs(z-12.5)<1}); else for(const cx of [-24,-8,8,24]) HLAND.grass(G,R,{n:220,rMin:0,rMax:7,h:.7,cx,cz:0,color:0x8cc455,skip:(x,z)=>z<-2||Math.abs(z-1.5)<1.3}); } }
 const HM=HistMuseum(THREE,scene,{PER,EV,FORMS,origin:new THREE.Vector3(0,0,75)});
 PPL.load().then(()=>{ for(const k in HS.S) PPL.swap(HS.S[k]); PPL.swap(HM.G); }).catch(e=>console.warn('people',e));
 /* estrelles */
@@ -295,7 +297,7 @@ function loop(now){ let dt=Math.min(.05,(now-last)/1000); last=now; if(window.UX
  { const bx=X(year); beacon.position.x+= (bx-beacon.position.x)*Math.min(1,dt*8); beacon.children.forEach(o=>{ if(o.geometry&&o.geometry.type==='TorusGeometry'){ const k=(o.userData.k+T*.4)%1; o.position.y=k*6; o.scale.setScalar(1-k*.5); o.material.opacity=.8*(1-k); } }); beacon.userData.core.rotation.y=T*1.5; beacon.userData.core.position.y=1.2+Math.sin(T*2)*.2;
    const pa=pulses.geometry.attributes.position.array, L=X(Y1)+6; pulses.userData.s.forEach(([u,z,s],i)=>{ const x=((u+T*s*.04)%1)*L-3; pa[i*3]=x; pa[i*3+1]=.22; pa[i*3+2]=z*.6; }); pulses.geometry.attributes.position.needsUpdate=true; }
  for(const e of EV){ const near=Math.abs(e.y-year)<1.5; e.spr.scale.setScalar(near?2.4+Math.sin(T*5)*.12:1.7); e.spr.position.y=3.4+Math.sin(T*1.5+e.y)*.15; }
- Vis.tick(T,camera); HS.tick(T,dt); HM.tick(T,dt); PPL.tick(dt); if(mode==='museu'){ const near=Walk.on?11:40; for(const p of pins) if(p.mus) p.hidden=p.pos.distanceTo(camera.position)>near; } if(Walk.on) Walk.tick(dt); else controls.update(); renderer.render(scene,camera); updatePins(); }
+ Vis.tick(T,camera); HS.tick(T,dt); HM.tick(T,dt); PPL.tick(dt); HLAND.tick(T); if(mode==='museu'){ const near=Walk.on?11:40; for(const p of pins) if(p.mus) p.hidden=p.pos.distanceTo(camera.position)>near; } if(Walk.on) Walk.tick(dt); else controls.update(); renderer.render(scene,camera); updatePins(); }
 controls.target.set(X(1789)+6,1.5,0); camera.position.set(X(1789)-2,10,20);
 renderer.setAnimationLoop(loop);
 applyMode(); $('#loading').remove(); Kit.initHelp('seen');
