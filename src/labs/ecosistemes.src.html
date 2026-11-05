@@ -84,6 +84,7 @@
 <div id="credit">Models 3D: Quaternius (CC0) i animals low poly fets a mida. Les xarxes alimentàries estan simplificades.</div>
 
 <script>/*KIT*/</script>
+<script>/*ECOLAND*/</script>
 <script>/*ECOASSETS*/</script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
 <script type="module">
@@ -166,16 +167,20 @@ function waveWater(r,seg,y,col,op){ const g=new THREE.CircleGeometry(r,seg,0,Mat
 function causticTex(){ const cv=document.createElement('canvas'); cv.width=cv.height=256; const x=cv.getContext('2d'); x.fillStyle='#000'; x.fillRect(0,0,256,256); x.strokeStyle='rgba(200,240,255,.9)'; x.lineWidth=3; for(let i=0;i<40;i++){ x.beginPath(); let px=Math.random()*256,py=Math.random()*256; x.moveTo(px,py); for(let k=0;k<4;k++){ px+=(Math.random()-.5)*90; py+=(Math.random()-.5)*90; x.quadraticCurveTo(px+(Math.random()-.5)*40,py+(Math.random()-.5)*40,px,py);} x.stroke(); } const t=new THREE.CanvasTexture(cv); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(4,4); return t; }
 function coral(R,col){ const g=new THREE.Group(); const m=new THREE.MeshStandardMaterial({color:col,roughness:.8,flatShading:true}); const br=(p,len,r,d)=>{ const c=new THREE.Mesh(new THREE.CylinderGeometry(r*.7,r,len,5),m); c.position.y=len/2; p.add(c); if(d<3) for(let i=0;i<2;i++){ const q=new THREE.Group(); q.position.y=len; q.rotation.set((R()-.5)*1.2,R()*6,(R()-.5)*1.2); p.add(q); br(q,len*.75,r*.7,d+1);} else { const t=new THREE.Mesh(new THREE.IcosahedronGeometry(r*1.3,0),m); t.position.y=len; p.add(t);} }; br(g,.5,.09,0); return g; }
 let waterFx=[], caust=null, bubbles=null, snow=null;
-function buildWorld(){ if(typeof unfollow==='function') unfollow(); clearWorld(); toastT=0; $('#toast')&&$('#toast').classList.remove('show'); chain=[]; clouds=[]; puffs=[]; const E=ECOS[eco], R=rnd(eco.length*31+7); world=new THREE.Group(); scene.add(world); trees=[]; alive=new Set(Object.keys(E.sp)); selSp=null;
+const LAND=EcoLand(THREE,{scene,groundY});
+function buildWorld(){ if(typeof unfollow==='function') unfollow(); clearWorld(); LAND.clear(); toastT=0; $('#toast')&&$('#toast').classList.remove('show'); chain=[]; clouds=[]; puffs=[]; const E=ECOS[eco], R=rnd(eco.length*31+7); world=new THREE.Group(); scene.add(world); trees=[]; alive=new Set(Object.keys(E.sp)); selSp=null;
  scene.background=new THREE.Color(E.sky); scene.fog=eco==='mar'?new THREE.Fog(0x0d4f7a,8,45):new THREE.Fog(E.sky,40,90);
  hemi.intensity=eco==='mar'?1.1:1.5; sunL.intensity=eco==='mar'?1.2:2.2;
  /* terra */
  const gg=new THREE.CircleGeometry(16,64); gg.rotateX(-Math.PI/2); const p=gg.attributes.position; for(let i=0;i<p.count;i++){const x=p.getX(i),z=p.getZ(i),d=Math.hypot(x,z); let y=(Math.sin(x*.5)+Math.cos(z*.4))*.15; if(eco==='bassa'&&d<6.5) y-=1.2*(1-d/6.5); if(eco==='mar') y=(Math.sin(x*.3)*Math.cos(z*.35))*.5; p.setY(i,y);} gg.computeVertexNormals();
  ground=new THREE.Mesh(gg,M(eco==='mar'?0xd8c48f:eco==='bosc'?0x7fb04f:0x6f8f45)); ground.receiveShadow=true; ground.userData.ground=1; world.add(ground);
  const base=new THREE.Mesh(new THREE.CylinderGeometry(16,15,2.5,64,1,true),M(eco==='mar'?0xa89060:0x5a4330,{side:THREE.DoubleSide})); base.position.y=-1.3; world.add(base);
+ const LE={bosc:{skyTop:0x3f8fe0,skyHor:0xd6ecff,hillLo:0x4e8a3a,hillHi:0x8fae5a,hillFar:0x9fb9cc},bassa:{skyTop:0x5aa6ea,skyHor:0xe2f1ff,hillLo:0x5f9a45,hillHi:0x9ab866,hillFar:0xa9c3d2,deep:0x1d6a95,shallow:0x5fbde6,wop:.82},mar:{sea:1,skyTop:0x083a5c,skyHor:0x2f86b8,hillLo:0xb9a06a,hillHi:0xd8c48f,hillFar:0x2a6a90}}[eco];
+ LAND.sky(world,LE); if(eco!=='mar') LAND.hills(world,LE,R); if(eco==='bosc') LAND.grass(world,R,{n:3200,color:0x6aa83c}); if(eco==='bassa') LAND.grass(world,R,{n:2200,rMin:6.9,color:0x7bb24a});
+ scene.fog=eco==='mar'?new THREE.Fog(0x0d4f7a,8,45):new THREE.Fog(LE.skyHor,38,95);
  water=null;
  waterFx=[]; caust=null; bubbles=null; snow=null;
- if(eco==='bassa'){ water=waveWater(6.6,40,-.12,0x3a8fc0,.72); world.add(water);
+ if(eco==='bassa'){ water=LAND.water(world,6.6,-.12,LE);
   if(MODELS.__ok){ for(let i=0;i<6;i++){ const t=modelInst('Willow_1',4.2).o; const a=i/6*6.28+R()*.5,d=9.5+R()*4; t.position.set(Math.cos(a)*d,groundY(Math.cos(a)*d,Math.sin(a)*d),Math.sin(a)*d); t.scale.multiplyScalar(.85+R()*.4); t.rotation.y=R()*6; world.add(t);} 
    for(let i=0;i<4;i++){ const t=modelInst('CommonTree_'+(1+i%3),3.6).o; const a=i/4*6.28+1.2+R()*.4,d=12+R()*2.5; t.position.set(Math.cos(a)*d,groundY(Math.cos(a)*d,Math.sin(a)*d),Math.sin(a)*d); world.add(t);} 
    scatter(R,[['Rock_Moss_1',.6,5],['Rock_Moss_2',.5,4],['Grass',.5,45],['Flowers',.45,14],['Plant_1',.5,8],['Plant_3',.6,6]],6.7,14.5);
@@ -379,7 +384,7 @@ function loop(now){ let dt=Math.min(.05,(now-last)/1000); last=now; if(window.UX
   if(b.fly){ b.obj.position.x=b.home.x+Math.sin(t*.5)*1.5; b.obj.position.z=b.home.z+Math.cos(t*.4)*1.5; b.obj.position.y=b.home.y+Math.sin(t*1.3)*.3; }
   else if(b.sp.r!=='prod'&&b.sp.r!=='desc'&&!b.sp.floor) { b.obj.position.x=b.home.x+Math.sin(t*.3)*.6; b.obj.position.z=b.home.z+Math.cos(t*.25)*.6; b.obj.position.y=b.home.y+Math.abs(Math.sin(t*3))*.12; }
   else if(b.sp.r==='prod'&&eco!=='bosc') b.obj.position.x=b.home.x+Math.sin(t*.8)*.08; }
- if(water&&water.userData.wave&&!paused){ const a=water.geometry.attributes.position.array, o=water.userData.wave, amp=eco==='mar'?.18:.035; for(let i=0;i<a.length;i+=3) a[i+1]=o[i+1]+Math.sin(o[i]*1.3+T*1.5)*amp+Math.cos(o[i+2]*1.1+T*1.2)*amp; water.geometry.attributes.position.needsUpdate=true; water.geometry.computeVertexNormals(); }
+ if(water&&water.userData.wave&&!paused&&!water.userData.landWater){ const a=water.geometry.attributes.position.array, o=water.userData.wave, amp=eco==='mar'?.18:.035; for(let i=0;i<a.length;i+=3) a[i+1]=o[i+1]+Math.sin(o[i]*1.3+T*1.5)*amp+Math.cos(o[i+2]*1.1+T*1.2)*amp; water.geometry.attributes.position.needsUpdate=true; water.geometry.computeVertexNormals(); }
  if(caust&&!paused){ caust.material.map.offset.set(Math.sin(T*.1)*.3,T*.02); caust.material.opacity=.18+Math.sin(T*1.7)*.05; }
  waterFx.forEach(s=>s.material.opacity=.04+Math.sin(T*.6+s.userData.ph)*.025);
  if(bubbles&&!paused){ const a=bubbles.geometry.attributes.position.array; bubbles.userData.seed.forEach(([x,z,y0,s],i)=>{ const y=(y0+T*s)%9; a[i*3]=x+Math.sin(T*2+i)*.1; a[i*3+1]=y; a[i*3+2]=z; }); bubbles.geometry.attributes.position.needsUpdate=true; }
@@ -387,7 +392,7 @@ function loop(now){ let dt=Math.min(.05,(now-last)/1000); last=now; if(window.UX
  if(!paused) stepNature(dt,T); if(!Walk.on) stepFollow(dt); clouds.forEach((c,i)=>{ c.userData.cloud+=dt*.01; c.position.x=Math.cos(c.userData.cloud)*22; c.position.z=Math.sin(c.userData.cloud)*22; });
  if(fireG){ const a=fireG.geometry.attributes.position.array; fireG.userData.seed.forEach(([an,d,s],i)=>{const k=(s+T*.6)%1; a.set([Math.cos(an)*d+Math.sin(T+i)*.2,k*4,Math.sin(an)*d],i*3);}); fireG.geometry.attributes.position.needsUpdate=true; fireG.material.opacity=Math.max(0,1-(T%30)/30)*.9+.1; }
  if(selSp||showWeb||chain.length>1){ if(Math.floor(T*4)!==Math.floor((T-dt)*4)) drawWeb(); }
- Vis.tick(T,camera); if(Walk.on) Walk.tick(dt); else controls.update(); renderer.render(scene,camera); updatePins(); }
+ Vis.tick(T,camera); LAND.tick(T); if(Walk.on) Walk.tick(dt); else controls.update(); renderer.render(scene,camera); updatePins(); }
 try{ await loadModels(); MODELS.__ok=true; }catch(e){ console.warn('models',e); }
 buildWorld(); camera.position.set(0,12,21); controls.target.set(0,1,0);
 renderer.setAnimationLoop(loop);
