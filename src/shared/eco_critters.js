@@ -3,10 +3,11 @@ const MODELS={};
 async function loadModels(){ const mgr=new THREE.LoadingManager(); mgr.setURLModifier(u=>u.includes('colormap')?ECOASSETS.__colormap:u); const L=new GLTFLoader(mgr); L.setMeshoptDecoder(MeshoptDecoder);
  for(const [k,v] of Object.entries(ECOASSETS)){ if(k.startsWith('__')) continue; const bin=atob(v), buf=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) buf[i]=bin.charCodeAt(i);
   MODELS[k]=await new Promise((res,rej)=>L.parse(buf.buffer,'',res,rej)); if(/Tree|Bush|Rock|Grass|Flowers|Stump|Willow|Lily|Plant/.test(k)) MODELS[k].scene.traverse(m=>{ if(m.isMesh){ m.material.color.multiplyScalar(k.startsWith('Rock')?1.3:1.9); m.material.roughness=.85; } }); } }
-function modelInst(name,h,byLen){ const g=MODELS[name]; const o=g.animations.length?SkeletonUtils.clone(g.scene):g.scene.clone(true); const wrap=new THREE.Group(); wrap.add(o);
+function modelInst(name,h,byLen,flip){ const g=MODELS[name]; const o=g.animations.length?SkeletonUtils.clone(g.scene):g.scene.clone(true); const wrap=new THREE.Group(); wrap.add(o);
  o.updateMatrixWorld(true); o.traverse(m=>{ if(m.isSkinnedMesh){ m.skeleton.update(); m.computeBoundingBox&&m.computeBoundingBox(); } }); const bb=new THREE.Box3().setFromObject(o), sz=bb.getSize(new THREE.Vector3()); const s=h/(byLen?Math.max(sz.x,sz.z):sz.y); o.scale.setScalar(s); o.position.y=byLen?-(bb.min.y+bb.max.y)/2*s:-bb.min.y*s; o.position.x=byLen?-(bb.min.x+bb.max.x)/2*s:0; o.position.z=byLen?-(bb.min.z+bb.max.z)/2*s:0;
  o.traverse(m=>{ if(m.isMesh){ m.castShadow=true; m.receiveShadow=true; if(m.isSkinnedMesh) m.frustumCulled=false; } });
  let mixer=null, acts={}; if(g.animations.length){ mixer=new THREE.AnimationMixer(o); g.animations.forEach(a=>acts[a.name]=mixer.clipAction(a)); }
+ if(flip){ const out=new THREE.Group(); wrap.rotation.y=Math.PI; out.add(wrap); return {o:out,mixer,acts}; }
  return {o:wrap,mixer,acts}; }
 /* animals low poly fets a mà, al mateix estil que els de Quaternius (facetat, colors naturals) */
 const LM={}; const lmat=c=>LM[c]||(LM[c]=new THREE.MeshStandardMaterial({color:c,roughness:.9,flatShading:true}));
@@ -73,13 +74,14 @@ function animCritter(g,t,state){ const P=g.userData.parts, k=g.userData.kind; co
 
 /* espècie → aparença i hàbitat, per ecosistema */
 const VIS={
- bosc:{guineu:{m:'Fox',h:.75},cervol:{m:'Deer',h:1.6},llop:{m:'Wolf',h:1.0},conill:{m:'Rabbit',h:.5,hop:1},senglar:{k:1.15},esquirol:{k:1},eruga:{k:1},formiga:{k:1.4},cuc:{k:1.4},bolet:{k:1.3,st:1},aguila:{m:'Hawk',h:2.0,len:1,hab:'air',alt:7.5,fly:1},ocell:{m:'Parrot',h:.6,len:1,hab:'air',alt:4,fly:1},serp:{k:1.4},herba:{plant:['Bush_1','BushBerries_1'],h:.9,st:1}},
+ bosc:{guineu:{m:'Fox',h:.75},cervol:{m:'Deer',h:1.6},llop:{m:'Wolf',h:1.0},conill:{m:'Rabbit',h:.5,hop:1},senglar:{k:1.15},esquirol:{k:1},eruga:{k:1},formiga:{k:1.4},cuc:{k:1.4},bolet:{k:1.3,st:1},aguila:{m:'Hawk',flip:1,h:2.0,len:1,hab:'air',alt:7.5,fly:1},ocell:{m:'Parrot',h:.6,len:1,hab:'air',alt:4,fly:1},serp:{k:1.4},herba:{plant:['Bush_1','BushBerries_1'],h:.9,st:1}},
  bassa:{algues:{k:1.1,hab:'pondfloor',st:1},canyis:{k:1,hab:'shore',st:1},nenufar:{m:'Lilypad',h:.12,hab:'surface',st:1,s:1.4},mosquit:{k:1.6,hab:'air',alt:1.2},cargol:{k:1.5,hab:'shore'},peix:{m:'Goldfish',h:.45,len:1,hab:'water'},anec:{k:1.2,hab:'surface'},granota:{m:'Frog',h:.4,hab:'shore',amph:1},flamenc:{m:'Flamingo',h:1.5,len:1,hab:'air',alt:2.2,fly:1},serp:{k:1.3,hab:'shore',amph:1},llodriga:{k:1.3,hab:'shore',amph:1},bacteri:{k:1.6,hab:'pondfloor',st:1}},
  mar:{posidonia:{k:1.3,hab:'floor',st:1},algues:{k:1.3,hab:'floor',st:1},escopinya:{k:1.5,hab:'floor',st:1},peix:{m:'Clownfish',h:.5,len:1,hab:'water',school:1},medusa:{k:1.2,hab:'water'},cranc:{k:1.4,hab:'floor'},pop:{k:1.3,hab:'floor'},tortuga:{m:'Turtle',h:1.1,len:1,hab:'water'},peixgran:{m:'Tuna',h:1.4,len:1,hab:'water'},dofi:{m:'Dolphin',h:2.2,len:1,hab:'water'},tauro:{m:'Shark',h:2.8,len:1,hab:'water'}}};
 const ANIMNAMES={idle:['Frog_Idle','Idle','Swim','Swimming_Normal'],walk:['Frog_Jump','Walk','Swim','Swimming_Normal'],run:['Frog_Jump','Gallop','Swim','Swimming_Fast'],eat:['Frog_Attack','Eating','Swim','Swimming_Normal'],death:['Frog_Death','Death']};
 const SPEED={os:[.5,2.4],llop:[1,3.6],guineu:[.9,3.3],conill:[.7,3.0],senglar:[.7,2.2],cervol:[.8,2.8],eruga:[.15,.2],esquirol:[.8,2.6],formiga:[.35,.5],cuc:[.12,.15],serp:[.5,2.2],ocell:[1.6,2.4],aguila:[2,6.5],
  mosquit:[1,1.5],cargol:[.08,.1],peix:[.8,2.6],anec:[.4,1.2],granota:[.5,2],flamenc:[.4,1.4],llodriga:[.7,2.6],medusa:[.25,.4],cranc:[.4,1],pop:[.3,1.4],tortuga:[.5,1.2],peixgran:[1,3.2],dofi:[1.2,3.8],tauro:[1,3.6]};
-VIS.muntanya={guineu:{m:'Fox',h:.75},cervol:{m:'Deer',h:1.6},llop:{m:'Wolf',h:1.0},conill:{m:'Rabbit',h:.5,hop:1},os:{m:'Bear',h:1.7,hop:.3,tint:0x6b4a2e,nomap:1},esquirol:{k:1},eruga:{k:1},formiga:{k:1.4},cuc:{k:1.4},bolet:{k:1.3,st:1},aguila:{m:'Hawk',h:2.0,len:1,hab:'air',alt:8,fly:1},ocell:{k:1.2,hab:'air',alt:4,fly:1},herba:{plant:['Bush_1','BushBerries_1','M_Fern'],h:.7,st:1}};
+VIS.muntanya={guineu:{m:'Fox',h:.75},cervol:{m:'Deer',h:1.6},llop:{m:'Wolf',h:1.0},conill:{m:'Rabbit',h:.5,hop:1},os:{m:'Bear',h:1.7,hop:.3,tint:0x6b4a2e,nomap:1},esquirol:{k:1},eruga:{k:1},formiga:{k:1.4},cuc:{k:1.4},bolet:{k:1.3,st:1},aguila:{m:'Hawk',flip:1,h:2.0,len:1,hab:'air',alt:8,fly:1},ocell:{k:1.2,hab:'air',alt:4,fly:1},herba:{plant:['Bush_1','BushBerries_1','M_Fern'],h:.7,st:1}};
+let OBST=[]; const isSolidRock=nm=>/Rock|Stone|Stump|Dead/.test(nm); const addObst=(x,z,r)=>OBST.push([x,z,r]);
 const vis=id=>(VIS[eco]||{})[id];
 const groundY=(x,z)=>{ let y=(Math.sin(x*.5)+Math.cos(z*.4))*.15; if(eco==='bassa'){ const d=Math.hypot(x,z); if(d<6.5) y-=1.2*(1-d/6.5); } if(eco==='mar') y=(Math.sin(x*.3)*Math.cos(z*.35))*.5; return y; };
 let wlev=0, wrad=1; const WATERY=()=>eco==='bassa'?-.12-wlev:9;
@@ -120,8 +122,9 @@ function clampHab(b){ const p=b.obj.position, h=b.hab;
  else if(h==='shore'&&!b.amph){ const r=Math.hypot(p.x,p.z); if(r<6.2){ p.x*=6.2/r; p.z*=6.2/r; } p.y=groundY(p.x,p.z); }
  else if(h==='shore'&&b.amph){ const r=Math.hypot(p.x,p.z); const gy=groundY(p.x,p.z); p.y= r<5.6? Math.max(gy+.1,Math.min(WATERY()-.15,p.y)) : gy; b.swimming=r<5.6; }
  else if(h!=='air'){ p.y=groundY(p.x,p.z)+(b.lift||0); if(eco==='bassa'&&h==='land'){ const r=Math.hypot(p.x,p.z); if(r<6.5){ p.x*=6.5/r; p.z*=6.5/r; } } }
+ if(h==='land'||h==='shore'||h==='floor'){ for(const [ox,oz,orad] of OBST){ const dx=p.x-ox, dz=p.z-oz, dd=Math.hypot(dx,dz), m=orad+.25; if(dd<m){ const k=dd>1e-4?m/dd:1; p.x=ox+(dd>1e-4?dx*k:m); p.z=oz+(dd>1e-4?dz*k:0); } } }
  const rr=Math.hypot(p.x,p.z); if(rr>14.5){ p.x*=14.5/rr; p.z*=14.5/rr; } }
-function behave(b,dt,T){ if(b.mixer) b.mixer.update(dt); if(b.v.hop&&!b.mixer){ const k=b.obj.children[0]; if(k) k.position.y=(b.cur==='walk'||b.cur==='run')?Math.abs(Math.sin((T+b.ph)*(b.cur==='run'?9:6)))*.14*(+b.v.hop):0; } const S=ECOS[eco].sp, sp=SPEED[b.id]||[.6,2]; const in3d=b.hab==='water'||(b.amph&&b.swimming);
+function behave(b,dt,T){ if(b.mixer) b.mixer.update(dt); if(b.v.hop&&!b.mixer){ const k=b.obj.children[0]; if(k){ if(b.hopBase==null) b.hopBase=k.position.y; k.position.y=b.hopBase+((b.cur==='walk'||b.cur==='run')?Math.abs(Math.sin((T+b.ph)*(b.cur==='run'?9:6)))*.14*(+b.v.hop):0); } } const S=ECOS[eco].sp, sp=SPEED[b.id]||[.6,2]; const in3d=b.hab==='water'||(b.amph&&b.swimming);
  if(b.critter) animCritter(b.obj.children[0],T+b.ph,b.cur);
  if(b.deadT!=null){ b.deadT-=dt; if(b.deadT<=0){ b.deadT=null; b.obj.visible=false; puff(b.obj.position); b.curA=null; b.mixer.stopAllAction(); } }
  if(b.hidden){ b.timer-=dt; if(b.timer<=0){ b.hidden=false; const p=habPt(b.hab); b.obj.position.copy(p); b.obj.visible=true; b.obj.scale.setScalar(.01); b.pop=0; b.state='idle'; b.timer=2; } return; }

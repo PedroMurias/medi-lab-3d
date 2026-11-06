@@ -246,14 +246,15 @@ function trafficLight(x,z,ry){ const g=new THREE.Group(); const pole=new THREE.M
 for(const cx of CX){ trafficLight(cx-4.2,20.2,Math.PI); trafficLight(cx+4.2,8,0); }
 function lightState(){ const c=lightT%16; return c<7?'g':c<9?'y':'r'; }
 function setLights(){ const st=lightState(); for(const g of lights){ g.userData.ls[0].material.emissiveIntensity=st==='r'?2.2:.05; g.userData.ls[1].material.emissiveIntensity=st==='y'?2.2:.05; g.userData.ls[2].material.emissiveIntensity=st==='g'?2.2:.05; } }
-function carsUpdate(dt){ lightT+=dt; setLights(); const st=lightState(); for(const c of cars){ const u=c.userData; let stop=false; if(st!=='g'){ for(const cx of CX){ const d=(cx-u.dir*5.2-c.position.x)*u.dir; if(d>-.2&&d<2.4) stop=true; } } for(const o of cars){ if(o===c||o.userData.dir!==u.dir) continue; const gap=(o.position.x-c.position.x)*u.dir; if(gap>0&&gap<5.5) stop=true; } u.v+=((stop?0:u.vmax)-u.v)*Math.min(1,dt*3); c.position.x+=u.dir*u.v*dt; if(c.position.x*u.dir>84){ c.position.x=-u.dir*84; } } }
+function carsUpdate(dt){ lightT+=dt; setLights(); const st=lightState(); for(const c of cars){ const u=c.userData; let stop=false; if(st!=='g'){ for(const cx of CX){ const d=(cx-u.dir*5.2-c.position.x)*u.dir; if(d>-.2&&d<2.4) stop=true; } } if(Walk.on){ const dx=(Walk.pos.x-c.position.x)*u.dir, dz=Math.abs(Walk.pos.z-c.position.z); if(dx>-1&&dx<7&&dz<1.7) stop=true; } for(const o of cars){ if(o===c||o.userData.dir!==u.dir) continue; const gap=(o.position.x-c.position.x)*u.dir; if(gap>0&&gap<5.5) stop=true; } u.v+=((stop?0:u.vmax)-u.v)*Math.min(1,dt*3); c.position.x+=u.dir*u.v*dt; if(c.position.x*u.dir>84){ c.position.x=-u.dir*84; } } }
+const solid=o=>{ o.updateMatrixWorld(true); const b=new THREE.Box3().setFromObject(o); b.expandByScalar(.3); townBoxes.push(b); };
 CTY.load().then(()=>{
  BG.visible=false;
  const skies=['CK_Sky1','CK_Sky2','CK_Sky3'], larges=['CK_Large1','CK_Large2'], smalls=['CK_Small1','CK_Small2','CK_Low1','CK_Low2']; let n=0;
- for(const [x,z,w,d,h,ry] of BGS){ const nm=h>=9?skies[n%3]:h>=6.5?larges[n%2]:smalls[n%4]; n++; const H=h>=9?h*2.2:h>=6.5?h*1.8:h*1.5; const o=CTY.inst(nm,H); o.position.set(x,.05,z); o.rotation.y=(ry||0)+(z>0?Math.PI:0)+(Math.abs(x)>=87?0:0); TOWN.add(o); }
+ for(const [x,z,w,d,h,ry] of BGS){ const nm=h>=9?skies[n%3]:h>=6.5?larges[n%2]:smalls[n%4]; n++; const H=h>=9?h*2.2:h>=6.5?h*1.8:h*1.5; const o=CTY.inst(nm,H); o.position.set(x,.05,z); o.rotation.y=(ry||0)+(z>0?Math.PI:0); TOWN.add(o); solid(o); }
  /* serveis públics */
  const svc=[['Hospital',-34,35,9.5],['Bank',34,35,6.2],['Shop',-56,33,3.4],['House2',56,33,5],['House3',-76,34,5.2],['Flat',72,35,8]];
- for(const [nm,x,z,h] of svc){ const o=CTY.inst(nm,h); o.position.set(x,.05,z); o.rotation.y=Math.PI; TOWN.add(o); }
+ for(const [nm,x,z,h] of svc){ const o=CTY.inst(nm,h); o.position.set(x,.05,z); o.rotation.y=Math.PI; TOWN.add(o); solid(o); }
  /* cotxes */
  const models=['Taxi','Cop','NormalCar1','SUV','Taxi','NormalCar1']; models.forEach((nm,i)=>{ const dir=i%2?-1:1; const o=CTY.inst(nm,4.4,'len'); const c=new THREE.Group(); c.add(o); o.rotation.y=dir>0?Math.PI/2:-Math.PI/2; c.position.set(-70+i*26+(dir>0?0:10),.07,dir>0?16.6:11.4); c.userData={dir,v:0,vmax:6+Math.random()*2.5}; cars.push(c); TOWN.add(c); });
 }).catch(e=>console.warn('city',e));
@@ -272,7 +273,7 @@ function townHome(){ flyTo(new THREE.Vector3(0,0,-2),new THREE.Vector3(0,78,125)
 
 $('#tHome').onclick=()=>{ if(mode==='inst') townHome(); else home(); };
 const townBoxes=[]; TOWN.updateMatrixWorld(true); townPins.filter(p=>p.k).forEach(p=>{ const b=new THREE.Box3().setFromObject(p.obj); b.expandByScalar(.6); townBoxes.push(b); });
-function walkStart(){ if(mode!=='inst') setMode('inst'); fl=null; document.body.classList.add('walking'); Walk.start(THREE,{camera,controls,canvas,start:[0,42],yaw:Math.PI,speed:5,eye:1.65,ground:(x,z)=>{ for(const Z of Object.values(ZONES)) if(Math.abs(x-Z.x)<18&&Math.abs(z+8)<18) return .1; return 0; }, radius:88, center:[0,0],
+function walkStart(){ if(mode!=='inst') setMode('inst'); fl=null; document.body.classList.add('walking'); Walk.start(THREE,{camera,controls,canvas,start:[0,42],yaw:Math.PI,speed:5,eye:1.65,ground:(x,z)=>{ for(const Z of Object.values(ZONES)) if(Math.abs(x-Z.x)<18&&Math.abs(z+8)<18) return .1; return 0; }, radius:88, center:[0,0], dynamic:(x,z,r)=>{ for(const c of cars){ if(Math.abs(x-c.position.x)<2.2+r&&Math.abs(z-c.position.z)<.95+r) return true; } return false; }, push:(x,z)=>{ for(const c of cars){ if(Math.abs(x-c.position.x)<2.6&&Math.abs(z-c.position.z)<1.3) return [(x-c.position.x)*4+c.userData.dir*c.userData.v*.5,(z-c.position.z)*10]; } return null; },
   blocked:(x,z)=>{ for(const b of townBoxes){ if(x>b.min.x&&x<b.max.x&&z>b.min.z&&z<b.max.z) return true; } for(const Z of Object.values(ZONES)) if(Math.hypot(x-Z.x,z+6)<3.1) return true; return false; }, onStop:()=>{ document.body.classList.remove('walking'); townHome(); }}); }
 Walk.button($('#tools'),walkStart); window.__c={dl,renderer,scene,THREE,TOWN,camera,controls,binClick,CONG,ODSG,walkStart};
 
