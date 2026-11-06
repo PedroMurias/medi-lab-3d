@@ -48,3 +48,6 @@ Els actius grans (model del cos `assets/cos.js`, personatge MakeHuman `assets/mh
 - Codi: three.js (MIT)
 
 Il·lustracions esquemàtiques generades per ordinador. Fet amb Claude per a l'aula.
+
+## Laboratori central
+`index.html` és un laboratori 3D (Sci-Fi Essentials Kit de Quaternius, CC0) amb una porta per tema; cada lab té el botó 🔬 per tornar-hi. Ecosistemes té 8 ecosistemes (bosc, bassa, mar, muntanya, desert, selva, àrtic, sabana).
