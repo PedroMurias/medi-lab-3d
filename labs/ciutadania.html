@@ -233,6 +233,7 @@ ul.tl{margin:4px 0 0 16px;padding:0;font-size:14px;line-height:1.5}
 #ctl .val{font-family:Orbitron;font-size:16px;color:#fff;white-space:nowrap}
 #ctl .seg{display:flex;background:rgba(0,0,0,.3);border-radius:10px;padding:2px;flex:none}#ctl .seg button{border:0;background:none;padding:7px 11px;border-radius:8px;cursor:pointer;color:var(--mu);font-size:14px;white-space:nowrap}#ctl .seg button.on{background:rgba(0,229,255,.25);color:#fff}
 @media (max-width:860px){#ctl{left:8px;right:8px;width:auto;transform:none;top:62px;bottom:auto}}
+body.walking #ctl,body.walking #panel{display:none!important}
 </style>
 </head>
 <body>
@@ -946,8 +947,8 @@ function townHome(){ flyTo(new THREE.Vector3(0,0,-2),new THREE.Vector3(0,78,125)
 
 $('#tHome').onclick=()=>{ if(mode==='inst') townHome(); else home(); };
 const townBoxes=[]; TOWN.updateMatrixWorld(true); townPins.filter(p=>p.k).forEach(p=>{ const b=new THREE.Box3().setFromObject(p.obj); b.expandByScalar(.6); townBoxes.push(b); });
-function walkStart(){ if(mode!=='inst') setMode('inst'); fl=null; Walk.start(THREE,{camera,controls,canvas,start:[0,42],yaw:Math.PI,speed:5,eye:1.65,ground:(x,z)=>{ for(const Z of Object.values(ZONES)) if(Math.abs(x-Z.x)<18&&Math.abs(z+8)<18) return .1; return 0; }, radius:88, center:[0,0],
-  blocked:(x,z)=>{ for(const b of townBoxes){ if(x>b.min.x&&x<b.max.x&&z>b.min.z&&z<b.max.z) return true; } for(const Z of Object.values(ZONES)) if(Math.hypot(x-Z.x,z+6)<3.1) return true; return false; }, onStop:()=>townHome()}); }
+function walkStart(){ if(mode!=='inst') setMode('inst'); fl=null; document.body.classList.add('walking'); Walk.start(THREE,{camera,controls,canvas,start:[0,42],yaw:Math.PI,speed:5,eye:1.65,ground:(x,z)=>{ for(const Z of Object.values(ZONES)) if(Math.abs(x-Z.x)<18&&Math.abs(z+8)<18) return .1; return 0; }, radius:88, center:[0,0],
+  blocked:(x,z)=>{ for(const b of townBoxes){ if(x>b.min.x&&x<b.max.x&&z>b.min.z&&z<b.max.z) return true; } for(const Z of Object.values(ZONES)) if(Math.hypot(x-Z.x,z+6)<3.1) return true; return false; }, onStop:()=>{ document.body.classList.remove('walking'); townHome(); }}); }
 Walk.button($('#tools'),walkStart); window.__c={dl,renderer,scene,THREE,TOWN,camera,controls,binClick,CONG,ODSG,walkStart};
 
 /* ================= ESCENARIS 2D ================= */
@@ -955,8 +956,8 @@ const ST=$('#stage>div');
 const W_STEPS=[['👥 La ciutadania major de 18 anys vota a les eleccions…',[]],['…i tria els membres del Parlament (Catalunya), les Corts Generals (Espanya) i el Parlament Europeu.',[['cat','leg'],['esp','leg'],['ue','leg']]],['El Parlament tria el president o la presidenta (a Espanya, el Congrés dels Diputats)…',[['cat','cap'],['esp','exe']]],['…que forma el Govern amb els consellers o els ministres.',[['cat','exe'],['esp','exe'],['ue','exe']]],['Els tribunals són independents: és la divisió de poders.',[['esp','jud'],['ue','jud']]]];
 let whoI=0;
 function whoStep(i){ whoI=i; const [t,hl]=W_STEPS[whoI%W_STEPS.length]; const el=$('#whoT'); if(el) el.textContent=t; townHighlight(hl); if(!hl.length) townHome(); else townFly(hl[0][0]); whoI++; const b=$('#who'); if(b) b.textContent=whoI%W_STEPS.length?'Següent →':'🗳️ Torna a començar'; }
-function ctlInst(){ clearPins(); townPins.forEach(addObjPin); const C=$('#ctl'); C.style.display=''; C.innerHTML=`<div class="crow"><span class="val" style="font-size:14px">Qui governa?</span><div class="seg">${Object.entries(ZONES).map(([k,Z])=>`<button data-z="${k}">${Z.n}</button>`).join('')}</div><button class="pill" id="who">🗳️ Qui elegeix qui?</button></div><div id="whoT" class="t" style="font-size:14px;min-height:20px;margin:4px 0 0;color:#fff"></div>`;
- C.querySelectorAll('[data-z]').forEach(b=>b.onclick=()=>{ C.querySelectorAll('[data-z]').forEach(x=>x.classList.toggle('on',x===b)); townHighlight([]); townFly(b.dataset.z); }); $('#who').onclick=()=>whoStep(whoI); }
+function ctlInst(){ clearPins(); townPins.forEach(addObjPin); const C=$('#ctl'); C.style.display=''; C.innerHTML=`<div class="crow"><span class="val" style="font-size:14px">Qui governa?</span><div class="seg">${Object.entries(ZONES).map(([k,Z])=>`<button data-z="${k}">${Z.n}</button>`).join('')}</div><button class="pill" id="who">🗳️ Qui elegeix qui?</button><button class="pill" id="walkI" style="border-color:var(--cy);color:#fff">🚶 Passeja pel poble</button></div><div id="whoT" class="t" style="font-size:14px;min-height:20px;margin:4px 0 0;color:#fff"></div>`;
+ C.querySelectorAll('[data-z]').forEach(b=>b.onclick=()=>{ C.querySelectorAll('[data-z]').forEach(x=>x.classList.toggle('on',x===b)); townHighlight([]); townFly(b.dataset.z); }); $('#who').onclick=()=>whoStep(whoI); $('#walkI').onclick=()=>walkStart(); }
 function stageInst(){ let h=`<p class="bigq" style="margin:0 0 10px;font-size:18px;text-align:center">Qui governa? Toca una institució</p><div class="inst"><div></div>${['cat','esp','ue'].map(k=>`<div class="hd">${INST[k].n}</div>`).join('')}`;
  for(const [r,rn] of ROWS){ h+=`<div class="rw" style="background:${{cap:'rgba(255,210,63,.12)',leg:'rgba(47,140,255,.15)',exe:'rgba(182,255,59,.12)',jud:'rgba(192,139,255,.15)'}[r]}">${rn}</div>`; for(const k of ['cat','esp','ue']){ const I=INST[k][r]; h+=`<button data-k="${k}" data-r="${r}">${I.n}<small>${I.f&&I.f['Poder']?'poder '+I.f['Poder']:''}</small></button>`; } }
  h+='</div><div class="row" style="justify-content:center;margin-top:12px"><button class="pill" id="who">🗳️ Qui elegeix qui?</button></div><div id="whoT" class="t" style="text-align:center;font-size:15px;min-height:24px;margin-top:6px"></div>'; ST.innerHTML=h;
