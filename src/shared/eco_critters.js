@@ -110,11 +110,12 @@ const SANDFOX={m:'Fox',h:.55,tint:0xe3c58c,nomap:1}, WHITE=0xeef2f5;
 VIS.desert={palmera:{},herba:{plant:['M_Plant7','M_Pebble'],h:.55,tint:0xb9a45c,st:1},camell:{k:1},formiga:{k:1.4},llangardaix:{k:1.5},escorpi:{k:1.6},escarabat:{k:1.7},serp:{k:1.5},fenec:SANDFOX,aguila:{m:'Hawk',flip:1,h:2.0,len:1,hab:'air',alt:8,fly:1}};
 VIS.selva={arbre:{},falgueres:{plant:['M_Fern','Plant_1','M_Fern'],h:.7,st:1},eruga:{k:1.3},mico:{k:1},guacamai:{m:'Parrot',h:.7,len:1,hab:'air',alt:3.5,fly:1},granota:{m:'Frog',h:.35,amph:0,tint:0x28d46a,nomap:1},serp:{k:1.8},jaguar:{k:1},aguila:{m:'Hawk',flip:1,h:2.2,len:1,hab:'air',alt:8.5,fly:1,tint:0x4a4a52,nomap:1},bolet:{k:1.4,st:1}};
 VIS.polar={algues:{k:1.1,hab:'pondfloor',st:1},liquen:{k:1.6,st:1},peix:{m:'Goldfish',h:.4,len:1,hab:'water',tint:0x9fb7c8,nomap:1},bacteri:{k:1.6,hab:'pondfloor',st:1},llebre:{m:'Rabbit',h:.55,hop:1,tint:WHITE,nomap:1},rena:{m:'Deer',h:1.45,tint:0xd9d3c6,nomap:1},foca:{k:1.1,hab:'shore'},guineu:{m:'Fox',h:.7,tint:WHITE,nomap:1},mussol:{m:'Hawk',flip:1,h:1.8,len:1,hab:'air',alt:6.5,fly:1,tint:WHITE,nomap:1},os:{m:'Bear',h:2.1,hop:.3,tint:0xf3f6f8,nomap:1},llop:{m:'Wolf',h:1.05,tint:0xe9ecee,nomap:1}};
+VIS.antartida={algues:{k:1.1,hab:'pondfloor',st:1},liquen:{k:1.6,st:1},krill:{m:'Clownfish',h:.22,len:1,hab:'water',school:1,tint:0xff8f7a,nomap:1},peix:{m:'Goldfish',h:.4,len:1,hab:'water',tint:0x8fa9bd,nomap:1},pingui:{m:'Penguin',h:.8,hab:'shore'},foca:{k:1.25,hab:'shore'},orca:{m:'Dolphin',h:1.7,len:1,hab:'water',tint:0x16191d,nomap:1},skua:{m:'Hawk',flip:1,h:1.6,len:1,hab:'air',alt:6,fly:1,tint:0x6b5a48,nomap:1},bacteri:{k:1.6,hab:'pondfloor',st:1}};
 VIS.sabana={acacia:{},herba:{plant:['M_Wisp'],h:.5,tint:0xd7bb55,st:1},formiga:{k:1.4},zebra:{k:1},girafa:{k:1},elefant:{k:1},llangardaix:{k:1.5},lleo:{k:1},voltor:{m:'Hawk',flip:1,h:2.0,len:1,hab:'air',alt:9,fly:1,tint:0x4a3a2c,nomap:1},escarabat:{k:1.7}};
-Object.assign(SPEED,{camell:[.45,1.9],fenec:[.9,3.4],llangardaix:[.4,1.6],escorpi:[.2,.5],escarabat:[.1,.25],mico:[.8,3],jaguar:[1,4.2],zebra:[.8,4],girafa:[.6,3],elefant:[.4,1.8],lleo:[1,5],foca:[.2,.6],rena:[.7,2.6],llebre:[.7,3],mussol:[1.6,5],guacamai:[1.6,2.6],voltor:[1.8,5.5]});
+Object.assign(SPEED,{pingui:[.35,1.2],skua:[1.6,5],camell:[.45,1.9],fenec:[.9,3.4],llangardaix:[.4,1.6],escorpi:[.2,.5],escarabat:[.1,.25],mico:[.8,3],jaguar:[1,4.2],zebra:[.8,4],girafa:[.6,3],elefant:[.4,1.8],lleo:[1,5],foca:[.2,.6],rena:[.7,2.6],llebre:[.7,3],mussol:[1.6,5],guacamai:[1.6,2.6],voltor:[1.8,5.5]});
 let OBST=[]; const isSolidRock=nm=>/Rock|Stone|Stump|Dead/.test(nm); const addObst=(x,z,r)=>OBST.push([x,z,r]);
 const vis=id=>(VIS[eco]||{})[id];
-const POND=()=>eco==='bassa'||eco==='polar'; const PS=()=>eco==='polar'?.64:1;
+const POLAR=()=>eco==='polar'||eco==='antartida'; const POND=()=>eco==='bassa'||POLAR(); const PS=()=>POLAR()?.64:1;
 const DUNE=(x,z)=>Math.sin(x*.32+z*.18)*.55+Math.cos(z*.27-x*.1)*.35+Math.sin((x+z)*.7)*.08;
 const groundY=(x,z)=>{ if(eco==='desert') return DUNE(x,z); if(eco==='sabana') return (Math.sin(x*.25)+Math.cos(z*.2))*.12; if(eco==='selva') return (Math.sin(x*.4)*Math.cos(z*.5))*.18; let y=(Math.sin(x*.5)+Math.cos(z*.4))*.15; if(POND()){ const d=Math.hypot(x,z); if(d<6.5*PS()) y-=1.2*(1-d/(6.5*PS())); } if(eco==='mar') y=(Math.sin(x*.3)*Math.cos(z*.35))*.5; return y; };
 let wlev=0, wrad=1; const WATERY=()=>POND()?-.12-wlev:9;
@@ -124,7 +125,7 @@ function habPt(hab){ const a=Math.random()*6.28; let d,y;
  else if(hab==='pondfloor'){ d=Math.random()*4.6*PS(); const p=new THREE.Vector3(Math.cos(a)*d,0,Math.sin(a)*d); p.y=groundY(p.x,p.z)+.02; return p; }
  else if(hab==='shore'){ d=(6.3+Math.random()*3)*PS(); }
  else if(hab==='floor'){ d=1+Math.random()*12; }
- else { d=2+Math.random()*11; if(POND()) d=(6.6+Math.random()*7)*(eco==='polar'?.8:1); }
+ else { d=2+Math.random()*11; if(POND()) d=(6.6+Math.random()*7)*(POLAR()?.8:1); }
  const p=new THREE.Vector3(Math.cos(a)*d,0,Math.sin(a)*d); p.y=(y!=null)?y:groundY(p.x,p.z); return p; }
 function rndPt(){ return habPt('land'); }
 
