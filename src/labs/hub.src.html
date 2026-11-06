@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Medi·Lab 6è · Laboratori central</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/*BASECSS*/
+#c{position:fixed;inset:0;width:100%;height:100%;display:block}
+#hdr{position:fixed;top:12px;left:14px;z-index:5;padding:10px 16px}
+#hdr b{font-family:Orbitron;color:var(--cy);letter-spacing:.08em;font-size:18px;text-shadow:0 0 12px rgba(0,229,255,.5)}
+#hdr small{display:block;color:var(--mu);font-size:12px;margin-top:2px}
+#hbtns{position:fixed;top:12px;right:14px;z-index:5;display:flex;gap:8px}
+#hbtns button,.hbtn{border:1px solid var(--gb);background:rgba(10,19,36,.93);color:#e6f1ff;border-radius:12px;padding:9px 14px;cursor:pointer;font-size:14px;font-weight:600}
+#hbtns button:hover,.hbtn:hover{border-color:var(--cy);color:var(--cy)}
+#intro{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,rgba(3,12,28,.55),rgba(3,7,18,.92))}
+#intro .box{max-width:520px;margin:20px;padding:28px 30px;text-align:center}
+#intro h1{font-family:Orbitron;color:var(--cy);margin:0 0 6px;font-size:clamp(24px,5vw,36px);letter-spacing:.06em;text-shadow:0 0 18px rgba(0,229,255,.55)}
+#intro p{color:#cfdcf0;line-height:1.5;margin:8px 0}
+#intro .go{margin-top:14px;font-size:18px;padding:12px 26px;border-radius:14px;border:0;background:var(--li);color:#06210a;font-weight:700;cursor:pointer}
+#intro .keys{font-size:13px;color:var(--mu)}
+#prompt{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);z-index:6;padding:12px 20px;display:none;font-size:17px;cursor:pointer;text-align:center}
+#prompt.show{display:block}
+#prompt b{color:var(--li)}
+#menu{position:fixed;inset:0;z-index:15;display:none;background:rgba(3,7,18,.92);overflow:auto}
+#menu.show{display:block}
+#menu .in{max-width:980px;margin:0 auto;padding:60px 18px 40px}
+#menu .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+#menu a{display:flex;flex-direction:column;gap:6px;text-decoration:none;color:inherit;padding:16px;border-radius:16px;background:rgba(10,19,36,.95);border:1px solid var(--gb);transition:transform .15s,border-color .15s}
+#menu a:hover{transform:translateY(-3px);border-color:var(--cy)}
+#menu .ic{font-size:36px}#menu .u{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--cy)}#menu h3{margin:0;font-size:19px}#menu p{margin:0;color:#cfdcf0;font-size:14px;line-height:1.4}
+#menu .x{position:fixed;top:14px;right:16px}
+#fade{position:fixed;inset:0;background:#030712;opacity:0;pointer-events:none;z-index:50;transition:opacity .5s}
+#fade.on{opacity:1}
+#loading{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;background:#030712;color:var(--cy);font-family:Orbitron;letter-spacing:.2em}
+#loading i{width:18px;height:18px;border:3px solid var(--cy);border-top-color:transparent;border-radius:50%;margin-right:12px;animation:sp 1s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+@media (max-width:700px){#hdr small{display:none}#hdr b{font-size:14px}#prompt{bottom:190px}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="loading"><i></i>CARREGANT EL LABORATORI…</div>
+<div id="hdr" class="glass"><b>MEDI·LAB 6è</b><small>Laboratori central · tria una porta i investiga</small></div>
+<div id="hbtns"><button id="bWalk">🚶 Passeja</button><button id="bMenu">📋 Tots els temes</button></div>
+<div id="prompt" class="glass"></div>
+<div id="intro"><div class="box glass"><h1>LABORATORI CENTRAL</h1><p>Benvingut o benvinguda al laboratori de <b>Coneixement del Medi</b>. Cada porta et porta a un tema del llibre: entra-hi per <b>aprendre i investigar</b> en 3D.</p><p class="keys">🖱️ Arrossega per mirar · ⌨️ fletxes o WASD per caminar · ⇧ córrer · Espai saltar · E o clic a la porta per entrar<br>📱 Al mòbil: palanca per caminar i toca la porta</p><p class="keys" style="font-size:11px">Models 3D de la sala: Sci-Fi Essentials Kit de Quaternius (CC0).</p><button class="go" id="goBtn">🔬 Entra al laboratori</button></div></div>
+<div id="menu"><button class="hbtn x" id="menuX">✕ Tanca</button><div class="in"><h2 style="font-family:Orbitron;color:var(--cy);margin:0 0 16px">Tots els temes</h2><div class="grid" id="mGrid"></div></div></div>
+<div id="fade"></div>
+<script>/*WALKJS*/</script>
+<script>/*HUBASSETS*/</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js'; import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
+const $=s=>document.querySelector(s);
+const DOORS=[
+ {f:'cos',e:'🦴',u:'Unitat 1',n:'El cos humà',c:0xff5c7a,d:'Esquelet, músculs, pell, òrgans, sistema nerviós i els cinc sentits.'},
+ {f:'adolescencia',e:'🌱',u:'Unitat 2',n:"L'adolescència",c:0xc08bff,d:'Etapes de la vida, aparells reproductors, embaràs i cicle menstrual.'},
+ {f:'ecosistemes',e:'🌳',u:'Unitat 3',n:'Els ecosistemes',c:0x4fd16a,d:'Ecosistemes en 3D: cadenes alimentàries, relacions i canvi climàtic.'},
+ {f:'univers',e:'🪐',u:'Unitat 4',n:"L'univers i la Terra",c:0x6a7cff,d:'Via Làctia, sistema solar, dia i nit, estacions, Lluna i climes.'},
+ {f:'espanya',e:'⛰️',u:'Unitat 5',n:'Espanya i Europa',c:0xffb04a,d:'Mapa en relleu: serralades, rius, climes, població i economia.'},
+ {f:'energia',e:'⚡',u:'Unitat 6',n:"L'energia",c:0xffe14a,d:'Formes i fonts d\'energia, de la central a casa, circuits i estalvi.'},
+ {f:'historia',e:'⏳',u:'Unitat 7',n:'Viatge en el temps',c:0xd9a066,d:"L'edat contemporània de 1789 fins avui."},
+ {f:'ciutadania',e:'🏛️',u:'Unitats 8 i 9',n:'Ciutadania i món',c:0x34e0e0,d:'Institucions, Unió Europea, riquesa, ODS i consum responsable.'}];
+$('#mGrid').innerHTML=DOORS.map(D=>`<a href="labs/${D.f}.html"><span class="ic">${D.e}</span><span class="u">${D.u}</span><h3>${D.n}</h3><p>${D.d}</p></a>`).join('');
+const canvas=$('#c'), renderer=new THREE.WebGLRenderer({canvas,antialias:true}); renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.05;
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x050b18); scene.fog=new THREE.Fog(0x050b18,18,40);
+const camera=new THREE.PerspectiveCamera(62,1,.1,100); camera.position.set(0,12,15);
+const controls=new OrbitControls(camera,canvas); controls.target.set(0,1.5,0); controls.enableDamping=true; controls.maxPolarAngle=1.5; controls.minDistance=4; controls.maxDistance=22;
+function resize(){ const w=innerWidth,h=innerHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); } addEventListener('resize',resize); resize();
+/* models */
+const MODELS={}; { const L=new GLTFLoader(); L.setMeshoptDecoder(MeshoptDecoder); for(const [k,v] of Object.entries(window.HUBASSETS)){ const bin=atob(v),buf=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) buf[i]=bin.charCodeAt(i); MODELS[k]=await new Promise((res,rej)=>L.parse(buf.buffer,'',res,rej)); } }
+function inst(name,h,x,z,ry,y=0){ const o=MODELS[name].scene.clone(true); const w=new THREE.Group(); w.add(o); const bb=new THREE.Box3().setFromObject(o), sz=bb.getSize(new THREE.Vector3()); const s=h/sz.y; o.scale.setScalar(s); o.position.set(-(bb.min.x+bb.max.x)/2*s,-bb.min.y*s,-(bb.min.z+bb.max.z)/2*s); o.traverse(m=>{ if(m.isMesh){ m.castShadow=true; m.receiveShadow=true; if(m.material){ m.material=m.material.clone(); m.material.metalness=Math.min(m.material.metalness||0,.15); m.material.roughness=Math.max(m.material.roughness||0,.55); m.material.envMapIntensity=1; if(m.material.emissiveMap) m.material.emissiveIntensity=1.5; } } }); w.position.set(x,y,z); w.rotation.y=ry; scene.add(w); w.userData.size=sz.clone().multiplyScalar(s); return w; }
+/* llum */
+scene.add(new THREE.HemisphereLight(0xdcecff,0x3a4a6a,2.2));
+const key=new THREE.DirectionalLight(0xffffff,1.1); key.position.set(4,12,3); key.castShadow=true; key.shadow.mapSize.set(1024,1024); Object.assign(key.shadow.camera,{left:-11,right:11,top:11,bottom:-11,near:1,far:30}); scene.add(key);
+const A=9, WH=4.4, N=8, OUT=A/Math.cos(Math.PI/N);
+/* terra amb quadrícula */
+function floorTex(){ const c=document.createElement('canvas'); c.width=c.height=512; const x=c.getContext('2d'); x.fillStyle='#0d1626'; x.fillRect(0,0,512,512); x.strokeStyle='rgba(0,229,255,.28)'; x.lineWidth=2; for(let i=0;i<=8;i++){ x.beginPath(); x.moveTo(i*64,0); x.lineTo(i*64,512); x.moveTo(0,i*64); x.lineTo(512,i*64); x.stroke(); } x.fillStyle='rgba(255,255,255,.04)'; for(let i=0;i<8;i++)for(let j=0;j<8;j++) if((i+j)%2) x.fillRect(i*64,j*64,64,64); const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(6,6); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t; }
+const floor=new THREE.Mesh(new THREE.CircleGeometry(OUT+.2,N),new THREE.MeshStandardMaterial({map:floorTex(),roughness:.55,metalness:.3})); floor.rotation.x=-Math.PI/2; floor.rotation.z=Math.PI/N; floor.receiveShadow=true; scene.add(floor);
+const ringM=new THREE.MeshBasicMaterial({color:0x00e5ff,transparent:true,opacity:.7}); for(const r of [2.6,6.4]){ const ring=new THREE.Mesh(new THREE.RingGeometry(r,r+.07,64),ringM); ring.rotation.x=-Math.PI/2; ring.position.y=.02; scene.add(ring); }
+/* sostre (es pot ocultar a la vista general) */
+const ceil=new THREE.Group(); { const cm=new THREE.Mesh(new THREE.CircleGeometry(OUT+.3,N),new THREE.MeshStandardMaterial({color:0x101a2c,roughness:.8,side:THREE.DoubleSide})); cm.rotation.x=Math.PI/2; cm.rotation.z=Math.PI/N; cm.position.y=WH; ceil.add(cm);
+ for(let i=0;i<N;i++){ const a=i/N*Math.PI*2+Math.PI/N; const s=new THREE.Mesh(new THREE.BoxGeometry(.5,.05,5),new THREE.MeshBasicMaterial({color:0xdff6ff})); s.position.set(Math.sin(a)*4.8,WH-.04,Math.cos(a)*4.8); s.rotation.y=a; ceil.add(s); }
+ const c0=new THREE.Mesh(new THREE.CylinderGeometry(1.4,1.4,.05,32),new THREE.MeshBasicMaterial({color:0xdff6ff})); c0.position.y=WH-.04; ceil.add(c0); scene.add(ceil); }
+/* parets i portes */
+const doorObjs=[]; const segW=2*A*Math.tan(Math.PI/N), DW=2.3, DH=3.15;
+const wallM=new THREE.MeshStandardMaterial({color:0x1b2740,roughness:.7,metalness:.25}), trimM=new THREE.MeshStandardMaterial({color:0x2c3d5e,roughness:.5,metalness:.5});
+function signTex(D){ const c=document.createElement('canvas'); c.width=512; c.height=192; const x=c.getContext('2d'); const col='#'+D.c.toString(16).padStart(6,'0'); x.fillStyle='rgba(6,12,26,.95)'; x.fillRect(0,0,512,192); x.strokeStyle=col; x.lineWidth=6; x.strokeRect(5,5,502,182); x.fillStyle=col; x.font='600 24px sans-serif'; x.textAlign='center'; x.fillText(D.u.toUpperCase(),310,48); x.font='80px serif'; x.fillText(D.e,70,125); x.fillStyle='#fff'; let fs=44; x.font='700 '+fs+'px sans-serif'; while(x.measureText(D.n).width>360&&fs>22){ fs-=2; x.font='700 '+fs+'px sans-serif'; } x.fillText(D.n,310,118); x.fillStyle='rgba(255,255,255,.55)'; x.font='20px sans-serif'; x.fillText('Entra-hi ▶',310,160); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t; }
+DOORS.forEach((D,i)=>{ const a=i/N*Math.PI*2; const g=new THREE.Group(); g.position.set(Math.sin(a)*A,0,Math.cos(a)*A); g.rotation.y=a+Math.PI; scene.add(g); /* +z local mira cap al centre */
+ const sideW=(segW-DW)/2+.3; for(const sx of [-1,1]){ const w=new THREE.Mesh(new THREE.BoxGeometry(sideW,WH,.4),wallM); w.position.set(sx*(DW/2+sideW/2-.3),WH/2,-.2); w.castShadow=w.receiveShadow=true; g.add(w); }
+ const lin=new THREE.Mesh(new THREE.BoxGeometry(DW+.6,WH-DH,.4),wallM); lin.position.set(0,DH+(WH-DH)/2,-.2); g.add(lin);
+ const col=new THREE.Color(D.c); const frM=new THREE.MeshBasicMaterial({color:col}); for(const sx of [-1,1]){ const f=new THREE.Mesh(new THREE.BoxGeometry(.1,DH,.12),frM); f.position.set(sx*(DW/2+.03),DH/2,.02); g.add(f); } const ft=new THREE.Mesh(new THREE.BoxGeometry(DW+.16,.1,.12),frM); ft.position.set(0,DH+.03,.02); g.add(ft);
+ const portal=new THREE.Mesh(new THREE.PlaneGeometry(DW,DH),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.35,side:THREE.DoubleSide})); portal.position.set(0,DH/2,-.35); g.add(portal);
+ const panels=[]; for(const sx of [-1,1]){ const p=new THREE.Mesh(new THREE.BoxGeometry(DW/2,DH,.08),trimM); p.position.set(sx*DW/4,DH/2,-.05); p.userData.x0=sx*DW/4; p.userData.sx=sx; g.add(p); panels.push(p); const st=new THREE.Mesh(new THREE.BoxGeometry(.04,DH*.8,.09),new THREE.MeshBasicMaterial({color:col})); st.position.set(-sx*DW/4*.8,0,0); p.add(st); }
+ const sign=new THREE.Mesh(new THREE.PlaneGeometry(2.6,.98),new THREE.MeshBasicMaterial({map:signTex(D),toneMapped:false})); sign.position.set(0,DH+.62,.03); g.add(sign);
+ const pl=new THREE.PointLight(D.c,16,8,2); pl.position.set(Math.sin(a)*(A-1.3),2.6,Math.cos(a)*(A-1.3)); scene.add(pl);
+ /* franja de llum al terra */ const st=new THREE.Mesh(new THREE.PlaneGeometry(DW,1.3),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.22,depthWrite:false})); st.rotation.x=-Math.PI/2; st.position.set(0,.025,1); g.add(st);
+ const hit=new THREE.Mesh(new THREE.PlaneGeometry(DW+.4,DH+1.2),new THREE.MeshBasicMaterial({visible:false,side:THREE.DoubleSide})); hit.position.set(0,(DH+1.2)/2,.1); hit.userData.door=i; g.add(hit);
+ doorObjs.push({D,g,panels,open:0,hit,a,portal}); });
+/* decoració: pack Sci-Fi */
+const solids=[]; const R=OUT-1.15;
+function wallProp(name,h,k,off){ const a=(k+.5)/N*Math.PI*2+(off||0); const r=A-.55; const w=inst(name,h,Math.sin(a)*r,Math.cos(a)*r,a+Math.PI); solids.push([Math.sin(a)*r,Math.cos(a)*r,.7]); return w; }
+wallProp('Prop_Shelves_WideTall',2.4,0); wallProp('Prop_Locker',2.3,1); wallProp('Prop_Shelves_ThinTall',2.4,2); wallProp('Prop_Locker',2.3,3); wallProp('Prop_Shelves_WideTall',2.4,4); wallProp('Prop_Locker',2.3,5); wallProp('Prop_Shelves_ThinTall',2.4,6); wallProp('Prop_Locker',2.3,7);
+/* taules centrals */
+const tabs=[[4.4,.8,'Prop_Desk_Medium',Math.PI*.1],[-4.4,.8,'Prop_Desk_L',Math.PI*-.15],[3.4,-3.4,'Prop_Desk_Small',Math.PI*.75],[-3.4,-3.6,'Prop_Desk_Medium',Math.PI*-.7]];
+for(const [x,z,nm,ry] of tabs){ const d=inst(nm,1.05,x,z,ry); solids.push([x,z,1.2]); const mug=inst('Prop_Mug',.14,x+.15,z+.1,0,1.04); inst('Prop_Chair',1.2,x*1.25,z*1.25+.2,Math.atan2(-x,-z)); }
+inst('Prop_HealthPack_Tube',.45,-4.4,.65,0,1.04); inst('Prop_Crate',.7,6.9,-3.9,.4); solids.push([6.9,-3.9,.6]); inst('Prop_Crate_Large',1.0,-6.9,-4.6,-.3); solids.push([-6.9,-4.6,.8]); inst('Prop_Barrel1',1.1,5.6,-6,0); solids.push([5.6,-6,.5]);
+/* holograma central */
+const holo=new THREE.Group(); holo.position.y=1.25; holo.scale.setScalar(.7); scene.add(holo); const base=new THREE.Mesh(new THREE.CylinderGeometry(.9,1.1,.55,24),trimM); base.position.y=-.95; holo.add(base); solids.push([0,0,1.0]);
+const globe=new THREE.Mesh(new THREE.IcosahedronGeometry(.8,2),new THREE.MeshBasicMaterial({color:0x00e5ff,wireframe:true,transparent:true,opacity:.75})); holo.add(globe); const core=new THREE.Mesh(new THREE.SphereGeometry(.34,24,16),new THREE.MeshBasicMaterial({color:0x2f8cff,transparent:true,opacity:.9})); holo.add(core);
+const holoL=new THREE.PointLight(0x00e5ff,6,8,2); holoL.position.set(0,1.6,0); scene.add(holoL);
+const drone=inst('Enemy_EyeDrone',.7,0,0,0); drone.position.set(0,2.9,0);
+/* hover / clic a portes */
+const ray=new THREE.Raycaster(), mouse=new THREE.Vector2(); let hover=-1;
+function pick(e){ const r=canvas.getBoundingClientRect(); mouse.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1); ray.setFromCamera(mouse,camera); const hs=ray.intersectObjects(doorObjs.map(d=>d.hit),false); return hs.length?hs[0].object.userData.door:-1; }
+let down=null; canvas.addEventListener('pointerdown',e=>{ down=[e.clientX,e.clientY]; }); canvas.addEventListener('pointerup',e=>{ if(!down||$('#intro')) return; if(Math.hypot(e.clientX-down[0],e.clientY-down[1])<7){ const i=pick(e); if(i>=0) enter(i); } down=null; });
+canvas.addEventListener('pointermove',e=>{ if(e.pointerType==='touch') return; hover=pick(e); canvas.style.cursor=hover>=0?'pointer':''; });
+let leaving=false; function enter(i){ if(leaving) return; leaving=true; $('#fade').classList.add('on'); const D=DOORS[i]; setTimeout(()=>{ location.href='labs/'+D.f+'.html'; },520); }
+/* mode passeig */
+let walking=false;
+function walkStart(){ $('#intro')?.remove(); walking=true; ceil.visible=true; scene.fog.far=40; Walk.start(THREE,{camera,controls,canvas,start:[0,-6],yaw:0,speed:4.2,eye:1.65,ground:()=>0,radius:A-.25,center:[0,0],
+  blocked:(x,z)=>{ for(const [sx,sz,r] of solids) if(Math.hypot(x-sx,z-sz)<r) return true; return false; }, onStop:()=>{ walking=false; document.body.classList.remove('walking'); overview(); },
+  onTick:()=>{} }); }
+function overview(){ ceil.visible=false; camera.fov=50; camera.updateProjectionMatrix(); camera.position.set(0,15,14); controls.target.set(0,1,0); controls.enabled=true; controls.update(); }
+$('#goBtn').onclick=walkStart; $('#bWalk').onclick=()=>{ if(walking) Walk.stop(); else walkStart(); };
+$('#bMenu').onclick=()=>$('#menu').classList.add('show'); $('#menuX').onclick=()=>$('#menu').classList.remove('show');
+addEventListener('keydown',e=>{ if(e.key.toLowerCase()==='e'&&near>=0&&walking) enter(near); if(e.key==='Escape') $('#menu').classList.remove('show'); });
+let near=-1; $('#prompt').onclick=()=>{ if(near>=0) enter(near); };
+/* bucle */
+const clk=new THREE.Clock(); renderer.setAnimationLoop(()=>{ const dt=Math.min(clk.getDelta(),.05), t=clk.elapsedTime;
+ if(walking) Walk.tick(dt); else controls.update();
+ globe.rotation.y=t*.5; globe.rotation.x=t*.2; core.scale.setScalar(1+Math.sin(t*2)*.08); drone.position.y=2.9+Math.sin(t*1.3)*.12; drone.rotation.y=t*.6;
+ /* portes: s'obren si estàs a prop */
+ const p=walking?Walk.pos:camera.position; near=-1; let best=99;
+ doorObjs.forEach((d,i)=>{ const dx=p.x-Math.sin(d.a)*A, dz=p.z-Math.cos(d.a)*A; const dist=Math.hypot(dx,dz); const tgt=(dist<4.2||hover===i)?1:0; d.open+=(tgt-d.open)*Math.min(1,dt*4); for(const pn of d.panels) pn.position.x=pn.userData.x0+pn.userData.sx*d.open*(DW/2-.08); d.portal.material.opacity=.3+.12*Math.sin(t*2+i)+d.open*.25; if(walking&&dist<3.4&&dist<best){ best=dist; near=i; } });
+ const pr=$('#prompt'); if(walking&&near>=0){ const D=DOORS[near]; pr.innerHTML=`${D.e} <b>${D.n}</b><br><small>Prem <b>E</b>, toca aquí o camina cap a la porta per entrar</small>`; pr.classList.add('show'); const d=doorObjs[near]; if(Math.hypot(p.x-Math.sin(d.a)*A,p.z-Math.cos(d.a)*A)<1.15) enter(near); } else pr.classList.remove('show');
+ renderer.render(scene,camera); });
+overview(); $('#loading').remove();
+window.__h={scene,camera,renderer,walkStart,Walk,enter,doorObjs,THREE};
+</script>
+</body>
+</html>
