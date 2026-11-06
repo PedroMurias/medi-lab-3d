@@ -136,13 +136,19 @@ function resize(){renderer.setSize(innerWidth,innerHeight,false);camera.aspect=i
  if(innerWidth>860) camera.setViewOffset(innerWidth,innerHeight,-190,0,innerWidth,innerHeight); else camera.setViewOffset(innerWidth,innerHeight,0,innerHeight*.2,innerWidth,innerHeight); camera.updateProjectionMatrix();}
 addEventListener('resize',resize); resize();
 scene.add(new THREE.HemisphereLight(0xffffff,0x334455,1.4)); const dl=new THREE.DirectionalLight(0xffffff,1.6); dl.position.set(-30,80,40); scene.add(dl); Vis.shadows(THREE,renderer,dl,2048,110); dl.shadow.camera.updateProjectionMatrix();
-const sea=new THREE.Mesh(new THREE.PlaneGeometry(800,500),new THREE.MeshStandardMaterial({color:0x0b2b52,roughness:.6})); sea.rotation.x=-Math.PI/2; sea.position.y=-.05; scene.add(sea);
+let SEAN=null; function seaNormal(){ if(SEAN) return SEAN; const S=256,cv=document.createElement('canvas'); cv.width=cv.height=S; const g=cv.getContext('2d'); const im=g.createImageData(S,S); const P=new Uint8Array(512); for(let i=0;i<256;i++) P[i]=i; for(let i=255;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [P[i],P[j]]=[P[j],P[i]]; } for(let i=0;i<256;i++) P[256+i]=P[i];
+ const fade=t=>t*t*t*(t*(t*6-15)+10), lerp=(a,b,t)=>a+(b-a)*t, grad=(h,x,y)=>{ const v=h&3; return (v<2?x:-x)+((v&1)?-y:y); };
+ const nz=(x,y)=>{ const X=Math.floor(x)&255,Y=Math.floor(y)&255; x-=Math.floor(x); y-=Math.floor(y); const u=fade(x),v=fade(y); const a=P[X]+Y,b=P[X+1]+Y; return lerp(lerp(grad(P[a],x,y),grad(P[b],x-1,y),u),lerp(grad(P[a+1],x,y-1),grad(P[b+1],x-1,y-1),u),v); };
+ const h=(a,b)=>nz(a*.05,b*.05)*.6+nz(a*.17+3,b*.17)*.4; for(let y=0;y<S;y++)for(let x=0;x<S;x++){ const i=(y*S+x)*4; const dx=h(x+1,y)-h(x-1,y), dy=h(x,y+1)-h(x,y-1); im.data[i]=128+dx*900; im.data[i+1]=128-dy*900; im.data[i+2]=255; im.data[i+3]=255; }
+ g.putImageData(im,0,0); SEAN=new THREE.CanvasTexture(cv); SEAN.wrapS=SEAN.wrapT=THREE.RepeatWrapping; SEAN.repeat.set(60,38); return SEAN; }
+const sea=new THREE.Mesh(new THREE.PlaneGeometry(800,500),new THREE.MeshStandardMaterial({color:0x0e3b6e,roughness:.22,metalness:.25,normalMap:seaNormal(),normalScale:new THREE.Vector2(.35,.35)})); sea.rotation.x=-Math.PI/2; sea.position.y=-.05; scene.add(sea);
 let proj={k:1,cx:0,cy:0,cos:1};
 const PX=(lon,lat)=>[(lon-proj.cx)*proj.cos*proj.k,-(lat-proj.cy)*proj.k];
 const countries=[];
+let LTEX=null; function landTex(){ if(LTEX) return LTEX; LTEX=Vis.noiseTex(THREE,256,5,.22); LTEX.wrapS=LTEX.wrapT=THREE.RepeatWrapping; LTEX.repeat.set(.12,.12); return LTEX; }
 function buildCountries(){ for(const c of WORLD){ if(c.n==='Antarctica') continue; const shapes=[]; for(let poly of c.p){ if(poly[0].some((p,i,r)=>i&&Math.abs(p[0]-r[i-1][0])>90)) poly=poly.map(r=>r.map(([x,y])=>[x<0?x+360:x,y])); const outer=poly[0].map(([x,y])=>new THREE.Vector2(x,y)); if(outer.length<3) continue; const sh=new THREE.Shape(outer); for(const h of poly.slice(1)) sh.holes.push(new THREE.Path(h.map(([x,y])=>new THREE.Vector2(x,y)))); shapes.push(sh);} if(!shapes.length) continue;
   const geo=new THREE.ExtrudeGeometry(shapes,{depth:1,bevelEnabled:false}); geo.rotateX(-Math.PI/2); /* x=lon, y=height, z=-lat */
-  const mat=new THREE.MeshStandardMaterial({color:0x5d7391,roughness:.8}); const mesh=new THREE.Mesh(geo,mat); mesh.userData.c=c; scene.add(mesh);
+  const mat=new THREE.MeshStandardMaterial({color:0x5d7391,roughness:.85,map:landTex()}); const mesh=new THREE.Mesh(geo,mat); mesh.userData.c=c; scene.add(mesh);
   let sx=0,sy=0,n=0; const big=c.p.reduce((a,b)=>b[0].length>a[0].length?b:a); for(const [x,y] of big[0]){sx+=x;sy+=y;n++;} c.center=[sx/n,sy/n]; c.mesh=mesh; c.h=.1; c.ht=.1; countries.push(c);
   const edges=new THREE.LineSegments(new THREE.EdgesGeometry(geo,30),new THREE.LineBasicMaterial({color:0x0a1626,transparent:true,opacity:.5})); mesh.add(edges); } }
 buildCountries();
@@ -312,7 +318,7 @@ $('#pmin').onclick=()=>{const m=$('#panel').classList.toggle('min');$('#pmin').t
 
 /* ================= LOOP ================= */
 let last=performance.now();
-function loop(now){ let dt=Math.min(.05,(now-last)/1000); last=now; if(window.UX&&UX.ST.paused) dt=0; if(!['ue','idh','inst','ods','consum'].includes(mode)) return;
+function loop(now){ let dt=Math.min(.05,(now-last)/1000); last=now; if(SEAN&&sea.visible){ SEAN.offset.x+=dt*.004; SEAN.offset.y-=dt*.003; } if(window.UX&&UX.ST.paused) dt=0; if(!['ue','idh','inst','ods','consum'].includes(mode)) return;
  if(mode==='inst'){ townUpdate(dt,now/1000); TOWN.userData.land.tick(now/1000); } if(ODSG.visible) CS.odsTick(dt,camera); if(CONG.visible){ CS.consumTick(dt); TOWN.userData.land.tick(now/1000); }
  if(fl){ fl.t=Math.min(1,fl.t+dt/fl.d); const k=1-Math.pow(1-fl.t,3); controls.target.lerpVectors(fl.ft,fl.tt,k); camera.position.lerpVectors(fl.fp,fl.tp,k); if(fl.t>=1) fl=null; }
  for(const c of countries){ c.h+=(c.ht-c.h)*Math.min(1,dt*6); c.mesh.scale.y=c.h; }
