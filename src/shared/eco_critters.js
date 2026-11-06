@@ -73,10 +73,10 @@ function animCritter(g,t,state){ const P=g.userData.parts, k=g.userData.kind; co
 
 /* espècie → aparença i hàbitat, per ecosistema */
 const VIS={
- bosc:{guineu:{m:'Fox',h:.75},cervol:{m:'Deer',h:1.6},llop:{m:'Wolf',h:1.0},conill:{k:1.25},senglar:{k:1.15},esquirol:{k:1},eruga:{k:1},formiga:{k:1.4},cuc:{k:1.4},bolet:{k:1.3,st:1},aguila:{m:'Hawk',h:2.0,len:1,hab:'air',alt:7.5,fly:1},ocell:{m:'Parrot',h:.6,len:1,hab:'air',alt:4,fly:1},serp:{k:1.4},herba:{plant:['Bush_1','BushBerries_1'],h:.9,st:1}},
- bassa:{algues:{k:1.1,hab:'pondfloor',st:1},canyis:{k:1,hab:'shore',st:1},nenufar:{m:'Lilypad',h:.12,hab:'surface',st:1,s:1.4},mosquit:{k:1.6,hab:'air',alt:1.2},cargol:{k:1.5,hab:'shore'},peix:{m:'Goldfish',h:.45,len:1,hab:'water'},anec:{k:1.2,hab:'surface'},granota:{k:1.1,hab:'shore',amph:1},flamenc:{m:'Flamingo',h:1.5,len:1,hab:'air',alt:2.2,fly:1},serp:{k:1.3,hab:'shore',amph:1},llodriga:{k:1.3,hab:'shore',amph:1},bacteri:{k:1.6,hab:'pondfloor',st:1}},
+ bosc:{guineu:{m:'Fox',h:.75},cervol:{m:'Deer',h:1.6},llop:{m:'Wolf',h:1.0},conill:{m:'Rabbit',h:.5,hop:1},senglar:{k:1.15},esquirol:{k:1},eruga:{k:1},formiga:{k:1.4},cuc:{k:1.4},bolet:{k:1.3,st:1},aguila:{m:'Hawk',h:2.0,len:1,hab:'air',alt:7.5,fly:1},ocell:{m:'Parrot',h:.6,len:1,hab:'air',alt:4,fly:1},serp:{k:1.4},herba:{plant:['Bush_1','BushBerries_1'],h:.9,st:1}},
+ bassa:{algues:{k:1.1,hab:'pondfloor',st:1},canyis:{k:1,hab:'shore',st:1},nenufar:{m:'Lilypad',h:.12,hab:'surface',st:1,s:1.4},mosquit:{k:1.6,hab:'air',alt:1.2},cargol:{k:1.5,hab:'shore'},peix:{m:'Goldfish',h:.45,len:1,hab:'water'},anec:{k:1.2,hab:'surface'},granota:{m:'Frog',h:.4,hab:'shore',amph:1},flamenc:{m:'Flamingo',h:1.5,len:1,hab:'air',alt:2.2,fly:1},serp:{k:1.3,hab:'shore',amph:1},llodriga:{k:1.3,hab:'shore',amph:1},bacteri:{k:1.6,hab:'pondfloor',st:1}},
  mar:{posidonia:{k:1.3,hab:'floor',st:1},algues:{k:1.3,hab:'floor',st:1},escopinya:{k:1.5,hab:'floor',st:1},peix:{m:'Clownfish',h:.5,len:1,hab:'water',school:1},medusa:{k:1.2,hab:'water'},cranc:{k:1.4,hab:'floor'},pop:{k:1.3,hab:'floor'},tortuga:{m:'Turtle',h:1.1,len:1,hab:'water'},peixgran:{m:'Tuna',h:1.4,len:1,hab:'water'},dofi:{m:'Dolphin',h:2.2,len:1,hab:'water'},tauro:{m:'Shark',h:2.8,len:1,hab:'water'}}};
-const ANIMNAMES={idle:['Idle','Swim','Swimming_Normal'],walk:['Walk','Swim','Swimming_Normal'],run:['Gallop','Swim','Swimming_Fast'],eat:['Eating','Swim','Swimming_Normal'],death:['Death']};
+const ANIMNAMES={idle:['Frog_Idle','Idle','Swim','Swimming_Normal'],walk:['Frog_Jump','Walk','Swim','Swimming_Normal'],run:['Frog_Jump','Gallop','Swim','Swimming_Fast'],eat:['Frog_Attack','Eating','Swim','Swimming_Normal'],death:['Frog_Death','Death']};
 const SPEED={llop:[1,3.6],guineu:[.9,3.3],conill:[.7,3.0],senglar:[.7,2.2],cervol:[.8,2.8],eruga:[.15,.2],esquirol:[.8,2.6],formiga:[.35,.5],cuc:[.12,.15],serp:[.5,2.2],ocell:[1.6,2.4],aguila:[2,6.5],
  mosquit:[1,1.5],cargol:[.08,.1],peix:[.8,2.6],anec:[.4,1.2],granota:[.5,2],flamenc:[.4,1.4],llodriga:[.7,2.6],medusa:[.25,.4],cranc:[.4,1],pop:[.3,1.4],tortuga:[.5,1.2],peixgran:[1,3.2],dofi:[1.2,3.8],tauro:[1,3.6]};
 const vis=id=>(VIS[eco]||{})[id];
@@ -94,7 +94,7 @@ function rndPt(){ return habPt('land'); }
 
 /* ===== COMPORTAMENT ===== */
 let natura=true, huntT=6, toastT=0;
-function setAnim(b,name){ if(!b.acts) { b.cur=name; return; } let a=null; for(const n of (ANIMNAMES[name]||[name])){ const key=Object.keys(b.acts).find(k=>k===n||k.endsWith('|'+n)||k.startsWith(n)); if(key){a=b.acts[key];break;} } if(!a){ const k0=Object.keys(b.acts)[0]; a=b.acts.Idle||b.acts[k0]; }
+function setAnim(b,name){ if(!b.acts||!Object.keys(b.acts).length) { b.cur=name; return; } let a=null; for(const n of (ANIMNAMES[name]||[name])){ const key=Object.keys(b.acts).find(k=>k===n||k.endsWith('|'+n)||k.startsWith(n)); if(key){a=b.acts[key];break;} } if(!a){ const k0=Object.keys(b.acts)[0]; a=b.acts.Idle||b.acts[k0]; }
  a.timeScale=name==='run'?2:name==='idle'?.6:1; if(!a||b.curA===a){ b.cur=name; return; } if(b.curA) b.curA.fadeOut(.2); a.reset().setEffectiveWeight(1).fadeIn(.2).play(); b.curA=a; b.cur=name; }
 function initBehav(b){ const v=b.v; b.state='idle'; b.timer=Math.random()*3; b.target=null; b.mover=1; b.hab=v.hab||'land';
  if(b.hab==='air'){ b.alt=(v.alt||4)+Math.random()*1.5; b.ang=Math.random()*6.28; b.rad=b.id==='aguila'?9:eco==='bassa'?2+Math.random()*4:4+Math.random()*6; } setAnim(b,'idle'); }
@@ -120,7 +120,7 @@ function clampHab(b){ const p=b.obj.position, h=b.hab;
  else if(h==='shore'&&b.amph){ const r=Math.hypot(p.x,p.z); const gy=groundY(p.x,p.z); p.y= r<5.6? Math.max(gy+.1,Math.min(WATERY()-.15,p.y)) : gy; b.swimming=r<5.6; }
  else if(h!=='air'){ p.y=groundY(p.x,p.z)+(b.lift||0); if(eco==='bassa'&&h==='land'){ const r=Math.hypot(p.x,p.z); if(r<6.5){ p.x*=6.5/r; p.z*=6.5/r; } } }
  const rr=Math.hypot(p.x,p.z); if(rr>14.5){ p.x*=14.5/rr; p.z*=14.5/rr; } }
-function behave(b,dt,T){ if(b.mixer) b.mixer.update(dt); const S=ECOS[eco].sp, sp=SPEED[b.id]||[.6,2]; const in3d=b.hab==='water'||(b.amph&&b.swimming);
+function behave(b,dt,T){ if(b.mixer) b.mixer.update(dt); if(b.v.hop&&!b.mixer){ const k=b.obj.children[0]; if(k) k.position.y=(b.cur==='walk'||b.cur==='run')?Math.abs(Math.sin((T+b.ph)*(b.cur==='run'?9:6)))*.14:0; } const S=ECOS[eco].sp, sp=SPEED[b.id]||[.6,2]; const in3d=b.hab==='water'||(b.amph&&b.swimming);
  if(b.critter) animCritter(b.obj.children[0],T+b.ph,b.cur);
  if(b.deadT!=null){ b.deadT-=dt; if(b.deadT<=0){ b.deadT=null; b.obj.visible=false; puff(b.obj.position); b.curA=null; b.mixer.stopAllAction(); } }
  if(b.hidden){ b.timer-=dt; if(b.timer<=0){ b.hidden=false; const p=habPt(b.hab); b.obj.position.copy(p); b.obj.visible=true; b.obj.scale.setScalar(.01); b.pop=0; b.state='idle'; b.timer=2; } return; }
