@@ -383,6 +383,17 @@ body.paused #c{filter:saturate(.7)}
 .hcards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:8px 0 14px}.hc{background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:12px;text-align:center}.hc svg{width:64px;height:64px;stroke:var(--cy);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;display:block;margin:0 auto 8px}.hc b{display:block;font-size:15px;margin-bottom:4px}.hc p{margin:0;font-size:13px;color:var(--mu);line-height:1.4}
 .pbook{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ye);border:1px solid rgba(255,210,63,.4);border-radius:20px;padding:3px 10px;margin:0 0 8px}
 @media (max-width:860px){.hcards{grid-template-columns:1fr 1fr}.logo{display:none}#top{padding-left:10px}#uxChip .nm{display:none}#uxChip i{width:44px}#uxTeach{left:12px;right:12px;top:auto;bottom:calc(var(--tb) + 10px);justify-content:space-around}body.teach #panel{top:auto}}
+/* ===== Walk (mode passeig) ===== */
+#walkUI{display:none}#walkUI.show{display:block}
+#walkJoy{position:fixed;left:24px;bottom:calc(var(--tb) + 26px);width:120px;height:120px;border-radius:50%;background:rgba(10,19,36,.55);border:2px solid rgba(0,229,255,.45);z-index:12;touch-action:none;display:none}
+#walkJoy i{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#9fe7ff,var(--cy));box-shadow:0 4px 14px rgba(0,0,0,.5)}
+#walkHint{position:fixed;left:50%;top:72px;transform:translateX(-50%);z-index:12;background:rgba(10,19,36,.9);border:1px solid var(--gb);border-radius:14px;padding:8px 14px;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--mu);pointer-events:none}
+#walkHint b{color:#fff;font-size:14px}#walkHint .mob{display:none}
+#walkX{position:fixed;right:76px;top:72px;z-index:12;padding:8px 14px;border-radius:12px;border:1px solid var(--rd);color:#fff;cursor:pointer;font-size:14px}
+#walkCross{position:fixed;left:50%;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border:2px solid rgba(255,255,255,.7);border-radius:50%;z-index:12;pointer-events:none;box-shadow:0 0 0 2px rgba(0,0,0,.4)}
+body.walking #panel{display:none!important}body.walking #c{cursor:move}
+@media (pointer:coarse){#walkJoy{display:block}#walkHint .pc{display:none}#walkHint .mob{display:inline}}
+@media (max-width:860px){#walkHint{top:60px;font-size:12px;max-width:calc(100% - 24px)}#walkX{right:12px;top:106px}#walkJoy{bottom:calc(var(--tb) + 20px);left:16px;width:104px;height:104px}}
 
 .big{border:0;border-radius:12px;padding:10px 14px;cursor:pointer;font-weight:600;background:linear-gradient(135deg,var(--cy),var(--bl));color:#03111f}
 </style>
@@ -713,7 +724,7 @@ V.contactShadow=function(THREE,parent,r=.6,opacity=.45,y=.005){
   if(!V._shTex){ const c=document.createElement('canvas'); c.width=c.height=128; const g=c.getContext('2d'); const gr=g.createRadialGradient(64,64,0,64,64,64); gr.addColorStop(0,'rgba(0,0,0,1)'); gr.addColorStop(.5,'rgba(0,0,0,.55)'); gr.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=gr; g.fillRect(0,0,128,128); V._shTex=new THREE.CanvasTexture(c); }
   const m=new THREE.Mesh(new THREE.PlaneGeometry(r*2,r*2),new THREE.MeshBasicMaterial({map:V._shTex,transparent:true,opacity,depthWrite:false})); m.rotation.x=-Math.PI/2; m.position.y=y; m.renderOrder=-1; parent.add(m); return m; };
 /* ombres reals: activa i configura el llum */
-V.shadows=function(THREE,renderer,light,size=2048,box=6){ renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap; light.castShadow=true; light.shadow.mapSize.set(size,size); const c=light.shadow.camera; c.left=-box; c.right=box; c.top=box; c.bottom=-box; c.near=.5; c.far=box*8; light.shadow.bias=-.0005; light.shadow.radius=4; return light; };
+V.shadows=function(THREE,renderer,light,size=2048,box=6){ renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFShadowMap; light.castShadow=true; light.shadow.mapSize.set(size,size); const c=light.shadow.camera; c.left=-box; c.right=box; c.top=box; c.bottom=-box; c.near=.5; c.far=box*8; light.shadow.bias=-.0005; light.shadow.radius=4; return light; };
 V.shadowFloor=function(THREE,scene,size=20,opacity=.35,y=0){ const m=new THREE.Mesh(new THREE.PlaneGeometry(size,size),new THREE.ShadowMaterial({opacity})); m.rotation.x=-Math.PI/2; m.position.y=y; m.receiveShadow=true; scene.add(m); return m; };
 /* transició: flaix suau en canviar de mode */
 V.fade=function(){ let o=document.getElementById('visFade'); if(!o){ o=document.createElement('div'); o.id='visFade'; o.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:4;background:radial-gradient(circle at 50% 50%,rgba(0,229,255,.18),rgba(3,7,18,.75) 70%);opacity:0;transition:opacity .35s'; document.body.appendChild(o); } o.style.transition='none'; o.style.opacity='1'; requestAnimationFrame(()=>requestAnimationFrame(()=>{ o.style.transition='opacity .55s'; o.style.opacity='0'; })); };
@@ -1173,6 +1184,24 @@ const SENSES={
   tipsH:"Altres reflexos",tips:["Tancar els ulls quan alguna cosa s'hi acosta.","Estirar la cama quan el metge et dona un copet sota el genoll.","Esternudar o tossir."],
   act:"Activitat 7: explica la diferència entre els moviments voluntaris i els reflexos.",
   quiz:[["Quina part dona l'ordre en un acte reflex?",["El cervell","La medul·la espinal","El cerebel"],1],["Com són els actes reflexos?",["Lents i pensats","Involuntaris i molt ràpids","Només de les cames"],1]]},
+ relacio:{grp:'ner',ico:'🔁',n:'Relació',org:"La funció de relació: estímul i resposta",
+  intro:"La funció de relació ens permet rebre informació de l'entorn i del nostre cos, interpretar-la i respondre. Hi participen els òrgans dels sentits, el sistema nerviós i l'aparell locomotor. Tot comença amb un estímul i acaba amb una resposta.",
+  steps:[['_ull',"Estímul: un canvi de l'entorn (o del nostre cos) que captem amb els receptors."],['cervell',"El sistema nerviós interpreta la informació."],['medulla',"El sistema nerviós elabora l'ordre i l'envia pels nervis."],['biceps',"Resposta: els músculs s'activen i fem un moviment."]],
+  labels:[['_ull','Receptor (estímul)'],['cervell','Cervell: interpreta'],['medulla','Medul·la i nervis: transmeten'],['biceps','Múscul: resposta']],
+  stepsH:"Estímul → resposta",route:"▶ Segueix el camí",
+  tipsH:"Dos tipus d'estímuls",tips:["Estímuls externs: venen de fora (llum, so, olor, temperatura, una pilota que s'acosta).","Estímuls interns: venen de dins del cos (set, gana, ganes de dormir, dolor d'estómac).","La resposta pot ser un moviment, però també una sensació o una emoció."],
+  extra:'relacio',
+  act:"Activitat 7: posa tres exemples d'estímul i la resposta corresponent. Digues si l'estímul és intern o extern i quins òrgans hi participen.",
+  quiz:[["La set és un estímul…",["Extern","Intern","Inexistent"],1],["Quins sistemes participen en la funció de relació?",["Només el digestiu","Òrgans dels sentits, sistema nerviós i aparell locomotor","Només la pell"],1],["Un soroll fort ens fa girar el cap. El soroll és…",["L'estímul","La resposta","El receptor"],0]]},
+ endocri:{grp:'ner',ico:'🧪',n:'Hormones',org:"El sistema endocrí",
+  intro:"A més del sistema nerviós, el cos es coordina amb el sistema endocrí. Està format per glàndules que fabriquen hormones, missatgers químics que viatgen per la sang i regulen funcions com el creixement, l'energia o el sucre de la sang. És més lent que el sistema nerviós, però els efectes duren més.",
+  steps:[['hipofisi',"Hipòfisi: la «glàndula directora». Regula les altres glàndules i produeix l'hormona del creixement."],['tiroide',"Tiroide: al coll. Regula el ritme del metabolisme, és a dir, quanta energia gastem."],['pancrees',"Pàncrees: fabrica la insulina, que baixa el sucre de la sang."],['suprarenals',"Suprarenals: sobre els ronyons. Fabriquen l'adrenalina, que ens prepara per a l'acció."],['gonades',"Ovaris i testicles: fabriquen les hormones sexuals, responsables dels canvis de la pubertat."]],
+  labels:[['hipofisi','Hipòfisi'],['tiroide','Tiroide'],['pancrees','Pàncrees'],['suprarenals','Suprarenals'],['gonades','Ovaris / testicles']],
+  stepsH:"Les glàndules principals",route:"▶ Recorre les glàndules",
+  tipsH:"Nerviós vs endocrí",tips:["Sistema nerviós: missatges elèctrics, molt ràpids i curts (un reflex dura un instant).","Sistema endocrí: missatges químics per la sang, més lents però de llarga durada (el creixement dura anys).","Quan tens por, les suprarenals alliberen adrenalina: el cor batega més de pressa."],
+  extra:'endocri',
+  act:"Activitat 8: completa una taula amb tres glàndules, l'hormona que fabriquen i la funció que regulen. Activitat 9: explica una diferència entre el sistema nerviós i el sistema endocrí.",
+  quiz:[["Què són les hormones?",["Missatgers químics que viatgen per la sang","Impulsos elèctrics dels nervis","Parts del múscul"],0],["Quina glàndula fabrica la insulina?",["El tiroide","El pàncrees","La hipòfisi"],1],["Quina glàndula dirigeix les altres?",["La hipòfisi","Les suprarenals","El fetge"],0]]},
  salutn:{grp:'ner',ico:'🛡️',n:'Salut',org:"Tenir cura del sistema nerviós",
   intro:"Els estils de vida saludables cuiden el sistema nerviós. També cal protegir el sistema nerviós central quan fem algunes activitats, perquè es pot danyar en caigudes o accidents. Per exemple, si es danya la medul·la espinal es pot produir una paràlisi de les extremitats.",
   steps:[],labels:[['cervell','Encèfal (protegit pel crani)'],['medulla','Medul·la (protegida per la columna)']],
@@ -1880,12 +1909,22 @@ function senseAnchors(s){
     if(s==='voluntari') A._path=[A._ull.clone().add(new THREE.Vector3(0,0,.12)),A._ull,cerv,A.tronc,mtop,shoulder,A.biceps];
     if(s==='reflex') A._path=[tip.clone().add(new THREE.Vector3(0,-.04,.04)),tip,wrist,elbow,shoulder,mtop,shoulder,A.biceps,shoulder,mtop,A.tronc,cerv];
     if(s==='voluntari') A.medulla=mtop; if(s==='reflex') A.medulla=mtop;
+    if(s==='relacio'){ A.medulla=mtop; A._path=[A._ull.clone().add(new THREE.Vector3(0,0,.12)),A._ull,cerv,A.tronc,mtop,shoulder,A.biceps]; }
+    if(s==='endocri'){
+      const cb=boxOf(groups.cervell), tb=boxOf(groups.tronc), est=center(groups.estomac||[]), ron=center(groups.ronyons||[]), clav=center(sideMeshes('clavicula'));
+      A.hipofisi=new THREE.Vector3(0,tb.max.y+.012,cb.min.z+(cb.max.z-cb.min.z)*.42);
+      A.tiroide=new THREE.Vector3(0,clav.y+.035,clav.z+.02);
+      A.pancrees=est.clone().add(new THREE.Vector3(sx*-.03,-.035,-.02));
+      A.suprarenals=ron.clone().add(new THREE.Vector3(0,.05,0));
+      A.gonades=ron.clone().add(new THREE.Vector3(0,-.2,.03));
+      A.cervell=cerv; A._path=[A.hipofisi,A.tiroide,A.pancrees,A.suprarenals,A.gonades];
+    }
   }
   return senseAnch[s]=A;
 }
 let tabGrp='';
 function buildSenseTabs(grp){
-  grp=grp||'sen'; if(tabGrp===grp) return; tabGrp=grp; const t=$('#senTabs'); t.innerHTML=''; t.style.gridTemplateColumns=`repeat(${grp==='ner'?6:5},1fr)`;
+  grp=grp||'sen'; if(tabGrp===grp) return; tabGrp=grp; const t=$('#senTabs'); t.innerHTML=''; t.style.gridTemplateColumns=`repeat(${grp==='ner'?4:5},1fr)`;
   for(const [k,S] of Object.entries(SENSES)){ if(S.grp!==grp) continue;const b=document.createElement('button'); b.dataset.s=k; b.innerHTML=`<span>${S.ico}</span>${S.n}`; b.onclick=()=>openSense(k); t.appendChild(b);}
 }
 const PRESET={
@@ -1895,7 +1934,7 @@ const PRESET={
  olfacte:{pe:.2,mu:0,os:.15,or:0,ne:.5,ci:0,se:1},
  gust:{pe:.2,mu:0,os:.2,or:0,ne:.5,ci:0,se:1},
  snc:{pe:.12,mu:0,os:.15,or:0,ne:1,ci:0,se:0},snp:{pe:.15,mu:0,os:.15,or:0,ne:1,ci:0,se:0},neurona:{pe:.12,mu:0,os:.12,or:0,ne:1,ci:0,se:0},
- voluntari:{pe:.12,mu:1,os:.2,or:0,ne:1,ci:0,se:1},reflex:{pe:.15,mu:1,os:.2,or:0,ne:1,ci:0,se:0},salutn:{pe:.12,mu:0,os:.35,or:0,ne:1,ci:0,se:0}};
+ voluntari:{pe:.12,mu:1,os:.2,or:0,ne:1,ci:0,se:1},reflex:{pe:.15,mu:1,os:.2,or:0,ne:1,ci:0,se:0},relacio:{pe:.12,mu:1,os:.2,or:0,ne:1,ci:0,se:1},endocri:{pe:.18,mu:0,os:.2,or:.55,ne:.35,ci:0,se:0},salutn:{pe:.12,mu:0,os:.35,or:0,ne:1,ci:0,se:0}};
 function senseMats(){
   const P=PRESET[sense], S=SENSES[sense];
   for(const L in layerMats) layerMats[L].forEach(m=>setOp(m,Math.max(P[L],.01)));
@@ -1905,10 +1944,10 @@ function senseMats(){
   meshes.forEach(o=>{const d=o.userData; let v=P[d.kind]>0;
     if(d.kind==='se') v= (S.parts||[]).includes(d.id);
     if(d.kind==='ne') v= ['cervell','cerebel','tronc','medulla'].includes(d.id)||(sense==='tacte'&&d.id==='nervis'&&(d.zone==='ma'||d.zone==='brac'||d.zone==='coll'||d.zone==='tronc'))||(S.grp==='ner'&&d.id==='nervis');
-    if(S.grp==='ner'&&d.kind==='se') v= sense==='voluntari'&&['iris','escler','cornia','nervioptic'].includes(d.id);
+    if(S.grp==='ner'&&d.kind==='se') v= (sense==='voluntari'||sense==='relacio')&&['iris','escler','cornia','nervioptic'].includes(d.id);
     if(sense==='oida'&&OSSETS.includes(d.id)) v=true;
-    if(d.kind==='mu') v= (sense==='voluntari'||sense==='reflex')&&d.id==='biceps'&&d.side==='r';
-    if(d.kind==='or'||d.kind==='ci') v=false;
+    if(d.kind==='mu') v= (sense==='voluntari'||sense==='reflex'||sense==='relacio')&&d.id==='biceps'&&d.side==='r';
+    if(d.kind==='or') v= sense==='endocri'&&['estomac','ronyons','fetge'].includes(d.id); if(d.kind==='ci') v=false;
     if(d.kind==='os'&&INFO[d.id].extra&&!OSSETS.includes(d.id)&&d.zone!=='cap'&&d.zone!=='ma') v=false;
     o.visible=v;
     let m=baseMat(o);
@@ -1930,6 +1969,8 @@ function openSense(k){
   const ex=$('#sExtra'); ex.innerHTML='';
   if(S.extra==='sabors') ex.innerHTML=`<div class="sbox"><p class="h">Els cinc sabors bàsics</p><div class="sab"><div><b>Dolç</b>sucre, fruita</div><div><b>Salat</b>sal, embotits</div><div><b>Àcid</b>vinagre, llimona</div><div><b>Amarg</b>cafè, aranja</div><div><b>Umami</b>formatge curat, tomàquet</div></div></div>`;
   if(S.extra==='neurona') ex.innerHTML=`<div class="sbox"><p class="h">Parts de la neurona</p><svg class="skin" viewBox="0 0 340 150" font-family="Space Grotesk" font-size="12"><g stroke="#ffd23f" stroke-width="3" fill="none" stroke-linecap="round"><path d="M70 75 L30 40 M30 40 L15 30 M30 40 L25 20 M70 75 L25 80 M25 80 L8 70 M25 80 L10 95 M70 75 L40 120 M40 120 L30 140 M40 120 L55 140 M70 75 L60 25"/><path d="M95 75 C150 70 200 80 265 75" stroke-width="5"/><path d="M265 75 L295 55 M265 75 L300 75 M265 75 L295 98"/></g><circle cx="78" cy="75" r="22" fill="#ffb347" stroke="#ffd23f" stroke-width="2"/><circle cx="78" cy="75" r="8" fill="#b6ff3b"/><path d="M150 60 l14 0 l-5 -5 M164 60 l-5 5" stroke="#00e5ff" stroke-width="2" fill="none"/><text x="58" y="112" fill="#e6f1ff">Cos (nucli)</text><text x="2" y="14" fill="#e6f1ff">Dendrites: reben</text><text x="150" y="100" fill="#e6f1ff">Axó: envia la informació</text><text x="300" y="118" fill="#00e5ff" text-anchor="end">→ neurona següent</text></svg></div>`;
+  if(S.extra==='relacio') ex.innerHTML=`<div class="sbox"><p class="h">Exemples</p><div class="sab" style="grid-template-columns:1fr 1fr;text-align:left"><div><b>Extern</b>Un semàfor es posa vermell → els ulls el veuen → el cervell ho interpreta → frenem.</div><div><b>Extern</b>Olor de pa calent → el nas la capta → ens comença a fer salivar.</div><div><b>Intern</b>Set → receptors interns avisen el cervell → anem a beure aigua.</div><div><b>Intern</b>Son → el cervell ho nota → badallem i anem al llit.</div></div></div>`;
+  if(S.extra==='endocri') ex.innerHTML=`<div class="sbox"><p class="h">Taula de glàndules</p><div class="sab"><div><b>Hipòfisi</b>hormona del creixement</div><div><b>Tiroide</b>metabolisme</div><div><b>Pàncrees</b>insulina (sucre)</div><div><b>Suprarenals</b>adrenalina</div><div><b>Gònades</b>hormones sexuals</div></div></div><div class="sbox"><p class="h">Insulina i sucre</p><p style="font-size:13px;line-height:1.4">Després de menjar puja el sucre de la sang → el pàncrees allibera insulina → les cèl·lules agafen el sucre i el nivell baixa. Si el pàncrees no fa prou insulina, apareix la diabetis.</p></div>`;
   if(S.extra==='skin') ex.innerHTML=`<div class="sbox"><p class="h">La pell per dins</p><svg class="skin" viewBox="0 0 340 150" font-family="Space Grotesk" font-size="12"><rect x="10" y="20" width="230" height="22" rx="4" fill="#e8b49a"/><rect x="10" y="42" width="230" height="58" fill="#c97f6c"/><rect x="10" y="100" width="230" height="36" rx="4" fill="#f2d39b" opacity=".8"/><path d="M40 98 C60 80 80 70 90 50 M150 98 C140 80 150 65 160 48 M210 98 C200 82 205 66 215 52" stroke="#ffd23f" stroke-width="2.5" fill="none"/><circle cx="90" cy="50" r="6" fill="#00e5ff"/><circle cx="160" cy="48" r="6" fill="#00e5ff"/><circle cx="215" cy="52" r="6" fill="#00e5ff"/><path d="M40 98 L20 140 M150 98 L150 140" stroke="#ffd23f" stroke-width="3"/><text x="250" y="35" fill="#e6f1ff">Epidermis</text><text x="250" y="72" fill="#e6f1ff">Dermis</text><text x="250" y="122" fill="#e6f1ff">Greix</text><text x="96" y="16" fill="#00e5ff">receptors</text><text x="160" y="145" fill="#ffd23f">nervis → cervell</text></svg></div>`;
   const q=$('#sQuiz'); q.innerHTML='';
   S.quiz.forEach(([qq,opts,ok])=>{const d=document.createElement('div'); d.className='q'; d.innerHTML='<p></p>'; d.querySelector('p').textContent=qq; const fb=document.createElement('div'); fb.className='fb';
