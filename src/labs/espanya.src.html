@@ -74,12 +74,13 @@ svg.chart{width:100%;height:auto;display:block}
   <div class="hpage" data-p="res" style="display:none"></div>
  </div>
 </div>
-<div id="credit">Contorns: Natural Earth (domini públic). Relleu esquemàtic generat a partir dels cims principals, exagerat verticalment.</div>
+<div id="credit">Contorns: Natural Earth (domini públic). Relleu real de la Península i les Balears (heightmapper, dades d'elevació Mapzen Terrain Tiles); Canàries esquemàtiques. Exagerat verticalment.</div>
 
 <script>/*KIT*/</script>
 <script>window.ESP=/*ESP*/;window.EU=/*EU*/;window.CCAA=/*CCAA*/;window.PROV=/*PROV*/;</script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
 <script>/*SHIPASSETS*/</script>
+<script>/*DEMESP*/</script>
 <script type="module">
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
@@ -229,9 +230,17 @@ function hESP(lon,lat,map){ const L=map.landAt(lon,lat); if(!L) return -50; let 
  if(lon>-1.6&&lon<1.0&&lat>41.0&&lat<42.4) h*=.55; /* Ebre */ if(lon>-6.5&&lon<-3.5&&lat>36.8&&lat<38.1) h*=.6; /* Guadalquivir */
  for(const r of RANGES){ const w=r.w||.38; if(r.p.length===1){const [x,y,hh]=r.p[0];const d=Math.hypot((lon-x)*.9,lat-y);h=Math.max(h,hh*Math.exp(-((d/w)**2)));continue;} const [d,i,t]=polyDist(lon,lat,r.p,.77); if(d>1.3) continue; const hh=r.p[i][2]+(r.p[i+1][2]-r.p[i][2])*t; h=Math.max(h,hh*Math.exp(-((d/w)**2))*(.75+.5*NZ(lon*6,lat*6))); }
  return Math.max(20,h); }
+
+/* relleu real: mapa d'alçades (heightmapper, dades Mapzen/AWS Terrain Tiles) */
+const DEM=await (async()=>{ const D=window.DEMESP; if(!D) return null; const img=new Image(); img.src=D.png; await img.decode(); const c=document.createElement('canvas'); c.width=D.w; c.height=D.h; const g=c.getContext('2d'); g.drawImage(img,0,0); const px=g.getImageData(0,0,D.w,D.h).data; const a=new Uint8Array(D.w*D.h); for(let i=0;i<a.length;i++) a[i]=px[i*4]; return Object.assign({a},D); })();
+const DCAL=[[0,0],[2,7],[21,199],[45,529],[59,657],[66,698],[85,900],[177,2314],[194,2591],[255,3479]];
+const g2h=g=>{ for(let i=1;i<DCAL.length;i++) if(g<=DCAL[i][0]){ const [a,b]=DCAL[i-1],[c,d]=DCAL[i]; return b+(d-b)*(g-a)/(c-a); } return 3479; };
+function demAt(lon,lat){ if(!DEM) return -1; const fx=(lon-DEM.lon0)/DEM.st, fy=(DEM.lat1-lat)/DEM.st; const i=Math.floor(fx), j=Math.floor(fy); if(i<0||j<0||i>=DEM.w-1||j>=DEM.h-1) return -1; const u=fx-i,v=fy-j, A=DEM.a, w=DEM.w; const q=[A[j*w+i],A[j*w+i+1],A[(j+1)*w+i],A[(j+1)*w+i+1]]; if(Math.min(...q)===0&&Math.max(...q)===0) return -1; return g2h(q[0]*(1-u)*(1-v)+q[1]*u*(1-v)+q[2]*(1-u)*v+q[3]*u*v); }
+const inCanBox=(lon,lat)=>lon>-11.75&&lon<-6.5&&lat>34.55&&lat<37.1;
+function hESPreal(lon,lat,map){ if(inCanBox(lon,lat)) return hESP(lon,lat,map); const L=map.landAt(lon,lat); if(!L) return -50; const d=demAt(lon,lat); if(d<0) return hESP(lon,lat,map); return Math.max(20,d); }
 const MAPES={lon0:-11.9,lon1:5.0,lat0:34.4,lat1:44.4,clat:40,cx:-3.4,cy:39.6,K:10,step:.04,ppd:100,hs:.0013,
  paintMask:(draw)=>{ for(const k of ['PRT','FRA','AND','MAR','DZA','GIB']) if(ESP[k]) draw(ESP[k],'#00ff00'); draw(ESP.ESP,'#ff0000',canShift); },
- height:hESP,
+ height:hESPreal,
  overlay:(g,map,key)=>{ const [x0,y0]=map.PX(-11.75,37.1), [x1,y1]=map.PX(-6.5,34.55); g.strokeStyle='rgba(255,255,255,.6)'; g.lineWidth=3; g.strokeRect(x0,y0,x1-x0,y1-y0);
   g.strokeStyle='rgba(20,30,40,.55)'; g.lineWidth=2; for(const k of ['PRT','FRA','AND']) for(const poly of ESP[k]){ g.beginPath(); poly[0].forEach(([x,y],i)=>{const [px,py]=map.PX(x,y); i?g.lineTo(px,py):g.moveTo(px,py);}); g.stroke(); } }};
 /* clima d'Espanya (simplificat) */
