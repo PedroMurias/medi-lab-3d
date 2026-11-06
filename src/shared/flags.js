@@ -1,0 +1,40 @@
+/* Banderes dibuixades amb canvas (simplificades però reconeixibles) */
+window.Flags=(function(){
+ const W=300,H=200;
+ const h=(...c)=>g=>{ const n=c.length; c.forEach((col,i)=>{ g.fillStyle=col; g.fillRect(0,H*i/n,W,H/n+1); }); };
+ const hw=(cols,ws)=>g=>{ const tot=ws.reduce((a,b)=>a+b,0); let y=0; cols.forEach((col,i)=>{ g.fillStyle=col; g.fillRect(0,y,W,H*ws[i]/tot+1); y+=H*ws[i]/tot; }); };
+ const v=(...c)=>g=>{ const n=c.length; c.forEach((col,i)=>{ g.fillStyle=col; g.fillRect(W*i/n,0,W/n+1,H); }); };
+ const nordic=(bg,cr,inner)=>g=>{ g.fillStyle=bg; g.fillRect(0,0,W,H); g.fillStyle=cr; g.fillRect(0,H*.4,W,H*.2); g.fillRect(W*.28,0,W*.12,H); if(inner){ g.fillStyle=inner; g.fillRect(0,H*.45,W,H*.1); g.fillRect(W*.31,0,W*.06,H); } };
+ const star=(g,x,y,r,col,n=5)=>{ g.fillStyle=col; g.beginPath(); for(let i=0;i<n*2;i++){ const a=-Math.PI/2+i*Math.PI/n; const rr=i%2?r*.42:r; g.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr); } g.closePath(); g.fill(); };
+ const shield=(g,x,y,w,hh,col,stroke)=>{ g.fillStyle=col; g.beginPath(); g.moveTo(x-w/2,y); g.lineTo(x+w/2,y); g.lineTo(x+w/2,y+hh*.6); g.quadraticCurveTo(x+w/2,y+hh,x,y+hh); g.quadraticCurveTo(x-w/2,y+hh,x-w/2,y+hh*.6); g.closePath(); g.fill(); if(stroke){ g.strokeStyle=stroke; g.lineWidth=3; g.stroke(); } };
+ const F={
+  Spain:g=>{ hw(['#AA151B','#F1BF00','#AA151B'],[1,2,1])(g); shield(g,W*.3,H*.33,34,44,'#AA151B','#F1BF00'); g.fillStyle='#F1BF00'; g.fillRect(W*.3-9,H*.33+10,18,10); },
+  France:v('#0055A4','#fff','#EF4135'), Italy:v('#009246','#fff','#CE2B37'), Belgium:v('#000','#FAE042','#ED2939'), Ireland:v('#169B62','#fff','#FF883E'), Romania:v('#002B7F','#FCD116','#CE1126'),
+  Germany:h('#000','#DD0000','#FFCE00'), Netherlands:h('#AE1C28','#fff','#21468B'), Luxembourg:h('#ED2939','#fff','#00A1DE'), Austria:h('#ED2939','#fff','#ED2939'), Hungary:h('#CE2939','#fff','#477050'), Bulgaria:h('#fff','#00966E','#D62612'), Lithuania:h('#FDB913','#006A44','#C1272D'), Estonia:h('#0072CE','#000','#fff'), Russia:h('#fff','#0039A6','#D52B1E'),
+  Poland:h('#fff','#DC143C'), Ukraine:h('#005BBB','#FFD500'), Latvia:hw(['#9E3039','#fff','#9E3039'],[2,1,2]),
+  Denmark:nordic('#C60C30','#fff'), Sweden:nordic('#006AA7','#FECC00'), Finland:nordic('#fff','#003580'), Norway:nordic('#BA0C2F','#fff','#00205B'), Iceland:nordic('#02529C','#fff','#DC1E35'),
+  Portugal:g=>{ g.fillStyle='#006600'; g.fillRect(0,0,W*.4,H); g.fillStyle='#FF0000'; g.fillRect(W*.4,0,W*.6,H); g.fillStyle='#FFE000'; g.beginPath(); g.arc(W*.4,H/2,42,0,7); g.fill(); shield(g,W*.4,H/2-28,34,56,'#FF0000','#fff'); g.fillStyle='#fff'; g.fillRect(W*.4-8,H/2-14,16,22); g.fillStyle='#0033aa'; for(const [dx,dy] of [[0,0],[-6,-6],[6,-6],[-6,6],[6,6]]) g.fillRect(W*.4-2+dx,H/2-5+dy,4,4); },
+  Greece:g=>{ for(let i=0;i<9;i++){ g.fillStyle=i%2?'#fff':'#0D5EAF'; g.fillRect(0,H*i/9,W,H/9+1); } g.fillStyle='#0D5EAF'; g.fillRect(0,0,H*5/9,H*5/9); g.fillStyle='#fff'; g.fillRect(H*5/9*.4,0,H*5/9*.2,H*5/9); g.fillRect(0,H*5/9*.4,H*5/9,H*5/9*.2); },
+  Cyprus:g=>{ g.fillStyle='#fff'; g.fillRect(0,0,W,H); g.fillStyle='#D57800'; g.beginPath(); g.moveTo(90,80); g.quadraticCurveTo(150,55,215,70); g.quadraticCurveTo(250,60,240,85); g.quadraticCurveTo(200,100,170,115); g.quadraticCurveTo(130,125,100,112); g.quadraticCurveTo(80,100,90,80); g.fill(); g.strokeStyle='#4E5B31'; g.lineWidth=4; g.beginPath(); g.moveTo(110,150); g.quadraticCurveTo(150,120,190,150); g.stroke(); },
+  Malta:g=>{ g.fillStyle='#fff'; g.fillRect(0,0,W/2,H); g.fillStyle='#CF142B'; g.fillRect(W/2,0,W/2,H); g.fillStyle='#999'; g.fillRect(22,16,30,8); g.fillRect(33,5,8,30); },
+  Czechia:g=>{ h('#fff','#D7141A')(g); g.fillStyle='#11457E'; g.beginPath(); g.moveTo(0,0); g.lineTo(W/2,H/2); g.lineTo(0,H); g.fill(); },
+  Croatia:g=>{ h('#FF0000','#fff','#171796')(g); const x=W/2,y=H*.3; for(let r=0;r<5;r++) for(let c=0;c<5;c++){ g.fillStyle=(r+c)%2?'#fff':'#FF0000'; g.fillRect(x-30+c*12,y+r*12,12,12); } },
+  Slovakia:g=>{ h('#fff','#0B4EA2','#EE1C25')(g); shield(g,W*.33,H*.28,56,86,'#EE1C25','#fff'); g.fillStyle='#fff'; g.fillRect(W*.33-4,H*.28+12,8,44); g.fillRect(W*.33-16,H*.28+22,32,7); g.fillRect(W*.33-12,H*.28+36,24,7); g.fillStyle='#0B4EA2'; g.beginPath(); g.arc(W*.33,H*.28+80,22,Math.PI,0); g.fill(); },
+  Slovenia:g=>{ h('#fff','#005DA4','#ED1C24')(g); shield(g,W*.3,H*.12,44,62,'#005DA4','#fff'); g.fillStyle='#fff'; g.beginPath(); g.moveTo(W*.3-18,H*.12+50); g.lineTo(W*.3-8,H*.12+30); g.lineTo(W*.3,H*.12+40); g.lineTo(W*.3+8,H*.12+26); g.lineTo(W*.3+18,H*.12+50); g.fill(); for(const dx of [-8,0,8]) star(g,W*.3+dx,H*.12+(dx?18:10),4,'#FFDD00',6); },
+  'United Kingdom':g=>{ g.fillStyle='#012169'; g.fillRect(0,0,W,H); g.strokeStyle='#fff'; g.lineWidth=28; g.beginPath(); g.moveTo(0,0); g.lineTo(W,H); g.moveTo(W,0); g.lineTo(0,H); g.stroke(); g.strokeStyle='#C8102E'; g.lineWidth=9; g.stroke(); g.fillStyle='#fff'; g.fillRect(0,H*.36,W,H*.28); g.fillRect(W*.4,0,W*.2,H); g.fillStyle='#C8102E'; g.fillRect(0,H*.42,W,H*.16); g.fillRect(W*.44,0,W*.12,H); },
+  Switzerland:g=>{ g.fillStyle='#D52B1E'; g.fillRect(0,0,W,H); g.fillStyle='#fff'; g.fillRect(W/2-16,H/2-55,32,110); g.fillRect(W/2-55,H/2-16,110,32); },
+  Turkey:g=>{ g.fillStyle='#E30A17'; g.fillRect(0,0,W,H); g.fillStyle='#fff'; g.beginPath(); g.arc(W*.38,H/2,52,0,7); g.fill(); g.fillStyle='#E30A17'; g.beginPath(); g.arc(W*.44,H/2,42,0,7); g.fill(); star(g,W*.6,H/2,22,'#fff'); },
+  Albania:g=>{ g.fillStyle='#E41E20'; g.fillRect(0,0,W,H); g.fillStyle='#000'; g.beginPath(); g.moveTo(W/2,H*.25); g.lineTo(W/2-60,H*.4); g.lineTo(W/2-70,H*.6); g.lineTo(W/2-25,H*.55); g.lineTo(W/2,H*.78); g.lineTo(W/2+25,H*.55); g.lineTo(W/2+70,H*.6); g.lineTo(W/2+60,H*.4); g.closePath(); g.fill(); },
+  'Bosnia and Herz.':g=>{ g.fillStyle='#002395'; g.fillRect(0,0,W,H); g.fillStyle='#FECB00'; g.beginPath(); g.moveTo(W*.3,0); g.lineTo(W*.78,0); g.lineTo(W*.78,H*.96); g.fill(); for(let i=0;i<7;i++) star(g,W*.22+i*W*.09,H*.1+i*H*.13,8,'#fff'); },
+  Montenegro:g=>{ g.fillStyle='#C40308'; g.fillRect(0,0,W,H); g.strokeStyle='#D4AF37'; g.lineWidth=12; g.strokeRect(6,6,W-12,H-12); shield(g,W/2,H*.3,50,70,'#D4AF37','#C40308'); star(g,W/2,H*.6,10,'#1D5E91',6); },
+  Serbia:g=>{ h('#C6363C','#0C4076','#fff')(g); shield(g,W*.35,H*.25,56,90,'#C6363C','#fff'); g.fillStyle='#fff'; g.fillRect(W*.35-3,H*.25+14,6,50); g.fillRect(W*.35-18,H*.25+30,36,6); },
+  Macedonia:g=>{ g.fillStyle='#D20000'; g.fillRect(0,0,W,H); g.fillStyle='#FFE600'; for(let i=0;i<8;i++){ const a=i*Math.PI/4; g.beginPath(); g.moveTo(W/2,H/2); g.lineTo(W/2+Math.cos(a-.12)*400,H/2+Math.sin(a-.12)*400); g.lineTo(W/2+Math.cos(a+.12)*400,H/2+Math.sin(a+.12)*400); g.fill(); } g.beginPath(); g.arc(W/2,H/2,30,0,7); g.fill(); g.strokeStyle='#D20000'; g.lineWidth=5; g.stroke(); },
+  Moldova:g=>{ v('#003DA5','#FFD200','#CC092F')(g); shield(g,W/2,H*.3,44,70,'#CC092F','#003DA5'); g.fillStyle='#FFD200'; g.fillRect(W/2-14,H*.3+20,28,8); g.fillRect(W/2-4,H*.3+8,8,40); },
+  Belarus:g=>{ hw(['#C8313E','#4AA657'],[2,1])(g); g.fillStyle='#fff'; g.fillRect(0,0,W*.11,H); g.fillStyle='#C8313E'; for(let i=0;i<10;i++) g.fillRect(6+(i%2)*10,i*20+4,12,12); },
+  Kosovo:g=>{ g.fillStyle='#244AA5'; g.fillRect(0,0,W,H); g.fillStyle='#D0A650'; g.beginPath(); g.ellipse(W/2,H*.58,45,32,0,0,7); g.fill(); for(let i=0;i<6;i++) star(g,W/2-50+i*20,H*.3-Math.abs(i-2.5)*6,7,'#fff'); },
+  Georgia:g=>{ g.fillStyle='#fff'; g.fillRect(0,0,W,H); g.fillStyle='#FF0000'; g.fillRect(W*.42,0,W*.16,H); g.fillRect(0,H*.4,W,H*.2); for(const [x,y] of [[W*.2,H*.2],[W*.8,H*.2],[W*.2,H*.8],[W*.8,H*.8]]){ g.fillRect(x-14,y-4,28,8); g.fillRect(x-4,y-14,8,28); } },
+ };
+ const cache={};
+ function canvas(n){ if(cache[n]) return cache[n]; const cv=document.createElement('canvas'); cv.width=W; cv.height=H; const g=cv.getContext('2d'); const f=F[n]; if(!f){ g.fillStyle='#5d7391'; g.fillRect(0,0,W,H); g.fillStyle='#fff'; g.font='bold 60px sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('?',W/2,H/2); } else f(g); cache[n]=cv; return cv; }
+ return {has:n=>!!F[n],canvas,dataURL:n=>canvas(n).toDataURL('image/png'),names:Object.keys(F)};
+})();
