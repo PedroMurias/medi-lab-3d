@@ -1134,15 +1134,18 @@ function occluded(p,ownIds){const dir=p.clone().sub(camera.position), d=dir.leng
   return hits.length && hits[0].distance<d-.015 && !ownIds.includes(hits[0].object.userData.id);}
 function place(el,p){tv.copy(p).project(camera); if(tv.z>1||Math.abs(tv.x)>1.05||Math.abs(tv.y)>1.05) return false;
   el.style.transform=`translate(${(tv.x*.5+.5)*innerWidth-7}px,${(-tv.y*.5+.5)*innerHeight-7}px)`; return true;}
+let occQ=0, lastCamMove=0;
 function updatePins(){
   const show= mode==='explora' && $('#oPins').checked; frame++;
   for(const id in pinEls){ const el=pinEls[id];
     const A=anchors[id]; if(A.mesh&&A.mesh.parent){ if(A.vi!==undefined){ A.p.fromBufferAttribute(A.mesh.geometry.attributes.position,A.vi); A.mesh.applyBoneTransform(A.vi,A.p); A.p.applyMatrix4(A.mesh.matrixWorld);} else { A.p.copy(A.local); A.mesh.localToWorld(A.p);} }
     let vis= show && !pinOff.has(INFO[id].k) && groups[id].some(o=>o.visible) && place(el,A.p);
-    if(vis && (frame%24===0||occl[id]===undefined)) occl[id]=occluded(anchors[id].p,[id]);
+    if(vis && occl[id]===undefined) occl[id]=false;
     if(vis && occl[id] && selected!==id) vis=false;
     el.classList.toggle('hide',!vis); el.classList.toggle('on',selected===id);
   }
+  /* oclusió: poques comprovacions per fotograma i només amb la càmera quieta (abans totes de cop i anava a batzegades) */
+  if(show && performance.now()-lastCamMove>180){ const ids=Object.keys(pinEls); for(let k=0;k<3&&ids.length;k++){ occQ=(occQ+1)%ids.length; const id=ids[occQ]; if(!pinEls[id].classList.contains('hide')||occl[id]) occl[id]=occluded(anchors[id].p,[id]); } }
   if(mode==='sentits'||mode==='nervios') updateSensePins();
   $('#pleg').classList.toggle('hidden', !show || $('#left').classList.contains('open'));
 }
@@ -1974,7 +1977,11 @@ let anim=null;
 function flyTo(t,p){anim={t:0,fromT:controls.target.clone(),toT:t.clone(),fromP:camera.position.clone(),toP:p.clone()};}
 let last=performance.now(), awakeUntil=0;
 const wake=(ms=400)=>{awakeUntil=Math.max(awakeUntil,performance.now()+ms);};
-controls.addEventListener('change',()=>wake(250));
+controls.addEventListener('change',()=>{ wake(250); lastCamMove=performance.now(); });
+controls.addEventListener('end',()=>wake(900));
+/* resolució adaptativa: si va lent mentre es mou, baixa la resolució; quan para, torna a la nítida */
+const DPR0=Math.min(devicePixelRatio,1.5); let dpr=DPR0, slowF=0, idleF=0, fastF=0;
+function adaptRes(dt,busy){ if(busy){ idleF=0; if(dt>.045){ slowF++; fastF=0; } else { slowF=Math.max(0,slowF-1); if(dt<.022) fastF++; } if(slowF>8&&dpr>.6){ dpr=Math.max(.6,dpr-.2); renderer.setPixelRatio(dpr); slowF=0; } } else if(dpr<DPR0&&(idleF+=dt||.016)>.5){ dpr=DPR0; renderer.setPixelRatio(dpr); wake(120); } }
 ['pointerdown','pointermove','wheel','keydown','input','click','touchstart'].forEach(ev=>addEventListener(ev,()=>wake(ev==='pointermove'?120:900),{passive:true}));
 addEventListener('resize',()=>wake(500));
 function loop(now){ let dt=Math.min(.05,(now-last)/1000); last=now; if(UX.ST.paused) dt=0;
@@ -1986,11 +1993,11 @@ function loop(now){ let dt=Math.min(.05,(now-last)/1000); last=now; if(UX.ST.pau
   routeTick(dt); flashTick(now);
   const busy= anim||(mode==='accio'&&(actRun||injOn))||playing||repAnim||routeT>=0||flashT>=0||controls.autoRotate||(motion._dirty&&motion._dirty.size)||renderer.xr.isPresenting||now<awakeUntil;
   if(!renderer.xr.isPresenting) controls.update();
-  if(!busy) return;
+  adaptRes(dt,busy); if(!busy) return;
   Vis.tick(now/1000,camera); motion.update(); renderer.render(scene,camera); if(meshes.length) updatePins();
 }
 renderer.xr.enabled=true; renderer.setAnimationLoop(loop);
-window.__app={fexp:()=>{frac.A.material.clippingPlanes=[];frac.A.material.needsUpdate=true;frac.B.material.clippingPlanes=[];frac.B.material.needsUpdate=true;},fdbg:()=>frac&&{a:frac.A.parent&&frac.A.parent.name,vis:frac.A.visible,pa:[frac.pA.normal.toArray(),frac.pA.constant],cen:frac.cen.toArray(),mat:frac.A.material.clippingPlanes.length,lcl:renderer.localClippingEnabled,size:frac.size},frac:id=>{const o=(groups[id]||[]).find(m=>m.userData.side==='r')||(groups[id]||[])[0]; if(o) fractureBone(o,true);},xray:v=>setXray(v),speed:v=>setSpeed(v),at:(k,t)=>{actRun=false;applyPose(ACTS[k].f(t));},only:k=>{meshes.forEach(o=>{if(o.userData.gpu)o.userData.gpu.visible=k!=="os"&&o.userData.kind===k; o.visible=o.userData.kind===k&&!(o.userData.gpu&&k!=="os");});},bench:()=>{const t0=performance.now();for(let i=0;i<20;i++){applyPose(ACTS.correr.f(i/20));motion.update();}return (performance.now()-t0)/20;},gpu:v=>{motion.gpuMode(v);actVis();},pose:P=>{actRun=false;applyPose(P);},cam:(a,b,c2,x,y,z)=>{anim=null;camera.position.set(a,b,c2);controls.target.set(x,y,z);},size:()=>home.size.y,act:k=>actStart(k),inj:k=>injShow(k),setMode,startGame,trobaPick,answerFirst:()=>document.querySelector('#rOpts button').click(),rState:()=>({rGame,rI,rScore,rCur}),rig:()=>rig,joint:j=>document.querySelector(`#joints button[data-j="${j}"]`).click(),locate,setMode,setBend,select,setIso,openSense,playRoute,controls,dolly,groups,
+window.__app={R:()=>renderer,S:()=>scene,M:()=>motion,fexp:()=>{frac.A.material.clippingPlanes=[];frac.A.material.needsUpdate=true;frac.B.material.clippingPlanes=[];frac.B.material.needsUpdate=true;},fdbg:()=>frac&&{a:frac.A.parent&&frac.A.parent.name,vis:frac.A.visible,pa:[frac.pA.normal.toArray(),frac.pA.constant],cen:frac.cen.toArray(),mat:frac.A.material.clippingPlanes.length,lcl:renderer.localClippingEnabled,size:frac.size},frac:id=>{const o=(groups[id]||[]).find(m=>m.userData.side==='r')||(groups[id]||[])[0]; if(o) fractureBone(o,true);},xray:v=>setXray(v),speed:v=>setSpeed(v),at:(k,t)=>{actRun=false;applyPose(ACTS[k].f(t));},only:k=>{meshes.forEach(o=>{if(o.userData.gpu)o.userData.gpu.visible=k!=="os"&&o.userData.kind===k; o.visible=o.userData.kind===k&&!(o.userData.gpu&&k!=="os");});},bench:()=>{const t0=performance.now();for(let i=0;i<20;i++){applyPose(ACTS.correr.f(i/20));motion.update();}return (performance.now()-t0)/20;},gpu:v=>{motion.gpuMode(v);actVis();},pose:P=>{actRun=false;applyPose(P);},cam:(a,b,c2,x,y,z)=>{anim=null;camera.position.set(a,b,c2);controls.target.set(x,y,z);},size:()=>home.size.y,act:k=>actStart(k),inj:k=>injShow(k),setMode,startGame,trobaPick,answerFirst:()=>document.querySelector('#rOpts button').click(),rState:()=>({rGame,rI,rScore,rCur}),rig:()=>rig,joint:j=>document.querySelector(`#joints button[data-j="${j}"]`).click(),locate,setMode,setBend,select,setIso,openSense,playRoute,controls,dolly,groups,
   setRoute:t=>{routeT=t}, zone:z=>document.querySelector(`#zones .z[data-z="${z}"]`).click(), quick:q=>document.querySelector(`.quick button[data-q="${q}"]`).click()};
 </script>
 </body>
