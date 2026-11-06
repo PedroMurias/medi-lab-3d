@@ -79,9 +79,11 @@ svg.chart{width:100%;height:auto;display:block}
 <script>/*KIT*/</script>
 <script>window.ESP=/*ESP*/;window.EU=/*EU*/;window.CCAA=/*CCAA*/;window.PROV=/*PROV*/;</script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<script>/*SHIPASSETS*/</script>
 <script type="module">
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 const {$,shuf,html,showCard,quiz,subtabs}=Kit; Kit.setPrefix('medilab_esp_');
 const D2R=Math.PI/180;
 /* ================= RENDER ================= */
@@ -302,6 +304,11 @@ function updatePins(){ for(const p of pins){ let vis=pinVisible(p)&&(showNames||
 
 /* ================= CONSTRUCCIÓ ESPANYA ================= */
 const MAP=makeMap(MAPES);
+
+/* vaixells (pack Ships de Quaternius): marineria als mars d'Espanya */
+const SHIPS=[]; { const L=new GLTFLoader(); const defs=[['CruiseShip',2.6,1.3,39.35,.25,.6],['BoatWSail',.9,4.1,39.55,.18,.9],['Sail_ship',1.6,-10.2,37.6,.3,.5],['Sail_ship',1.3,-5.2,44.1,.2,.7],['Boat',.5,-1.0,36.6,.15,1.2]];
+ for(const [nm,len,lo,la,rad,sp] of defs){ const bin=atob(window.SHIPASSETS[nm]),buf=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) buf[i]=bin.charCodeAt(i); const gl=await new Promise((res,rej)=>L.parse(buf.buffer,'',res,rej)); const o=gl.scene; o.traverse(m=>{ if(m.isMesh){ m.material=m.material.clone(); m.material.metalness=0; m.material.roughness=.7; m.castShadow=false; } }); const bb=new THREE.Box3().setFromObject(o),sz=bb.getSize(new THREE.Vector3()); const k=len/Math.max(sz.x,sz.z); o.scale.setScalar(k); o.position.set(-(bb.min.x+bb.max.x)/2*k,-bb.min.y*k*.85,-(bb.min.z+bb.max.z)/2*k); const g=new THREE.Group(); g.add(o); g.userData={lo,la,rad,sp,ph:Math.random()*6.28,len}; MAP.group.add(g); SHIPS.push(g); } }
+function shipsTick(t){ for(const g of SHIPS){ const u=g.userData,a=u.ph+t*.00003*u.sp*60; const lo=u.lo+Math.cos(a)*u.rad, la=u.la+Math.sin(a)*u.rad*.6; const dlo=-Math.sin(a), dla=Math.cos(a)*.6; g.position.set(MAP.X(lo),.05+Math.sin(t*.002+u.ph)*.04,MAP.Z(la)); g.rotation.y=Math.atan2(dlo,-dla)+Math.PI; g.rotation.z=Math.sin(t*.0017+u.ph)*.04; } }
 const TEX={
  territori:(lon,lat,L,h)=>{ if(!L) return [24,70,125]; const n=NZ(lon*4,lat*4), n2=NZ(lon*14+5,lat*14);
    const wet=Math.max(0,Math.min(1,(lat-41.2)/1.6))*Math.max(0,Math.min(1,(-lon-3.5)/2+1))+Math.max(0,Math.min(1,(lat-42.4)/1.2))*.8+ (lon>-7.5&&lat>43?.6:0);
@@ -493,7 +500,7 @@ $('#pmin').onclick=()=>{const m=$('#panel').classList.toggle('min');$('#pmin').t
 
 /* ================= LOOP ================= */
 let last=performance.now();
-function loop(now){ let dt=Math.min(.05,(now-last)/1000); last=now; if(window.UX&&UX.ST.paused) dt=0; if(SEAN){SEAN.offset.x+=dt*.004;SEAN.offset.y-=dt*.003;}
+function loop(now){ let dt=Math.min(.05,(now-last)/1000); last=now; shipsTick(now); if(window.UX&&UX.ST.paused) dt=0; if(SEAN){SEAN.offset.x+=dt*.004;SEAN.offset.y-=dt*.003;}
  if(fly){ fly.t=Math.min(1,fly.t+dt/fly.d); const k=1-Math.pow(1-fly.t,3); controls.target.lerpVectors(fly.ft,fly.tt,k); camera.position.lerpVectors(fly.fp,fly.tp,k); if(fly.t>=1) fly=null; awake=Math.max(awake,2); }
  if(mode==='rius'){ flowTex.offset.x-=dt*.9; awake=Math.max(awake,1); }
  controls.update(); if(awake<=0) return; awake--; Vis.tick(now/1000,camera); renderer.render(scene,camera); updatePins(); }
@@ -502,7 +509,7 @@ renderer.setAnimationLoop(loop);
 applyMode(); $('#loading').remove(); Kit.initHelp('seen');
 UX.boot({items:[...TERR.map(t=>({k:t.n,n:t.n,ic:'🗺️'})),...RANGES.filter(r=>!r.nolabel).map(r=>({k:r.n,n:r.n,ic:'⛰️'})),...DEP.map(d=>({k:d.n,n:d.n,ic:'🏞️'})),...RIVERS.map(r=>({k:'Riu '+r.n,n:'Riu '+r.n,ic:'🌊'})),...CITIES.map(c=>({k:c[0],n:c[0],ic:'🏙️'})),...ECO.map(e=>({k:e.n,n:e.n,ic:e.e}))],title:'Llocs descoberts',reset:()=>setMode('territori'),
  tour:{intro:'Hola! Aquest és el mapa d\'Espanya en 3D. En 30 segons et dic com va.',tap:'Toca un punt de color (una serralada, un riu, una ciutat) per veure la seva fitxa.',drag:'Arrossega per girar el mapa. Amb dos dits (o la roda) t\'hi apropes.'}});
-window.__s={setMode,sub,applyMode,selectClim,setMap,startGame:k=>repte.start(k),pick:(lo,la)=>R.onPick&&R.onPick([lo,la])};
+window.__s={cam:(a,b,c,x,y,z)=>{camera.position.set(a,b,c);controls.target.set(x,y,z);controls.update();wake(80);},land:(lo,la)=>MAP.landAt(lo,la),X:MAP.X,Z:MAP.Z,setMode,sub,applyMode,selectClim,setMap,startGame:k=>repte.start(k),pick:(lo,la)=>R.onPick&&R.onPick([lo,la])};
 </script>
 </body>
 </html>

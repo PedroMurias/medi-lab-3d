@@ -108,6 +108,7 @@
 <script>/*NATKIT*/</script>
 <script>/*ECOLAND*/</script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<script>/*FARMASSETS*/</script>
 <script type="module">
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
@@ -186,6 +187,13 @@ for(const [x,z] of [[-42,-26],[-36,-18],[-32,-28]]){const g=new THREE.Group();co
 {const g=new THREE.Group();const pr=[];for(let i=0;i<=10;i++){const t=i/10;pr.push(new THREE.Vector2(3.4-2.6*Math.sin(t*Math.PI*.8)+t*0.6,t*11));}const tow=new THREE.Mesh(new THREE.LatheGeometry(pr,32),M(0xe9e6e0,{side:THREE.DoubleSide}));tow.position.set(-4,0,0);g.add(tow);
  const dome=new THREE.Mesh(new THREE.SphereGeometry(2.6,24,12,0,Math.PI*2,0,Math.PI/2),mats.white);dome.position.set(4,3,0);g.add(dome);const cy=cyl(2.6,2.6,3,mats.white,24);cy.position.set(4,1.5,0);g.add(cy);
  const s=smoke(260,0xffffff,2.2,14,3.5);s.position.set(-4,11,0);g.add(s);smokes.push([s,'nuclear']);mk('nuclear',ON(8,26,g));}
+
+/* granja i molins (pack Farm Buildings de Quaternius) */
+const FARM={}; { const L=new GLTFLoader(); for(const [k,v] of Object.entries(window.FARMASSETS)){ const bin=atob(v),buf=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) buf[i]=bin.charCodeAt(i); FARM[k]=await new Promise((res,rej)=>L.parse(buf.buffer,'',res,rej)); } }
+const farmInst=(nm,x,z,ry,sc=1)=>{ const o=FARM[nm].scene.clone(true); o.traverse(m=>{ if(m.isMesh){ m.castShadow=true; m.receiveShadow=true; m.material=m.material.clone(); m.material.metalness=0; m.material.roughness=.8; } }); const g=new THREE.Group(); g.add(o); g.scale.setScalar(sc); g.rotation.y=ry||0; return ON(x,z,g); };
+const FARMSOL=[[-21.7,47,4.2,4.4],[-14,43,2,2],[-32,48,3.3,3.3],[-20,55,.9,.9],[-27,56,1.3,1.3],[-38,41,2,2],[-30,-14,2.6,1.2],[27,-26,1.4,1.4]]; { const FX=-22,FZ=47; const fy=(x,z)=>x; farmInst('Barn',FX,FZ,.3); farmInst('Silo',FX+8,FZ-4,0); farmInst('SmallBarn',FX-10,FZ+1,-.2); farmInst('Well',FX+2,FZ+8,0,1.2); farmInst('ChickenCoop',FX-5,FZ+9,.5); farmInst('TowerWindmill',FX-16,FZ-6,.4,.8);
+  for(let i=0;i<5;i++) farmInst('Fence',FX-8+i*5.9,FZ+13,0); farmInst('Fence',FX+16,FZ+9,Math.PI/2);
+  farmInst('Windmill',-30,-14,-.3,1.1); farmInst('WaterTower',27,-26,0,1.3); }
 /* ciutat */
 const town=new THREE.Group(); const TOWN={x:54,z:0}, TH=.3;
 const winMats=[mats.win, new THREE.MeshStandardMaterial({color:0x333a44,emissive:0xfff0c8,emissiveIntensity:0}), new THREE.MeshStandardMaterial({color:0x2c333c,emissive:0x9fd0ff,emissiveIntensity:0})];
@@ -232,6 +240,9 @@ const pins=[]; const tv=new THREE.Vector3();
 function pin(obj,pos,txt,col,onclick){const b=document.createElement('button');b.className='pin';b.style.setProperty('--c',col);b.innerHTML='<i></i><span></span>';b.querySelector('span').textContent=txt;b.onclick=e=>{e.stopPropagation();onclick();};$('#pins').appendChild(b);const p={el:b,pos,src:obj};pins.push(p);return p;}
 for(const [k,s] of Object.entries(SRC)){ s.pin=pin(k,new THREE.Vector3(s.x,hgt(s.x,s.z)+(k==='vent'?18:k==='fossil'?17:12),s.z),s.n,s.renov?'#b6ff3b':'#ff8a5c',()=>srcClick(k)); }
 const townPin=pin('town',new THREE.Vector3(TOWN.x,18,TOWN.z),'Ciutat (consum)','#00e5ff',()=>cityView()||showCard({n:'La ciutat',tipus:'Consum',t:"Les cases, escoles i fàbriques fan servir l'electricitat que arriba per les línies elèctriques.",c:"El corrent elèctric viatja pels cables gairebé a la velocitat de la llum: uns 300.000 km per segon."}));
+
+pin('farm',new THREE.Vector3(-22,hgt(-22,47)+9,47),'Granja','#ffb04a',()=>showCard({n:'La granja i el molí de vent',tipus:'Energia al camp',t:"Al camp s'ha fet servir l'energia del vent des de fa segles: els <b>molins de vent</b> moldrien el gra i les bombes de vent treien aigua dels pous. Una granja també consumeix energia (tractors, bombes, llum) i pot produir-ne: amb els fems i les restes de collita es fa <b>biomassa</b>.",c:"Els molins antics i els aerogeneradors actuals aprofiten el mateix: l'energia mecànica del vent."}));
+pin('wtower',new THREE.Vector3(27,hgt(27,-26)+10,-26),'Dipòsit d\'aigua','#4fc3f7',()=>showCard({n:'Dipòsit d\'aigua',tipus:'Serveis',t:"El dipòsit elevat guarda aigua perquè arribi a les cases amb pressió gràcies a la gravetat. Les bombes elèctriques l'omplen, sobretot de dia, quan hi ha energia solar.",c:"Gastar menys aigua també estalvia energia: potabilitzar-la i bombar-la costa electricitat."}));
 const subPin=pin('sub',new THREE.Vector3(SUB.x,SUB.y+6,SUB.z),'Subestació','#00e5ff',()=>showCard({n:'Xarxa elèctrica',tipus:'Transport',t:"Les línies elèctriques porten l'electricitat des de les centrals fins als llocs on es consumeix. Les torres elèctriques aguanten els cables.",c:"Les línies elèctriques poden ser perilloses per als ocells: hi xoquen o s'hi electrocuten."}));
 function updatePins(){const show=['fonts','central'].includes(mode);for(const p of pins){let vis=show&&!p.hidden;if(vis){tv.copy(p.pos).project(camera);vis=tv.z<1&&Math.abs(tv.x)<1.05&&Math.abs(tv.y)<1.05;if(vis)p.el.style.transform=`translate(${(tv.x*.5+.5)*innerWidth-5}px,${(-tv.y*.5+.5)*innerHeight-5}px)`;}p.el.classList.toggle('hide',!vis);}}
 
@@ -293,7 +304,7 @@ function fly(s){ const t=new THREE.Vector3(s.x,hgt(s.x,s.z)+3,s.z); const f=s.id
 let fl=null; function flyTo(t,p,d=1){fl={t:0,d,ft:controls.target.clone(),tt:t,fp:camera.position.clone(),tp:p};}
 function walkStart(){ if(!['fonts','central'].includes(mode)) setMode('fonts'); fl=null; Walk.start(THREE,{camera,controls,canvas,start:[TOWN.x,TOWN.z],yaw:-Math.PI/2,speed:4.5,eye:1.65,
   ground:(x,z)=>hgt(x,z)+(Math.max(Math.abs(x-TOWN.x),Math.abs(z-TOWN.z))<22?.1:.05), radius:95, center:[0,0],
-  blocked:(x,z)=>{ for(let bx=0;bx<4;bx++) for(let bz=0;bz<4;bz++){ if(bx===2&&bz===2) continue; const cx=TOWN.x-15+bx*10, cz=TOWN.z-15+bz*10; if(Math.abs(x-cx)<3.5&&Math.abs(z-cz)<3.5) return true; } for(const k in SRC){ const s=SDATA[k]; if(s&&Math.hypot(x-s.x,z-s.z)<4) return true; } return false; },
+  blocked:(x,z)=>{ for(let bx=0;bx<4;bx++) for(let bz=0;bz<4;bz++){ if(bx===2&&bz===2) continue; const cx=TOWN.x-15+bx*10, cz=TOWN.z-15+bz*10; if(Math.abs(x-cx)<3.5&&Math.abs(z-cz)<3.5) return true; } for(const k in SRC){ const s=SDATA[k]; if(s&&Math.hypot(x-s.x,z-s.z)<4) return true; } for(const [fx,fz,fw,fd] of FARMSOL) if(Math.abs(x-fx)<fw&&Math.abs(z-fz)<fd) return true; return false; },
   onStop:()=>{ cityView(); }}); }
 Walk.button($('#tools'),walkStart);
 function cityView(){ flyTo(new THREE.Vector3(54,1,0),new THREE.Vector3(32,20,38),1.2); }
