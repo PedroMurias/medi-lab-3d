@@ -92,12 +92,13 @@ ul.tl{margin:4px 0 0 16px;padding:0;font-size:14px;line-height:1.5}
   <div class="hpage" data-p="res" style="display:none"></div>
  </div>
 </div>
-<div id="credit">Contorns: Natural Earth (domini públic). Classificació de l'IDH aproximada.</div>
+<div id="credit">Contorns: Natural Earth (domini públic). Models 3D d'edificis, cotxes i City Kit: Quaternius (CC0). Classificació de l'IDH aproximada.</div>
 
 <script>/*KIT*/</script>
 <script>/*PEOPLE*/</script>
 <script>/*ECOLAND*/</script>
 <script>/*NATKIT*/</script>
+<script>/*CITYASSETS*/</script>
 <script>/*CITYKIT*/</script>
 <script>/*ODSTEX*/</script>
 <script>/*CIUSCENES*/</script>
@@ -108,7 +109,7 @@ ul.tl{margin:4px 0 0 16px;padding:0;font-size:14px;line-height:1.5}
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js'; import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js'; import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
-const PPL=People(THREE,GLTFLoader,SkeletonUtils,MeshoptDecoder); const NK=NatKit(THREE,GLTFLoader,MeshoptDecoder);
+const PPL=People(THREE,GLTFLoader,SkeletonUtils,MeshoptDecoder); const NK=NatKit(THREE,GLTFLoader,MeshoptDecoder); const CTY=CityAssets(THREE,GLTFLoader,MeshoptDecoder);
 const {$,shuf,html,showCard,quiz}=Kit; Kit.setPrefix('medilab_x_');
 /* ================= DADES ================= */
 const CA={'Spain':'Espanya','France':'França','Portugal':'Portugal','Italy':'Itàlia','Germany':'Alemanya','Belgium':'Bèlgica','Netherlands':'Països Baixos','Luxembourg':'Luxemburg','Denmark':'Dinamarca','Ireland':'Irlanda','United Kingdom':'Regne Unit','Greece':'Grècia','Austria':'Àustria','Finland':'Finlàndia','Sweden':'Suècia','Cyprus':'Xipre','Czechia':'Txèquia','Estonia':'Estònia','Hungary':'Hongria','Latvia':'Letònia','Lithuania':'Lituània','Poland':'Polònia','Slovakia':'Eslovàquia','Slovenia':'Eslovènia','Bulgaria':'Bulgària','Romania':'Romania','Croatia':'Croàcia','Norway':'Noruega','Switzerland':'Suïssa','Iceland':'Islàndia','Russia':'Rússia','Ukraine':'Ucraïna','Belarus':'Bielorússia','Turkey':'Turquia','Serbia':'Sèrbia','Albania':'Albània','Moldova':'Moldàvia','Bosnia and Herz.':'Bòsnia i Hercegovina','Macedonia':'Macedònia del Nord','Montenegro':'Montenegro','Kosovo':'Kosovo','Morocco':'Marroc','Algeria':'Algèria','Tunisia':'Tunísia','Libya':'Líbia','Egypt':'Egipte','United States of America':'Estats Units','Canada':'Canadà','Mexico':'Mèxic','Brazil':'Brasil','Argentina':'Argentina','Chile':'Xile','Peru':'Perú','Colombia':'Colòmbia','Venezuela':'Veneçuela','Bolivia':'Bolívia','Ecuador':'Equador','Paraguay':'Paraguai','Uruguay':'Uruguai','Cuba':'Cuba','Haiti':'Haití','China':'Xina','Japan':'Japó','India':'Índia','Pakistan':'Pakistan','Bangladesh':'Bangladesh','Indonesia':'Indonèsia','Australia':'Austràlia','New Zealand':'Nova Zelanda','South Africa':'Sud-àfrica','Nigeria':'Nigèria','Ethiopia':'Etiòpia','Kenya':'Kenya','Niger':'Níger','Chad':'Txad','Mali':'Mali','Somalia':'Somàlia','Sudan':'Sudan','S. Sudan':'Sudan del Sud','Dem. Rep. Congo':'R. D. del Congo','Central African Rep.':'República Centreafricana','Afghanistan':'Afganistan','Yemen':'Iemen','Saudi Arabia':'Aràbia Saudita','Iran':'Iran','Iraq':'Iraq','Syria':'Síria','Israel':'Israel','South Korea':'Corea del Sud','North Korea':'Corea del Nord','Vietnam':'Vietnam','Thailand':'Tailàndia','Philippines':'Filipines','Malaysia':'Malàisia','Kazakhstan':'Kazakhstan','Mongolia':'Mongòlia','Madagascar':'Madagascar','Mozambique':'Moçambic','Angola':'Angola','Ghana':'Ghana','Senegal':'Senegal','Mauritania':'Mauritània','Greenland':'Groenlàndia','Georgia':'Geòrgia','Armenia':'Armènia','Azerbaijan':'Azerbaidjan'};
@@ -197,7 +198,7 @@ const CK=CityKit(THREE);
 function building(kind,zone){ const g=kind==='leg'?CK.parliament(zone):kind==='cap'?CK.palace(zone):kind==='exe'?CK.govern(zone):CK.court(zone); g.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; } }); return g; }
 function lowTree(x,z,s=1){ const g=new THREE.Group(); const t=new THREE.Mesh(new THREE.CylinderGeometry(.25,.35,2,6),fm(0x6b4a2b)); t.position.y=1; g.add(t); const c=new THREE.Mesh(new THREE.IcosahedronGeometry(1.8,1),fm([0x3f8f3f,0x4faa44,0x2f7f3a][Math.floor(Math.random()*3)])); c.position.y=3; c.scale.set(1,1.2,1); g.add(c); g.position.set(x,0,z); g.scale.setScalar(s); g.traverse(o=>{ if(o.isMesh) o.castShadow=true; }); return g; }
 function person(c){ const g=new THREE.Group(); const b=new THREE.Mesh(new THREE.CapsuleGeometry(.32,.9,4,8),fm(c)); b.position.y=.95; g.add(b); const h=new THREE.Mesh(new THREE.SphereGeometry(.3,10,8),fm(0xf2c7a5)); h.position.y=1.85; g.add(h); g.traverse(o=>{ if(o.isMesh) o.castShadow=true; }); return g; }
-const walkers=[], flags=[], fountains=[], treeSpots=[];
+let BG,BGS; const walkers=[], flags=[], fountains=[], treeSpots=[];
 { const LAND=EcoLand(THREE,{scene,groundY:()=>0}); const gt=LAND.groundTex(256,6,0x7fb055,0x5a8a3c); gt.repeat.set(30,30); const ground=new THREE.Mesh(new THREE.CircleGeometry(95,64),new THREE.MeshStandardMaterial({map:gt,roughness:1})); ground.rotation.x=-Math.PI/2; ground.position.y=-.02; ground.receiveShadow=true; TOWN.add(ground);
   const skyD=LAND.sky(TOWN,{skyTop:0x3f8fe0,skyHor:0xd6ecff,radius:300}); { const hl=LAND.hills(TOWN,{hillLo:0x5f8f3f,hillHi:0x8aa85a,hillFar:0xa9c0cf}); hl.scale.set(5.2,1.7,5.2); hl.position.y=-1.5; } let sd=5; const R=()=>{sd=(sd*16807)%2147483647; return sd/2147483647;};
   const inPlaza=(x,z)=>[-46,0,46].some(cx=>Math.abs(x-cx)<18.5&&Math.abs(z+8)<18.5), inStreet=(x,z)=>Math.abs(z-14)<7, inBlocks=(x,z)=>z<-30||z>24;
@@ -225,7 +226,7 @@ const walkers=[], flags=[], fountains=[], treeSpots=[];
     const sign=new THREE.Mesh(new THREE.BoxGeometry(10,2.2,.4),fm(0x0a1628)); sign.position.set(Z.x-13,2.6,22); TOWN.add(sign); { const cv=document.createElement('canvas'); cv.width=512; cv.height=112; const g=cv.getContext('2d'); g.fillStyle='#0a1628'; g.fillRect(0,0,512,112); g.fillStyle='#'+Z.c1.toString(16).padStart(6,'0'); g.fillRect(0,0,512,14); g.fillRect(0,98,512,14); g.fillStyle='#fff'; g.font='700 52px Space Grotesk, sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(Z.n,256,56); const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; const lab=new THREE.Mesh(new THREE.PlaneGeometry(10,2.2),new THREE.MeshBasicMaterial({map:t})); lab.position.set(Z.x-13,2.6,22.21); TOWN.add(lab); } const sp=new THREE.Mesh(new THREE.CylinderGeometry(.15,.15,2.2),fm(0x888)); sp.position.set(Z.x-13,1.1,22); TOWN.add(sp);
     for(let i=0;i<6;i++){ const p=person([0x3a86ff,0xf15bb5,0xffd23f,0x2ec4b6,0xff6b35,0x8338ec][i]); p.userData={cx:Z.x,cz:-8,r:6+Math.random()*8,a:Math.random()*6.28,v:(.15+Math.random()*.25)*(Math.random()<.5?1:-1)}; TOWN.add(p); walkers.push(p); } }
   /* illes de cases de fons */
-  { let i=0; const put=(x,z,w,d,h,ry=0)=>{ const b=CK.block(w,h,d,i++); b.position.set(x,.05,z); b.rotation.y=ry; TOWN.add(b); };
+  BG=new THREE.Group(); TOWN.add(BG); BGS=[]; { let i=0; const put=(x,z,w,d,h,ry=0)=>{ const b=CK.block(w,h,d,i++); b.position.set(x,.05,z); b.rotation.y=ry; BG.add(b); BGS.push([x,z,w,d,h,ry]); };
     for(let x=-80;x<=80;x+=14){ put(x+(R()-.5)*2,-42-R()*3,9+R()*4,8+R()*3,5+R()*4); if(R()<.7) put(x+(R()-.5)*2,-58-R()*3,9+R()*4,8+R()*3,7+R()*7); }
     for(let x=-80;x<=80;x+=14){ if(Math.abs(x)<22) continue; put(x+(R()-.5)*2,38+R()*2,9+R()*3,8+R()*2,5+R()*3); }
     for(let z=-30;z<=30;z+=12){ put(-88,z,8,9,5+R()*4,Math.PI/2); put(88,z,8,9,5+R()*4,-Math.PI/2); }
@@ -237,9 +238,27 @@ const walkers=[], flags=[], fountains=[], treeSpots=[];
   /* arbres reals quan carreguin */
   NK.load().then(()=>{ for(const [x,z,h] of treeSpots){ const o=NK.inst('CommonTree_'+(1+Math.floor(R()*3)),h); o.position.set(x,.05,z); TOWN.add(o); } }).catch(e=>{ console.warn('trees',e); for(const [x,z,h] of treeSpots) TOWN.add(lowTree(x,z,h/3.5)); });
 }
+
+/* ciutat real: edificis, serveis públics i trànsit */
+const cars=[], lights=[]; const CX=[-46,0,46]; let lightT=0;
+function trafficLight(x,z,ry){ const g=new THREE.Group(); const pole=new THREE.Mesh(new THREE.CylinderGeometry(.07,.09,3.2,8),fm(0x2b2f36)); pole.position.y=1.6; g.add(pole); const box=new THREE.Mesh(new THREE.BoxGeometry(.4,1.1,.3),fm(0x15181d)); box.position.set(0,3.3,0); g.add(box); const ls=[0xff3b30,0xffb020,0x2ecc40].map((c,i)=>{ const l=new THREE.Mesh(new THREE.SphereGeometry(.12,10,8),new THREE.MeshStandardMaterial({color:0x222222,emissive:c,emissiveIntensity:0})); l.position.set(0,3.6-i*.3,.16); g.add(l); return l; }); g.position.set(x,.06,z); g.rotation.y=ry; g.userData.ls=ls; g.traverse(o=>{ if(o.isMesh) o.castShadow=true; }); TOWN.add(g); lights.push(g); }
+for(const cx of CX){ trafficLight(cx-4.2,20.2,Math.PI); trafficLight(cx+4.2,8,0); }
+function lightState(){ const c=lightT%16; return c<7?'g':c<9?'y':'r'; }
+function setLights(){ const st=lightState(); for(const g of lights){ g.userData.ls[0].material.emissiveIntensity=st==='r'?2.2:.05; g.userData.ls[1].material.emissiveIntensity=st==='y'?2.2:.05; g.userData.ls[2].material.emissiveIntensity=st==='g'?2.2:.05; } }
+function carsUpdate(dt){ lightT+=dt; setLights(); const st=lightState(); for(const c of cars){ const u=c.userData; let stop=false; if(st!=='g'){ for(const cx of CX){ const d=(cx-u.dir*5.2-c.position.x)*u.dir; if(d>-.2&&d<2.4) stop=true; } } for(const o of cars){ if(o===c||o.userData.dir!==u.dir) continue; const gap=(o.position.x-c.position.x)*u.dir; if(gap>0&&gap<5.5) stop=true; } u.v+=((stop?0:u.vmax)-u.v)*Math.min(1,dt*3); c.position.x+=u.dir*u.v*dt; if(c.position.x*u.dir>84){ c.position.x=-u.dir*84; } } }
+CTY.load().then(()=>{
+ BG.visible=false;
+ const skies=['CK_Sky1','CK_Sky2','CK_Sky3'], larges=['CK_Large1','CK_Large2'], smalls=['CK_Small1','CK_Small2','CK_Low1','CK_Low2']; let n=0;
+ for(const [x,z,w,d,h,ry] of BGS){ const nm=h>=9?skies[n%3]:h>=6.5?larges[n%2]:smalls[n%4]; n++; const H=h>=9?h*2.2:h>=6.5?h*1.8:h*1.5; const o=CTY.inst(nm,H); o.position.set(x,.05,z); o.rotation.y=(ry||0)+(z>0?Math.PI:0)+(Math.abs(x)>=87?0:0); TOWN.add(o); }
+ /* serveis públics */
+ const svc=[['Hospital',-34,35,9.5],['Bank',34,35,6.2],['Shop',-56,33,3.4],['House2',56,33,5],['House3',-76,34,5.2],['Flat',72,35,8]];
+ for(const [nm,x,z,h] of svc){ const o=CTY.inst(nm,h); o.position.set(x,.05,z); o.rotation.y=Math.PI; TOWN.add(o); }
+ /* cotxes */
+ const models=['Taxi','Cop','NormalCar1','SUV','Taxi','NormalCar1']; models.forEach((nm,i)=>{ const dir=i%2?-1:1; const o=CTY.inst(nm,4.4,'len'); const c=new THREE.Group(); c.add(o); o.rotation.y=dir>0?Math.PI/2:-Math.PI/2; c.position.set(-70+i*26+(dir>0?0:10),.07,dir>0?16.6:11.4); c.userData={dir,v:0,vmax:6+Math.random()*2.5}; cars.push(c); TOWN.add(c); });
+}).catch(e=>console.warn('city',e));
 const CS=CiuScenes(THREE,CK,TOWN.userData.land,NK); const ODSG=CS.ods(ODS); scene.add(ODSG); const CONG=CS.consum(BINS); scene.add(CONG);
 { const L=TOWN.userData.land; L.sky(CONG,{skyTop:0x3f8fe0,skyHor:0xd6ecff,radius:300}); const hl=L.hills(CONG,{hillLo:0x5f8f3f,hillHi:0x8aa85a,hillFar:0xa9c0cf}); hl.scale.set(3,1.2,3); hl.position.set(0,-1.2,-20); }
-function townUpdate(dt,T){ for(const f of flags) CK.waveFlag(f,T); for(const F of fountains) F.userData.tick(dt); for(const p of walkers){ const u=p.userData; u.a+=u.v*dt; p.position.set(u.cx+Math.cos(u.a)*u.r,0,u.cz+Math.sin(u.a)*u.r); p.rotation.y=-u.a+(u.v>0?Math.PI:0); if(!p.userData.real) p.position.y=Math.abs(Math.sin(T*8+u.a*5))*.08; } PPL.tick(dt); }
+function townUpdate(dt,T){ for(const f of flags) CK.waveFlag(f,T); for(const F of fountains) F.userData.tick(dt); for(const p of walkers){ const u=p.userData; u.a+=u.v*dt; p.position.set(u.cx+Math.cos(u.a)*u.r,0,u.cz+Math.sin(u.a)*u.r); p.rotation.y=-u.a+(u.v>0?Math.PI:0); if(!p.userData.real) p.position.y=Math.abs(Math.sin(T*8+u.a*5))*.08; } PPL.tick(dt); carsUpdate(dt); }
 PPL.load().then(()=>{ /* substituïm les càpsules per persones animades */
  walkers.forEach(p=>{ const q=PPL.make(1.75,{anim:'Walk'}); if(!q) return; q.o.position.copy(p.position); q.o.userData=Object.assign({},p.userData,{real:1}); q.o.rotation.copy(p.rotation); TOWN.add(q.o); TOWN.remove(p); const i=walkers.indexOf(p); walkers[i]=q.o; });
  const vot=TOWN.userData.vot; if(vot){ const kids=[...vot.children]; kids.forEach((p,i)=>{ const q=PPL.make(1.7,{anim:i%4===0?'Wave':i%3===0?'Interact':'Idle'}); if(!q) return; q.o.position.copy(p.position); q.o.rotation.y=Math.PI+(Math.random()-.5)*.6; vot.add(q.o); vot.remove(p); }); }
@@ -254,7 +273,7 @@ $('#tHome').onclick=()=>{ if(mode==='inst') townHome(); else home(); };
 const townBoxes=[]; TOWN.updateMatrixWorld(true); townPins.filter(p=>p.k).forEach(p=>{ const b=new THREE.Box3().setFromObject(p.obj); b.expandByScalar(.6); townBoxes.push(b); });
 function walkStart(){ if(mode!=='inst') setMode('inst'); fl=null; Walk.start(THREE,{camera,controls,canvas,start:[0,42],yaw:Math.PI,speed:5,eye:1.65,ground:(x,z)=>{ for(const Z of Object.values(ZONES)) if(Math.abs(x-Z.x)<18&&Math.abs(z+8)<18) return .1; return 0; }, radius:88, center:[0,0],
   blocked:(x,z)=>{ for(const b of townBoxes){ if(x>b.min.x&&x<b.max.x&&z>b.min.z&&z<b.max.z) return true; } for(const Z of Object.values(ZONES)) if(Math.hypot(x-Z.x,z+6)<3.1) return true; return false; }, onStop:()=>townHome()}); }
-Walk.button($('#tools'),walkStart); window.__c={dl,renderer,scene,THREE,TOWN,camera,controls,binClick,CONG,ODSG};
+Walk.button($('#tools'),walkStart); window.__c={dl,renderer,scene,THREE,TOWN,camera,controls,binClick,CONG,ODSG,walkStart};
 
 /* ================= ESCENARIS 2D ================= */
 const ST=$('#stage>div');

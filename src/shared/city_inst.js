@@ -1,0 +1,4 @@
+window.CityAssets=function(THREE,GLTFLoader,MeshoptDecoder){ const M={}; const K={M};
+ K.load=async()=>{ const L=new GLTFLoader(); L.setMeshoptDecoder(MeshoptDecoder); for(const [k,v] of Object.entries(CITYASSETS)){ const bin=atob(v),buf=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) buf[i]=bin.charCodeAt(i); M[k]=await new Promise((res,rej)=>L.parse(buf.buffer,'',res,rej)); } K.ok=true; };
+ K.inst=(name,h,by)=>{ const o=M[name].scene.clone(true); const w=new THREE.Group(); w.add(o); const bb=new THREE.Box3().setFromObject(o), sz=bb.getSize(new THREE.Vector3()); const s=h/(by==='len'?Math.max(sz.x,sz.z):sz.y); o.scale.setScalar(s); o.position.set(-(bb.min.x+bb.max.x)/2*s,-bb.min.y*s,-(bb.min.z+bb.max.z)/2*s); o.traverse(m=>{ if(m.isMesh){ m.castShadow=true; m.receiveShadow=true; if(m.material){ m.material.roughness=Math.max(m.material.roughness||0,.6); m.material.metalness=0; } } }); return w; };
+ return K; };
