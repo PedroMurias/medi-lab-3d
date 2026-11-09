@@ -45,6 +45,8 @@ html,body{margin:0;height:100%;overflow:hidden;background:#090426;color:#fff;fon
 .ans.ko .hex>div{background:linear-gradient(180deg,#ff7a6e,var(--ko) 55%,#9b1e16)}
 .ans.gone{visibility:hidden}
 @keyframes blink{50%{filter:brightness(1.6)}}
+#qimg{display:none;max-height:min(30vh,260px);max-width:min(460px,80vw);border-radius:16px;border:3px solid var(--line);box-shadow:0 0 30px rgba(110,90,255,.6);object-fit:cover;background:#000}
+#mainCol.img #logo{display:none}#mainCol.img #qimg{display:block;margin:auto 0 6px}
 #qnum{margin:8px 0 2px;color:var(--gold2);font-weight:700;font-size:15px;letter-spacing:.06em}
 #confirm{margin-top:12px;display:none;gap:10px}
 .btn{border:2px solid #dfe3ff;border-radius:30px;background:linear-gradient(180deg,#5a54e6,#2a2496);color:#fff;font:700 17px 'Space Grotesk',system-ui,sans-serif;padding:10px 24px;cursor:pointer}
@@ -107,7 +109,7 @@ input#nom{font:600 17px 'Space Grotesk',system-ui,sans-serif;padding:10px 14px;b
     <text font-family="Orbitron" font-weight="900" font-size="20" fill="#fff" letter-spacing="3"><textPath href="#arcT" startOffset="50%" text-anchor="middle">EL GRAN REPTE</textPath></text>
     <text font-family="Orbitron" font-weight="700" font-size="13" fill="#ffd76a" letter-spacing="4"><textPath href="#arcB" startOffset="50%" text-anchor="middle">· CONEIXEMENT DEL MEDI ·</textPath></text>
    </svg></div>
-   <div id="qnum"></div>
+   <img id="qimg" alt=""><div id="qnum"></div>
    <div class="hexrow" id="qbar"><div class="hex"><div id="qtxt">Prepara't!</div></div></div>
    <div id="answers"></div>
    <div id="confirm" class="row"><button class="btn gold" id="bOk">✅ És la meva resposta definitiva</button><button class="btn ghost" id="bNo">Canviar</button></div>
@@ -133,6 +135,7 @@ input#nom{font:600 17px 'Space Grotesk',system-ui,sans-serif;padding:10px 14px;b
 <!-- final -->
 <div class="ov" id="ovEnd"><div class="card"><h1 id="eT"></h1><p id="eB" style="font-size:18px"></p><div class="row"><button class="btn gold" id="eAgain">🔁 Torna a jugar</button><button class="btn ghost" id="eUnits">Canvia d'unitats</button></div><p id="eRec"></p></div></div>
 <script>/*REPTEQ*/</script>
+<script>/*REPTEIMG*/</script>
 <script>
 (()=>{
 const $=s=>document.querySelector(s);
@@ -170,7 +173,7 @@ function newGame(){
 function drawLadder(){ $('#ladder').innerHTML=G.prize.map((p,i)=>`<div class="${G.safe.includes(i)?'safe':''} ${i===G.i?'cur':''} ${i<G.i?'done':''}"><span>${i+1}</span><span>◆ ${fmt(p)}</span></div>`).join(''); $('#scoreTop').textContent=fmt(G.i?G.prize[G.i-1]:0)+' punts'; }
 function ask(){ const q=G.qs[G.i]; G.sel=-1; G.locked=false; G.removed=new Set(); G.order=shuffle([0,1,2,3]);
  $('#qnum').textContent=`Pregunta ${G.i+1} de ${G.qs.length} · per ${fmt(G.prize[G.i])} punts · ${RUNITS.find(u=>u[0]===q[0])[1]} ${RUNITS.find(u=>u[0]===q[0])[2]}`;
- $('#qtxt').textContent=q[2];
+ $('#qtxt').textContent=q[2]; const im=q[5]&&window.RQIMG&&RQIMG[q[5]]; $('#mainCol').classList.toggle('img',!!im); if(im){ $('#qimg').src=im; $('#qimg').alt=q[2]; }
  $('#answers').innerHTML=G.order.map((o,k)=>`<div class="ans hexrow" data-k="${k}"><div class="hex"><div><b>${L[k]}:</b> ${q[3][o]}</div></div></div>`).join('');
  document.querySelectorAll('.ans').forEach(a=>a.onclick=()=>pick(+a.dataset.k));
  $('#confirm').style.display='none'; $('#expl').style.display='none'; $('#bPlant').style.display=G.i?'':'none'; drawLadder(); }
@@ -203,7 +206,7 @@ function end(win,all,plant){ G.locked=true; let pts=0, t='', b='';
  $('#eT').textContent=t; $('#eB').innerHTML=b; showRec($('#eRec')); $('#ovEnd').classList.add('show'); $('#scoreTop').textContent=fmt(pts)+' punts'; }
 $('#bGo').onclick=newGame; $('#eAgain').onclick=newGame; $('#eUnits').onclick=()=>{ $('#ovEnd').classList.remove('show'); drawUnits(); showRec($('#rec')); $('#ovStart').classList.add('show'); };
 addEventListener('keydown',e=>{ if(!G||G.locked||document.querySelector('.ov.show')) return; const k='abcd'.indexOf(e.key.toLowerCase()); if(k>=0) pick(k); if(e.key==='Enter'&&G.sel>=0) $('#bOk').click(); });
-window.__r={newGame,get G(){return G}};
+window.__r={newGame,ask,get G(){return G}};
 })();
 </script>
 </body>

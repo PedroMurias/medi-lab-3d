@@ -157,5 +157,15 @@ window.RQ=[
 [9,3,"Quin és un exemple de consum responsable?",["Comprar productes de proximitat i de temporada","Comprar coses que no necessitem","Llençar la roba nova","Fer servir moltes bosses de plàstic"],"Els productes de prop contaminen menys en el transport."],
 [9,3,"On té una de les seus principals el Parlament Europeu?",["A Estrasburg","A Madrid","A Roma","A Londres"],"El Parlament Europeu es reuneix a Estrasburg i a Brussel·les."],
 [9,3,"Quin d'aquests països NO forma part de la Unió Europea?",["Suïssa","França","Portugal","Itàlia"],"Suïssa és a Europa, però no és membre de la UE."]
+,
+/* ---------- Preguntes amb imatge (captures dels labs 3D) ---------- */
+[1,1,"Quins ossos estan marcats en blau?",["Les costelles","Les vèrtebres","Les clavícules","Els fèmurs"],"Les costelles formen la caixa toràcica, que protegeix el cor i els pulmons.","costella"],
+[1,2,"Quin os està marcat en blau?",["El fèmur","L'húmer","La tíbia","El radi"],"El fèmur és l'os de la cuixa i el més llarg del cos.","femur"],
+[1,2,"Quina part de l'esquelet està marcada en blau?",["El crani","La pelvis","L'estèrnum","La ròtula"],"L'os frontal forma part del crani, que protegeix l'encèfal.","frontal"],
+[1,3,"Quin os del braç està marcat en blau?",["L'húmer","El cúbit","El fèmur","La clavícula"],"L'húmer va de l'espatlla fins al colze.","humer"],
+[3,1,"En quin ecosistema viu aquest animal?",["A l'Àrtic","A la selva","Al desert","A la sabana"],"L'ós polar viu a l'Àrtic i caça foques sobre el gel marí.","os"],
+[3,2,"On viuen aquests animals?",["A l'Antàrtida","A l'Àrtic","Al bosc mediterrani","A la selva amazònica"],"Els pingüins viuen a l'hemisferi sud, sobretot a l'Antàrtida.","pingui"],
+[3,1,"Quin animal del bosc mediterrani és aquest?",["Una guineu","Un llop","Un cérvol","Un senglar"],"La guineu és un depredador del bosc: caça conills, ratolins i altres animals petits.","guineu"],
+[3,2,"Aquest animal viu al mar. Quin tipus d'animal és?",["Un mamífer","Un peix","Un rèptil","Un amfibi"],"El dofí és un mamífer: respira aire amb pulmons i alimenta les cries amb llet.","dofi"]
 ];
 window.RUNITS=[[1,'🦴','El cos humà'],[2,'🌱',"L'adolescència"],[3,'🌳','Els ecosistemes'],[4,'🪐',"L'univers i la Terra"],[5,'⛰️','Espanya i Europa'],[6,'⚡',"L'energia"],[7,'⏳','Viatge en el temps'],[8,'🏛️','Ciutadania'],[9,'🌍','El món']];
