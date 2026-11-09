@@ -166,6 +166,16 @@ window.RQ=[
 [3,1,"En quin ecosistema viu aquest animal?",["A l'Àrtic","A la selva","Al desert","A la sabana"],"L'ós polar viu a l'Àrtic i caça foques sobre el gel marí.","os"],
 [3,2,"On viuen aquests animals?",["A l'Antàrtida","A l'Àrtic","Al bosc mediterrani","A la selva amazònica"],"Els pingüins viuen a l'hemisferi sud, sobretot a l'Antàrtida.","pingui"],
 [3,1,"Quin animal del bosc mediterrani és aquest?",["Una guineu","Un llop","Un cérvol","Un senglar"],"La guineu és un depredador del bosc: caça conills, ratolins i altres animals petits.","guineu"],
-[3,2,"Aquest animal viu al mar. Quin tipus d'animal és?",["Un mamífer","Un peix","Un rèptil","Un amfibi"],"El dofí és un mamífer: respira aire amb pulmons i alimenta les cries amb llet.","dofi"]
+[3,2,"Aquest animal viu al mar. Quin tipus d'animal és?",["Un mamífer","Un peix","Un rèptil","Un amfibi"],"El dofí és un mamífer: respira aire amb pulmons i alimenta les cries amb llet.","dofi"],
+[5,2,"Quin riu està marcat en blau?",["L'Ebre","El Tajo","El Guadalquivir","El Duero"],"L'Ebre passa per Saragossa i desemboca al Mediterrani, on forma un delta.","ebre"],
+[5,2,"Quin riu està marcat en blau?",["El Guadalquivir","L'Ebre","El Miño","El Xúquer"],"El Guadalquivir passa per Còrdova i Sevilla i desemboca a l'Atlàntic.","guadalquivir"],
+[5,3,"Quin riu està marcat en blau?",["El Tajo","El Duero","El Guadiana","L'Ebre"],"El Tajo és el riu més llarg de la Península i desemboca a Lisboa.","tajo"],
+[5,1,"Quina serralada està marcada en groc?",["Els Pirineus","El Sistema Central","La Serralada Cantàbrica","Sierra Morena"],"Els Pirineus fan de frontera amb França.","pirineus"],
+[5,3,"Quina serralada està marcada en groc?",["El Sistema Central","El Sistema Ibèric","Sierra Morena","La Serralada Cantàbrica"],"El Sistema Central divideix la Meseta en dues parts.","central"],
+[5,3,"Quina serralada està marcada en groc? (hi ha el Mulhacén)",["La Serralada Bètica","Sierra Morena","El Sistema Central","Els Pirineus"],"A la Serralada Bètica hi ha Sierra Nevada i el Mulhacén, el cim més alt de la Península.","betica"],
+[4,1,"Què hi ha al centre del sistema solar?",["El Sol","La Terra","La Lluna","Júpiter"],"Tots els planetes giren al voltant del Sol, que és una estrella.","solar"],
+[4,1,"Quin planeta és aquest?",["Saturn","Júpiter","Mart","La Terra"],"Saturn és famós pels seus anells de gel i roca.","saturn"],
+[4,2,"Quin planeta és aquest?",["Mart","Venus","Mercuri","Neptú"],"Mart és el planeta vermell, pel color del seu sòl.","mart"],
+[7,1,"Amb la Revolució Industrial van arribar fàbriques i trens. Què els feia moure?",["La màquina de vapor","L'electricitat solar","El motor elèctric","Els cavalls"],"La màquina de vapor cremava carbó i movia fàbriques, trens i vaixells.","revol"]
 ];
 window.RUNITS=[[1,'🦴','El cos humà'],[2,'🌱',"L'adolescència"],[3,'🌳','Els ecosistemes'],[4,'🪐',"L'univers i la Terra"],[5,'⛰️','Espanya i Europa'],[6,'⚡',"L'energia"],[7,'⏳','Viatge en el temps'],[8,'🏛️','Ciutadania'],[9,'🌍','El món']];

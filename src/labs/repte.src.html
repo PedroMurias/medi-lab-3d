@@ -45,7 +45,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#090426;color:#fff;fon
 .ans.ko .hex>div{background:linear-gradient(180deg,#ff7a6e,var(--ko) 55%,#9b1e16)}
 .ans.gone{visibility:hidden}
 @keyframes blink{50%{filter:brightness(1.6)}}
-#qimg{display:none;max-height:min(30vh,260px);max-width:min(460px,80vw);border-radius:16px;border:3px solid var(--line);box-shadow:0 0 30px rgba(110,90,255,.6);object-fit:cover;background:#000}
+#qimg{display:none;max-height:min(38vh,340px);max-width:min(600px,86vw);cursor:zoom-in;border-radius:16px;border:3px solid var(--line);box-shadow:0 0 30px rgba(110,90,255,.6);object-fit:cover;background:#000}
 #mainCol.img #logo{display:none}#mainCol.img #qimg{display:block;margin:auto 0 6px}
 #qnum{margin:8px 0 2px;color:var(--gold2);font-weight:700;font-size:15px;letter-spacing:.06em}
 #confirm{margin-top:12px;display:none;gap:10px}
@@ -195,6 +195,7 @@ $('#lPub').onclick=()=>{ if(!use('lPub')) return; const c=correctK(), alive=[0,1
 const FR=['la Laia','en Pau','la iaia Montse','en Jordi','la mestra Núria','l\'Arnau'];
 $('#lTel').onclick=()=>{ if(!use('lTel')) return; const c=correctK(); const sure=[0,.92,.78,.62][lvl()]; const alive=[0,1,2,3].filter(k=>!G.removed.has(k)); const say=Math.random()<sure?c:shuffle(alive.filter(k=>k!==c))[0]; const who=FR[Math.random()*FR.length|0];
  const conf=say===c?(lvl()===1?'Segur que':'Crec que'):'Uf, no ho sé... potser'; $('#hT').textContent='📞 Truques a '+who; $('#hB').innerHTML=`<p style="font-size:20px">«${conf} és la <b style="color:var(--gold2)">${L[say]}</b>: ${G.qs[G.i][3][G.order[say]]}.»</p><p style="font-size:14px;opacity:.75">Els amics a vegades s'equivoquen, sobretot amb les preguntes difícils!</p>`; $('#ovHelp').classList.add('show'); tone(880,.1,'square',.05); tone(880,.1,'square',.05,.2); };
+$('#qimg').onclick=()=>{ $('#hT').textContent='🔍'; $('#hB').innerHTML=`<img src="${$('#qimg').src}" style="max-width:100%;max-height:70vh;border-radius:12px">`; $('#ovHelp').classList.add('show'); };
 $('#hX').onclick=()=>$('#ovHelp').classList.remove('show');
 $('#bPlant').onclick=()=>{ if(!G||G.locked||!G.i) return; end(true,false,true); };
 /* final */
