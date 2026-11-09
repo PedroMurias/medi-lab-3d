@@ -319,7 +319,8 @@ const DOORS=[
  {f:'espanya',e:'⛰️',u:'Unitat 5',n:'Espanya i Europa',c:0xffb04a,d:'Mapa en relleu: serralades, rius, climes, població i economia.'},
  {f:'energia',e:'⚡',u:'Unitat 6',n:"L'energia",c:0xffe14a,d:'Formes i fonts d\'energia, de la central a casa, circuits i estalvi.'},
  {f:'historia',e:'⏳',u:'Unitat 7',n:'Viatge en el temps',c:0xd9a066,d:"L'edat contemporània de 1789 fins avui."},
- {f:'ciutadania',e:'🏛️',u:'Unitats 8 i 9',n:'Ciutadania i món',c:0x34e0e0,d:'Institucions, Unió Europea, riquesa, ODS i consum responsable.'}];
+ {f:'ciutadania',e:'🏛️',u:'Unitats 8 i 9',n:'Ciutadania i món',c:0x34e0e0,d:'Institucions, Unió Europea, riquesa, ODS i consum responsable.'},
+ {f:'repte',e:'🏆',u:'Concurs',n:'El Gran Repte',c:0xf5b62e,d:'Concurs de preguntes de totes les unitats: 15 preguntes, comodins i fins a 1.000.000 de punts.'}];
 $('#mGrid').innerHTML=DOORS.map(D=>`<a href="labs/${D.f}.html"><span class="ic">${D.e}</span><span class="u">${D.u}</span><h3>${D.n}</h3><p>${D.d}</p></a>`).join('');
 const canvas=$('#c'), renderer=new THREE.WebGLRenderer({canvas,antialias:true}); renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.05;
 const scene=new THREE.Scene(); scene.background=new THREE.Color(0x050b18); scene.fog=new THREE.Fog(0x050b18,18,40);
@@ -332,7 +333,7 @@ function inst(name,h,x,z,ry,y=0){ const o=MODELS[name].scene.clone(true); const 
 /* llum */
 scene.add(new THREE.HemisphereLight(0xdcecff,0x3a4a6a,2.2));
 const key=new THREE.DirectionalLight(0xffffff,1.1); key.position.set(4,12,3); key.castShadow=true; key.shadow.mapSize.set(1024,1024); Object.assign(key.shadow.camera,{left:-11,right:11,top:11,bottom:-11,near:1,far:30}); scene.add(key);
-const A=9, WH=4.4, N=8, OUT=A/Math.cos(Math.PI/N);
+const A=9.6, WH=4.4, N=DOORS.length, OUT=A/Math.cos(Math.PI/N);
 /* terra amb quadrícula */
 function floorTex(){ const c=document.createElement('canvas'); c.width=c.height=512; const x=c.getContext('2d'); x.fillStyle='#0d1626'; x.fillRect(0,0,512,512); x.strokeStyle='rgba(0,229,255,.28)'; x.lineWidth=2; for(let i=0;i<=8;i++){ x.beginPath(); x.moveTo(i*64,0); x.lineTo(i*64,512); x.moveTo(0,i*64); x.lineTo(512,i*64); x.stroke(); } x.fillStyle='rgba(255,255,255,.04)'; for(let i=0;i<8;i++)for(let j=0;j<8;j++) if((i+j)%2) x.fillRect(i*64,j*64,64,64); const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(6,6); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t; }
 const floor=new THREE.Mesh(new THREE.CircleGeometry(OUT+.2,N),new THREE.MeshStandardMaterial({map:floorTex(),roughness:.55,metalness:.3})); floor.rotation.x=-Math.PI/2; floor.rotation.z=Math.PI/N; floor.receiveShadow=true; scene.add(floor);
@@ -359,7 +360,7 @@ DOORS.forEach((D,i)=>{ const a=i/N*Math.PI*2; const g=new THREE.Group(); g.posit
 /* decoració: pack Sci-Fi */
 const solids=[]; const R=OUT-1.15;
 function wallProp(name,h,k,off){ const a=(k+.5)/N*Math.PI*2+(off||0); const r=A-.55; const w=inst(name,h,Math.sin(a)*r,Math.cos(a)*r,a+Math.PI); solids.push([Math.sin(a)*r,Math.cos(a)*r,.7]); return w; }
-wallProp('Prop_Shelves_WideTall',2.4,0); wallProp('Prop_Locker',2.3,1); wallProp('Prop_Shelves_ThinTall',2.4,2); wallProp('Prop_Locker',2.3,3); wallProp('Prop_Shelves_WideTall',2.4,4); wallProp('Prop_Locker',2.3,5); wallProp('Prop_Shelves_ThinTall',2.4,6); wallProp('Prop_Locker',2.3,7);
+for(let k=0;k<N;k++) wallProp(['Prop_Shelves_WideTall','Prop_Locker','Prop_Shelves_ThinTall','Prop_Locker'][k%4],k%2?2.3:2.4,k);
 /* taules centrals */
 const tabs=[[4.4,.8,'Prop_Desk_Medium',Math.PI*.1],[-4.4,.8,'Prop_Desk_L',Math.PI*-.15],[3.4,-3.4,'Prop_Desk_Small',Math.PI*.75],[-3.4,-3.6,'Prop_Desk_Medium',Math.PI*-.7]];
 for(const [x,z,nm,ry] of tabs){ const d=inst(nm,1.05,x,z,ry); solids.push([x,z,1.2]); const mug=inst('Prop_Mug',.14,x+.15,z+.1,0,1.04); inst('Prop_Chair',1.2,x*1.25,z*1.25+.2,Math.atan2(-x,-z)); }
