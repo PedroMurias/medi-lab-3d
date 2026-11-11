@@ -1,10 +1,10 @@
 import sys
 n=sys.argv[1]
 s=open(f'{n}.src.html').read()
-s=s.replace('/*BASECSS*/',open('/home/claude/base.css').read()).replace('/*KIT*/',open('kit.js').read()+'\n'+open('ux.js').read()+'\n'+open('vis.js').read()+'\n'+open('walk.js').read())
+s=s.replace('/*BASECSS*/',open('/home/claude/base.css').read()).replace('/*KIT*/',open('kit.js').read()+'\n'+open('ux.js').read()+'\n'+open('vis.js').read()+'\n'+open('walk.js').read()+'\n'+open('hover.js').read())
 s=s.replace('/*WORLD*/',open('world110.json').read()).replace('/*ESP*/',open('esp50.json').read()).replace('/*EU*/',open('eu110.json').read()).replace('/*CCAA*/',open('ccaa.json').read()).replace('/*PROV*/',open('prov.json').read())
 s=s.replace('/*CRITTERS*/',open('eco_critters.js').read()).replace('/*ECOASSETS*/',open('eco_assets.js').read()).replace('/*ECOLAND*/',open('eco_land.js').read())
-s=s.replace('/*WALKJS*/',open('walk.js').read())
+s=s.replace('/*WALKJS*/',open('walk.js').read()+'\n'+open('hover.js').read())
 s=s.replace('/*FARMASSETS*/',open('farm_assets.js').read())
 s=s.replace('/*DEMESP*/',open('dem_esp.js').read())
 s=s.replace('/*MUSASSETS*/',open('mus_assets.js').read())

@@ -232,6 +232,7 @@ $('#tYear').oninput=e=>{ playing=false; $('#tPlay').textContent='▶'; goYear(+e
 $('#tPer').innerHTML=PER.map(p=>`<i style="width:${(p.b-p.a)/(Y1-Y0)*100}%;background:${p.c}" title="${p.n}"></i>`).join('');
 const ray=new THREE.Raycaster(); let down=null;
 canvas.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY};});
+const HOV=Hover(THREE,{canvas,camera,ray,walkOn:()=>Walk.on,targets:()=>[{objs:[...evObjs,...plats],label:o=>o.userData.ev?(o.userData.ev.e+' '+o.userData.ev.y+' · '+o.userData.ev.n):o.userData.per?('📜 '+o.userData.per.a+'–'+o.userData.per.b+' · '+o.userData.per.n):''}]});
 canvas.addEventListener('pointerup',e=>{ if(!down||Math.hypot(e.clientX-down.x,e.clientY-down.y)>6){down=null;return;} down=null;
  ray.setFromCamera(new THREE.Vector2(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1),camera);
  const h=ray.intersectObjects([...evObjs,...plats],false); if(!h.length) return; const o=h[0].object; if(o.userData.ev) return evCard(o.userData.ev); if(o.userData.per) perCard(o.userData.per); });

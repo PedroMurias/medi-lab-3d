@@ -314,6 +314,7 @@ function cityView(){ flyTo(new THREE.Vector3(54,1,0),new THREE.Vector3(32,20,38)
 function home(){ const asp=innerWidth/innerHeight, f=asp<1?1.6:1; flyTo(new THREE.Vector3(8,0,0),new THREE.Vector3(8,70*f,95*f)); }
 const ray=new THREE.Raycaster(); let down=null;
 canvas.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY};});
+const HOV=Hover(THREE,{canvas,camera,ray,walkOn:()=>Walk.on,targets:()=>['fonts','central'].includes(mode)?[{objs:pickables,root:o=>{ const id=o.userData.src; return SDATA[id]?SDATA[id].g:o; },label:o=>{ const S=SDATA[o.userData.src]; return S?('⚡ '+S.n):''; }}]:[]});
 canvas.addEventListener('pointerup',e=>{ if(!down||Math.hypot(e.clientX-down.x,e.clientY-down.y)>6){down=null;return;} down=null; if(!['fonts','central'].includes(mode)) return;
   ray.setFromCamera(new THREE.Vector2(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1),camera); const h=ray.intersectObjects(pickables,false); if(h.length) srcClick(h[0].object.userData.src); });
 function applyFilter(){ for(const [k,s] of Object.entries(SRC)){ const on=filter==='tots'||(filter==='renov')===!!s.renov; s.g.traverse(o=>{if(o.isMesh&&o.material!==mats.water){o.material=o.material.userData.orig||o.material;}}); s.pin.hidden=!on; s.g.visible=true; s.g.scale.setScalar(on?1:.0001); } }
