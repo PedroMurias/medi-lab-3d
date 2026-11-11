@@ -112,7 +112,7 @@ function resize(){renderer.setSize(innerWidth,innerHeight,false); composer.setSi
  if(innerWidth>860) camera.setViewOffset(innerWidth,innerHeight,-190,0,innerWidth,innerHeight); else camera.setViewOffset(innerWidth,innerHeight,0,innerHeight*.2,innerWidth,innerHeight); camera.updateProjectionMatrix();}
 addEventListener('resize',resize); resize();
 const hemi=new THREE.HemisphereLight(0xeaf6ff,0x6a7a4a,1.8); scene.add(hemi);
-const sunL=new THREE.DirectionalLight(0xfff1d8,2.2); sunL.position.set(14,26,10); sunL.castShadow=true; sunL.shadow.mapSize.set(1024,1024); Object.assign(sunL.shadow.camera,{left:-18,right:18,top:18,bottom:-18,near:1,far:70}); sunL.shadow.bias=-.0005; scene.add(sunL);
+const sunL=new THREE.DirectionalLight(0xfff1d8,2.2); sunL.position.set(14,26,10); sunL.castShadow=true; sunL.shadow.mapSize.set(2048,2048); sunL.shadow.radius=4; Object.assign(sunL.shadow.camera,{left:-18,right:18,top:18,bottom:-18,near:1,far:70}); sunL.shadow.bias=-.0005; scene.add(sunL);
 const M=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.9,metalness:0},o));
 function rnd(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296;};}
 /* emoji → sprite */

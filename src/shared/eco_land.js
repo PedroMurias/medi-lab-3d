@@ -22,8 +22,8 @@ window.EcoLand=function(THREE,{scene,groundY}){
   g.setAttribute('color',new THREE.BufferAttribute(col,3)); g.computeVertexNormals(); const m=add(new THREE.Mesh(g,new THREE.MeshStandardMaterial({vertexColors:true,roughness:1,flatShading:true}))); m.receiveShadow=true; world.add(m); return m; };
  /* ---- herba instanciada amb vent ---- */
  L.grass=(world,R,opts={})=>{ const N=opts.n||2600, rMin=opts.rMin||.8, rMax=opts.rMax||15.2, gy=opts.groundY||groundY, cx=opts.cx||0, cz=opts.cz||0;
-  const blade=new THREE.PlaneGeometry(.12,.5,1,3); blade.translate(0,.25,0); const pos=blade.attributes.position; for(let i=0;i<pos.count;i++){ const y=pos.getY(i); pos.setX(i,pos.getX(i)*(1-y/.5*.8)); }
-  const mat=new THREE.MeshStandardMaterial({color:opts.color||0x6fae3f,side:THREE.DoubleSide,roughness:.95,transparent:true,opacity:.92}); mat.userData.t={value:0};
+  const blade=new THREE.PlaneGeometry(.16,.42,1,4); blade.translate(0,.21,0); const pos=blade.attributes.position; for(let i=0;i<pos.count;i++){ const y=pos.getY(i); const k=y/.42; pos.setX(i,pos.getX(i)*(1-k*.85)); pos.setZ(i,Math.sin(k*1.4)*.06); } { const col=new Float32Array(pos.count*3); for(let i=0;i<pos.count;i++){ const k=pos.getY(i)/.42; const d=.55+k*.5; col[i*3]=d; col[i*3+1]=d; col[i*3+2]=d; } blade.setAttribute('color',new THREE.BufferAttribute(col,3)); }
+  const mat=new THREE.MeshStandardMaterial({color:opts.color||0x6fae3f,side:THREE.DoubleSide,roughness:.95,vertexColors:true,transparent:true,opacity:.95}); mat.userData.t={value:0};
   mat.onBeforeCompile=sh=>{ sh.uniforms.t=mat.userData.t; sh.vertexShader='uniform float t;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vec4 wp=instanceMatrix*vec4(0.,0.,0.,1.); float sw=sin(t*1.8+wp.x*.7+wp.z*.5)*.5+sin(t*3.1+wp.z*1.3)*.25; transformed.x+=sw*position.y*.55; transformed.z+=cos(t*1.3+wp.x)*position.y*.25;'); };
   mat.customProgramCacheKey=()=>'ecograss';
   const im=add(new THREE.InstancedMesh(blade,mat,N)); const M=new THREE.Matrix4(), q=new THREE.Quaternion(), s=new THREE.Vector3(), v=new THREE.Vector3(); const col=new THREE.Color(); const base=new THREE.Color(opts.color||0x6fae3f);
