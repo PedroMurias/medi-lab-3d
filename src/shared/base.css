@@ -187,8 +187,9 @@ body.paused #c{filter:saturate(.7)}
 #walkJoy i{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#9fe7ff,var(--cy));box-shadow:0 4px 14px rgba(0,0,0,.5)}
 #walkHint{position:fixed;left:50%;top:72px;transform:translateX(-50%);z-index:12;background:rgba(10,19,36,.9);border:1px solid var(--gb);border-radius:14px;padding:8px 14px;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--mu);pointer-events:none}
 #walkHint b{color:#fff;font-size:14px}#walkHint .mob{display:none}
+#walkV{position:fixed;right:248px;top:72px;z-index:12;padding:8px 14px;border-radius:12px;border:1px solid var(--cy);color:#fff;cursor:pointer;font-size:14px}
 #walkX{position:fixed;right:76px;top:72px;z-index:12;padding:8px 14px;border-radius:12px;border:1px solid var(--rd);color:#fff;cursor:pointer;font-size:14px}
 #walkCross{position:fixed;left:50%;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border:2px solid rgba(255,255,255,.7);border-radius:50%;z-index:12;pointer-events:none;box-shadow:0 0 0 2px rgba(0,0,0,.4)}
 body.walking #panel{display:none!important}body.walking #c{cursor:move}
 @media (pointer:coarse){#walkJoy{display:block}#walkHint .pc{display:none}#walkHint .mob{display:inline}}
-@media (max-width:860px){#walkHint{top:60px;font-size:12px;max-width:calc(100% - 24px)}#walkX{right:12px;top:106px}#walkJoy{bottom:calc(var(--tb) + 20px);left:16px;width:104px;height:104px}}
+@media (max-width:860px){#walkHint{top:60px;font-size:12px;max-width:calc(100% - 24px)}#walkX{right:12px;top:106px}#walkV{right:12px;top:150px}#walkJoy{bottom:calc(var(--tb) + 20px);left:16px;width:104px;height:104px}}

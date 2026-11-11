@@ -87,6 +87,7 @@
 <script>/*KIT*/</script>
 <script>/*ECOLAND*/</script>
 <script>/*ECOASSETS*/</script>
+<script>/*PEOPLE*/</script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
 <script type="module">
 import * as THREE from 'three';
@@ -475,7 +476,9 @@ const repte=Kit.Repte(RP,{
 
 /* ================= MODES ================= */
 let fly=null; function flyTo(t,p,d=1){fly={t:0,d,ft:controls.target.clone(),tt:t,fp:camera.position.clone(),tp:p};}
-function walkStart(){ if(mode==='repte') setMode('eco'); unfollow(); fly=null; const ec=eco; Walk.start(THREE,{camera,controls,canvas,start:ec==='desert'?[3,5]:[0,9],yaw:Math.PI,speed:3,eye:ec==='mar'?1.2:1.5,fov:66,
+/* avatar de l'alumne per a la tercera persona (V) */
+(async()=>{ try{ const PPL=People(THREE,GLTFLoader,SkeletonUtils,MeshoptDecoder); await PPL.load(); const av=PPL.make(1.7,{kind:['male_shirt','male_longsleeve','male_casual'][Math.floor(Math.random()*3)],anim:'Idle'}); if(!av) return; av.o.visible=false; av.o.traverse(m=>{ if(m.isMesh) m.castShadow=true; }); scene.add(av.o); window.__avatar=av; window.__pplTick=dt=>PPL.tick(dt); if(Walk.on) Walk.setAvatar(av); }catch(e){ console.warn('avatar',e); } })();
+function walkStart(){ if(mode==='repte') setMode('eco'); unfollow(); fly=null; const ec=eco; Walk.start(THREE,{camera,controls,canvas,avatar:window.__avatar||null,start:ec==='desert'?[3,5]:[0,9],yaw:Math.PI,speed:3,eye:ec==='mar'?1.2:1.5,fov:66,
   ground:(x,z)=>{ const d=Math.hypot(x,z); let y=(Math.sin(x*.5)+Math.cos(z*.4))*.15; if(ec==='bassa'&&d<6.5) y-=1.2*(1-d/6.5); if(ec==='mar') y=(Math.sin(x*.3)*Math.cos(z*.35))*.5; return y; },
   radius:14.5, blocked:(x,z)=>{ if(ec==='bassa'&&Math.hypot(x,z)<6.9) return true; for(const [ox,oz,orad] of OBST){ if(Math.hypot(x-ox,z-oz)<orad) return true; } for(const t of trees){ if(Math.hypot(x-t.position.x,z-t.position.z)<.7) return true; } return false; },
   onStop:()=>home()}); if(window.UX) UX.toast(ec==='mar'?'Estàs bussejant pel fons del mar':ec==='bassa'?'Passeja per la vora de la bassa':ec==='muntanya'?'Passeja per la muntanya':ec==='desert'?'Camina per les dunes del Sàhara':ec==='selva'?'Camina per la selva amazònica':ec==='polar'?'Camina pel gel de l\'Àrtic':ec==='antartida'?'Camina per l\'Antàrtida, entre pingüins':ec==='sabana'?'Camina per la sabana':'Passeja pel bosc','🚶',2500); }
@@ -507,7 +510,7 @@ function loop(now){ let dt=Math.min(.05,(now-last)/1000); last=now; if(window.UX
  if(!paused) stepNature(dt,T); if(!Walk.on) stepFollow(dt); clouds.forEach((c,i)=>{ c.userData.cloud+=dt*.01; c.position.x=Math.cos(c.userData.cloud)*22; c.position.z=Math.sin(c.userData.cloud)*22; });
  if(fireG){ const a=fireG.geometry.attributes.position.array; fireG.userData.seed.forEach(([an,d,s],i)=>{const k=(s+T*.6)%1; a.set([Math.cos(an)*d+Math.sin(T+i)*.2,k*4,Math.sin(an)*d],i*3);}); fireG.geometry.attributes.position.needsUpdate=true; fireG.material.opacity=Math.max(0,1-(T%30)/30)*.9+.1; }
  if(selSp||showWeb||chain.length>1){ if(Math.floor(T*4)!==Math.floor((T-dt)*4)) drawWeb(); }
- Vis.tick(T,camera); LAND.tick(T); if(Walk.on) Walk.tick(dt); else controls.update(); if(FX){ const _t0=performance.now(); composer.render(); if(performance.now()-_t0>38&&++slowF>45) FX=false; } else renderer.render(scene,camera); updatePins(); }
+ Vis.tick(T,camera); LAND.tick(T); if(Walk.on) Walk.tick(dt); else controls.update(); if(window.__pplTick&&Walk.on&&Walk.third) __pplTick(dt); if(FX){ const _t0=performance.now(); composer.render(); if(performance.now()-_t0>38&&++slowF>45) FX=false; } else renderer.render(scene,camera); updatePins(); }
 try{ await loadModels(); MODELS.__ok=true; }catch(e){ console.warn('models',e); }
 buildWorld(); camera.position.set(0,12,21); controls.target.set(0,1,0);
 renderer.setAnimationLoop(loop);

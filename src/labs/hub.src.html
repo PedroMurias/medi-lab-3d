@@ -130,7 +130,10 @@ doorObjs.forEach(d=>{ d.rings=[]; for(let k=0;k<3;k++){ const r=new THREE.Mesh(n
 /* guia del laboratori (persona animada) */
 let guide=null, guideBubble=null; (async()=>{ try{ const PPL=People(THREE,GLTFLoader,SkeletonUtils,MeshoptDecoder); await PPL.load(); guide=PPL.make(1.75,{kind:'male_casual',anim:'Wave'}); if(!guide) return; guide.o.position.set(2.4,0,2.6); guide.o.rotation.y=Math.PI*1.15; guide.o.traverse(m=>{ if(m.isMesh){ m.castShadow=true; } }); scene.add(guide.o); solids.push([2.4,2.6,.5]); window.__ppl=PPL;
   const c=document.createElement('canvas'); c.width=512; c.height=160; const x=c.getContext('2d'); x.fillStyle='rgba(255,255,255,.96)'; x.beginPath(); x.roundRect(8,8,496,120,28); x.fill(); x.moveTo(120,128); x.lineTo(150,156); x.lineTo(170,128); x.fill(); x.fillStyle='#0b1a33'; x.font='700 34px system-ui, sans-serif'; x.textAlign='center'; x.fillText('Hola! Tria una porta i',256,58); x.fillText('comencem a investigar 🔬',256,104); const tx=new THREE.CanvasTexture(c); tx.colorSpace=THREE.SRGBColorSpace; guideBubble=new THREE.Sprite(new THREE.SpriteMaterial({map:tx,transparent:true,depthWrite:false})); guideBubble.scale.set(2.6,.81,1); guideBubble.position.set(2.0,2.55,2.6); scene.add(guideBubble);
-  setInterval(()=>{ if(!guide) return; guide.play(Math.random()<.5?'Wave':'Idle',.4); },6000); }catch(e){ console.warn('guia',e); } })();
+  setInterval(()=>{ if(!guide) return; guide.play(Math.random()<.5?'Wave':'Idle',.4); },6000);
+  /* avatar de l'alumne (tercera persona, tecla V) */
+  const av=PPL.make(1.7,{kind:['male_shirt','male_longsleeve','male_casual'][Math.floor(Math.random()*3)],anim:'Idle'}); if(av){ av.o.visible=false; av.o.traverse(m=>{ if(m.isMesh) m.castShadow=true; }); scene.add(av.o); window.__avatar=av; if(walking) Walk.setAvatar(av); }
+ }catch(e){ console.warn('guia',e); } })();
 /* hover / clic a portes */
 const ray=new THREE.Raycaster(), mouse=new THREE.Vector2(); let hover=-1;
 function pick(e){ const r=canvas.getBoundingClientRect(); mouse.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1); ray.setFromCamera(mouse,camera); const hs=ray.intersectObjects(doorObjs.map(d=>d.hit),false); return hs.length?hs[0].object.userData.door:-1; }
@@ -139,7 +142,7 @@ canvas.addEventListener('pointermove',e=>{ if(e.pointerType==='touch') return; h
 let leaving=false; function enter(i){ if(leaving) return; leaving=true; $('#fade').classList.add('on'); const D=DOORS[i]; setTimeout(()=>{ location.href='labs/'+D.f+'.html'; },520); }
 /* mode passeig */
 let walking=false;
-function walkStart(){ $('#intro')?.remove(); walking=true; ceil.visible=true; scene.fog.far=40; Walk.start(THREE,{camera,controls,canvas,start:[0,-6],yaw:0,speed:4.2,eye:1.65,ground:()=>0,radius:A-.25,center:[0,0],
+function walkStart(){ $('#intro')?.remove(); walking=true; ceil.visible=true; scene.fog.far=40; Walk.start(THREE,{camera,controls,canvas,start:[0,-6],yaw:0,speed:4.2,eye:1.65,ground:()=>0,radius:A-.25,center:[0,0],avatar:window.__avatar||null,
   blocked:(x,z)=>{ for(const [sx,sz,r] of solids) if(Math.hypot(x-sx,z-sz)<r) return true; return false; }, onStop:()=>{ walking=false; document.body.classList.remove('walking'); overview(); },
   onTick:()=>{} }); }
 function overview(){ ceil.visible=false; camera.fov=50; camera.updateProjectionMatrix(); camera.position.set(0,15,14); controls.target.set(0,1,0); controls.enabled=true; controls.update(); }
