@@ -91,6 +91,8 @@
 <script type="module">
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js'; import {RenderPass} from 'three/addons/postprocessing/RenderPass.js'; import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js'; import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
@@ -99,11 +101,13 @@ const {$,shuf,html,showCard,quiz,subtabs}=Kit; Kit.setPrefix('medilab_eco_');
 /* ================= RENDER ================= */
 const canvas=$('#c');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
-renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.outputColorSpace=THREE.SRGBColorSpace; renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-const scene=new THREE.Scene(); setTimeout(()=>{ Vis.dust(THREE,scene,180,[40,8,40],{size:3,color:0xfff2b0,y:0}); },0);
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.outputColorSpace=THREE.SRGBColorSpace; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.0; renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene(); { const pm=new THREE.PMREMGenerator(renderer); scene.environment=pm.fromScene(new RoomEnvironment(),.04).texture; scene.environmentIntensity=.35; pm.dispose(); } setTimeout(()=>{ Vis.dust(THREE,scene,180,[40,8,40],{size:3,color:0xfff2b0,y:0}); },0);
 const camera=new THREE.PerspectiveCamera(45,1,0.1,500);
 const controls=new OrbitControls(camera,canvas); controls.enableDamping=true; controls.dampingFactor=.1; controls.rotateSpeed=.55; controls.zoomSpeed=.8; controls.minDistance=5; controls.maxDistance=60; controls.maxPolarAngle=1.5;
-function resize(){renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;
+/* postprocessat lleuger: resplendor del sol, l'aigua i les llums; es desactiva si va lent */
+const composer=new EffectComposer(renderer); composer.addPass(new RenderPass(scene,camera)); const bloom=new UnrealBloomPass(new THREE.Vector2(400,400),.35,.45,1.25); composer.addPass(bloom); composer.addPass(new OutputPass()); let FX=true, slowF=0;
+function resize(){renderer.setSize(innerWidth,innerHeight,false); composer.setSize(innerWidth,innerHeight); camera.aspect=innerWidth/innerHeight;
  if(innerWidth>860) camera.setViewOffset(innerWidth,innerHeight,-190,0,innerWidth,innerHeight); else camera.setViewOffset(innerWidth,innerHeight,0,innerHeight*.2,innerWidth,innerHeight); camera.updateProjectionMatrix();}
 addEventListener('resize',resize); resize();
 const hemi=new THREE.HemisphereLight(0xeaf6ff,0x6a7a4a,1.8); scene.add(hemi);
@@ -255,7 +259,7 @@ function buildWorld(){ if(typeof unfollow==='function') unfollow(); clearWorld()
  if(eco==='desert'){ const pm=['M_Palm_1','M_Palm_3']; for(let i=0;i<5;i++){ const t=modelInst(pm[i%2],4.4).o; const a=i/5*6.28+.5,d=4+R()*1.6; t.position.set(Math.cos(a)*d,groundY(Math.cos(a)*d,Math.sin(a)*d),Math.sin(a)*d); t.scale.multiplyScalar(.9+R()*.4); t.rotation.y=R()*6.28; t.userData.sp='palmera'; world.add(t); trees.push(t); }
   const oa=new THREE.Mesh(new THREE.CircleGeometry(2.6,24),new THREE.MeshStandardMaterial({color:0x3f95c8,roughness:.1,transparent:true,opacity:.85})); oa.rotation.x=-Math.PI/2; oa.position.set(Math.cos(.5+3.1)*0+0,0,0); const oy=groundY(0,0); oa.position.y=oy+.04; world.add(oa);
   if(MODELS.__ok){ for(const [nm,h,n] of [['M_Stone_1',1.4,6],['M_Stone_2',1.1,6],['M_Dead_2',2.2,3],['M_Pebble',.3,16],['M_Plant7',.4,8]]) for(let i=0;i<n;i++){ const o=modelInst(nm,h*(.8+R()*.5)).o; const a=R()*6.28,d=5.6+R()*9; o.position.set(Math.cos(a)*d,groundY(Math.cos(a)*d,Math.sin(a)*d)-.05,Math.sin(a)*d); o.rotation.y=R()*6.28; if(nm==='M_Plant7'||nm==='M_Pebble') o.traverse(q=>{ if(q.isMesh&&nm==='M_Plant7'){ q.material=q.material.clone(); q.material.map=null; q.material.color.set(0xa8963f);} }); world.add(o); if(isSolidRock(nm)) addObst(o.position.x,o.position.z,nm==='M_Dead_2'?.4:h*.55);} }
-  addClouds(R,2,0xfff3dc); const sun=new THREE.Mesh(new THREE.SphereGeometry(2.2,16,12),new THREE.MeshBasicMaterial({color:0xfff2b0})); sun.position.set(-30,26,-34); world.add(sun); }
+  addClouds(R,2,0xfff3dc); const sun=new THREE.Mesh(new THREE.SphereGeometry(2.2,16,12),new THREE.MeshBasicMaterial({color:new THREE.Color(0xfff2b0).multiplyScalar(2.2),toneMapped:false})); sun.position.set(-30,26,-34); world.add(sun); }
  if(eco==='selva'){ const pm=['M_Palm_3','M_Palm_1']; for(let i=0;i<16;i++){ const pal=i%3===0; const t=modelInst(pal?pm[i%2]:'CommonTree_'+(1+i%3),pal?6:5.2).o; const a=i/16*6.28+R()*.3,d=6+R()*8; t.position.set(Math.cos(a)*d,groundY(Math.cos(a)*d,Math.sin(a)*d),Math.sin(a)*d); t.scale.multiplyScalar(.9+R()*.5); t.rotation.y=R()*6.28; if(!pal) t.traverse(q=>{ if(q.isMesh){ q.material=q.material.clone(); q.material.color.multiplyScalar(.75); } }); t.userData.sp='arbre'; world.add(t); trees.push(t); }
   if(MODELS.__ok){ for(const [nm,h,n] of [['M_Fern',.8,18],['Plant_1',.6,10],['Plant_3',.6,6],['Flowers',.45,14],['Rock_Moss_1',.8,4],['Rock_Moss_2',.7,3],['TreeStump_Moss',.6,2]]) for(let i=0;i<n;i++){ if(!MODELS[nm]) continue; const o=modelInst(nm,h*(.8+R()*.5)).o; const a=R()*6.28,d=1+R()*14; o.position.set(Math.cos(a)*d,groundY(Math.cos(a)*d,Math.sin(a)*d),Math.sin(a)*d); o.rotation.y=R()*6.28; world.add(o); if(isSolidRock(nm)) addObst(o.position.x,o.position.z,h*.5);} }
   const mist=new THREE.Mesh(new THREE.CircleGeometry(15,32),new THREE.MeshBasicMaterial({color:0xe8f6ee,transparent:true,opacity:.14,depthWrite:false})); mist.rotation.x=-Math.PI/2; mist.position.y=1.1; world.add(mist); addClouds(R,4,0xeef8f4); }
@@ -270,7 +274,7 @@ function buildWorld(){ if(typeof unfollow==='function') unfollow(); clearWorld()
  if(eco==='sabana'){ for(let i=0;i<9;i++){ const t=ATREE(R); const a=i/9*6.28+R()*.5,d=6+R()*8; t.position.set(Math.cos(a)*d,groundY(Math.cos(a)*d,Math.sin(a)*d),Math.sin(a)*d); t.scale.setScalar(1.1+R()*.5); t.rotation.y=R()*6.28; t.userData.sp='acacia'; world.add(t); trees.push(t); }
   for(let i=0;i<3;i++){ const m=new THREE.Mesh(new THREE.ConeGeometry(.7+R()*.4,1.6+R()*.8,8),M(0x9b6a43)); const a=R()*6.28,d=5+R()*8; m.position.set(Math.cos(a)*d,.7,Math.sin(a)*d); m.castShadow=true; world.add(m); addObst(m.position.x,m.position.z,.8); }
   if(MODELS.__ok){ for(const [nm,h,n] of [['M_Stone_1',1.2,5],['M_Stone_2',1,4],['M_Dead_2',2.3,3],['M_Wisp',.5,40],['M_Pebble',.3,10]]) for(let i=0;i<n;i++){ const o=modelInst(nm,h*(.8+R()*.5)).o; const a=R()*6.28,d=1+R()*14; o.position.set(Math.cos(a)*d,groundY(Math.cos(a)*d,Math.sin(a)*d)-.03,Math.sin(a)*d); o.rotation.y=R()*6.28; if(nm==='M_Wisp') o.traverse(q=>{ if(q.isMesh){ q.material=q.material.clone(); q.material.map=null; q.material.color.set(0xd2b650);} }); world.add(o); if(isSolidRock(nm)) addObst(o.position.x,o.position.z,nm==='M_Dead_2'?.4:h*.55);} }
-  const sun=new THREE.Mesh(new THREE.SphereGeometry(2.4,16,12),new THREE.MeshBasicMaterial({color:0xffe9a0})); sun.position.set(26,12,-36); world.add(sun); addClouds(R,4); }
+  const sun=new THREE.Mesh(new THREE.SphereGeometry(2.4,16,12),new THREE.MeshBasicMaterial({color:new THREE.Color(0xffe9a0).multiplyScalar(2.2),toneMapped:false})); sun.position.set(26,12,-36); world.add(sun); addClouds(R,4); }
  trees.forEach(t=>addObst(t.position.x,t.position.z,.55));
  /* éssers vius */
  for(const [id,s] of Object.entries(E.sp)){ if(s.tree){ trees.filter(t=>t.userData.sp===id).forEach((t,i)=>{ const b={id,sp:s,obj:t,home:t.position.clone(),ph:R()*6}; beings.push(b); t.traverse(o=>{if(o.isMesh)o.userData.being=b;}); if(i===0) b.pin=addPin(t,s.n,ROLE[s.r][1],()=>spClick(id),3.6,'sp'); }); continue; }
@@ -489,7 +493,7 @@ function loop(now){ let dt=Math.min(.05,(now-last)/1000); last=now; if(window.UX
  if(!paused) stepNature(dt,T); if(!Walk.on) stepFollow(dt); clouds.forEach((c,i)=>{ c.userData.cloud+=dt*.01; c.position.x=Math.cos(c.userData.cloud)*22; c.position.z=Math.sin(c.userData.cloud)*22; });
  if(fireG){ const a=fireG.geometry.attributes.position.array; fireG.userData.seed.forEach(([an,d,s],i)=>{const k=(s+T*.6)%1; a.set([Math.cos(an)*d+Math.sin(T+i)*.2,k*4,Math.sin(an)*d],i*3);}); fireG.geometry.attributes.position.needsUpdate=true; fireG.material.opacity=Math.max(0,1-(T%30)/30)*.9+.1; }
  if(selSp||showWeb||chain.length>1){ if(Math.floor(T*4)!==Math.floor((T-dt)*4)) drawWeb(); }
- Vis.tick(T,camera); LAND.tick(T); if(Walk.on) Walk.tick(dt); else controls.update(); renderer.render(scene,camera); updatePins(); }
+ Vis.tick(T,camera); LAND.tick(T); if(Walk.on) Walk.tick(dt); else controls.update(); if(FX){ composer.render(); if(dt>.05&&++slowF>40){ FX=false; } } else renderer.render(scene,camera); updatePins(); }
 try{ await loadModels(); MODELS.__ok=true; }catch(e){ console.warn('models',e); }
 buildWorld(); camera.position.set(0,12,21); controls.target.set(0,1,0);
 renderer.setAnimationLoop(loop);
