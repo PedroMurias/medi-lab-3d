@@ -389,11 +389,12 @@ body.paused #c{filter:saturate(.7)}
 #walkJoy i{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#9fe7ff,var(--cy));box-shadow:0 4px 14px rgba(0,0,0,.5)}
 #walkHint{position:fixed;left:50%;top:72px;transform:translateX(-50%);z-index:12;background:rgba(10,19,36,.9);border:1px solid var(--gb);border-radius:14px;padding:8px 14px;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--mu);pointer-events:none}
 #walkHint b{color:#fff;font-size:14px}#walkHint .mob{display:none}
+#walkV{position:fixed;right:248px;top:72px;z-index:12;padding:8px 14px;border-radius:12px;border:1px solid var(--cy);color:#fff;cursor:pointer;font-size:14px}
 #walkX{position:fixed;right:76px;top:72px;z-index:12;padding:8px 14px;border-radius:12px;border:1px solid var(--rd);color:#fff;cursor:pointer;font-size:14px}
 #walkCross{position:fixed;left:50%;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border:2px solid rgba(255,255,255,.7);border-radius:50%;z-index:12;pointer-events:none;box-shadow:0 0 0 2px rgba(0,0,0,.4)}
 body.walking #panel{display:none!important}body.walking #c{cursor:move}
 @media (pointer:coarse){#walkJoy{display:block}#walkHint .pc{display:none}#walkHint .mob{display:inline}}
-@media (max-width:860px){#walkHint{top:60px;font-size:12px;max-width:calc(100% - 24px)}#walkX{right:12px;top:106px}#walkJoy{bottom:calc(var(--tb) + 20px);left:16px;width:104px;height:104px}}
+@media (max-width:860px){#walkHint{top:60px;font-size:12px;max-width:calc(100% - 24px)}#walkX{right:12px;top:106px}#walkV{right:12px;top:150px}#walkJoy{bottom:calc(var(--tb) + 20px);left:16px;width:104px;height:104px}}
 
 .big{border:0;border-radius:12px;padding:10px 14px;cursor:pointer;font-weight:600;background:linear-gradient(135deg,var(--cy),var(--bl));color:#03111f}
 </style>
@@ -990,6 +991,7 @@ window.MediCore={BodyModel,SkeletonRig,JOINT_DEFS,THREE};
    ===================================================================== */
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
 import {mergeVertices} from 'three/addons/utils/BufferGeometryUtils.js';
@@ -1215,13 +1217,15 @@ const canvas=$('#c');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'}); renderer.localClippingEnabled=true;
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.setClearColor(0x081224,1);
 renderer.outputColorSpace=THREE.SRGBColorSpace; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.15;
-const scene=new THREE.Scene(); scene.background=new THREE.Color(0x081224); setTimeout(()=>{ Vis.backdrop(THREE,scene,'lab',{radius:45}); Vis.dust(THREE,scene,140,[2.4,2.2,2.4],{size:2.2,color:0x9fe7ff,y:-.2}); },0);
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x081224); { const pm=new THREE.PMREMGenerator(renderer); scene.environment=pm.fromScene(new RoomEnvironment(),.04).texture; scene.environmentIntensity=.45; pm.dispose(); } setTimeout(()=>{ Vis.backdrop(THREE,scene,'lab',{radius:45}); Vis.dust(THREE,scene,140,[2.4,2.2,2.4],{size:2.2,color:0x9fe7ff,y:-.2}); },0);
 const camera=new THREE.PerspectiveCamera(35,1,0.005,100);
 const controls=new OrbitControls(camera,canvas); controls.enableDamping=true; controls.dampingFactor=.12; controls.autoRotateSpeed=2.2;
 controls.rotateSpeed=.55; controls.zoomSpeed=.8; controls.panSpeed=.7; controls.screenSpacePanning=true; controls.zoomToCursor=true;
 controls.minPolarAngle=.2; controls.maxPolarAngle=Math.PI-.2;
-scene.add(new THREE.HemisphereLight(0xcfe6ff,0x1a1030,1.5));
-const key=new THREE.DirectionalLight(0xffffff,2.4); key.position.set(2,3,4); scene.add(key);
+scene.add(new THREE.HemisphereLight(0xcfe6ff,0x1a1030,1.1));
+/* focus de quiròfan: llum càlida des de dalt i un cercle lluminós al terra */
+{ const sp=new THREE.SpotLight(0xfff3e0,55,14,.55,.5,1.6); sp.position.set(0,5.5,1.2); sp.target.position.set(0,0,0); scene.add(sp); scene.add(sp.target); const ring=new THREE.Mesh(new THREE.RingGeometry(1.15,1.22,64),new THREE.MeshBasicMaterial({color:new THREE.Color(0x00e5ff).multiplyScalar(1.4),toneMapped:false,transparent:true,opacity:.75,side:THREE.DoubleSide})); ring.rotation.x=-Math.PI/2; ring.position.y=-1.02; scene.add(ring); const disc=new THREE.Mesh(new THREE.CircleGeometry(1.15,64),new THREE.MeshStandardMaterial({color:0x0b1a30,roughness:.25,metalness:.6,envMapIntensity:1.2})); disc.rotation.x=-Math.PI/2; disc.position.y=-1.025; scene.add(disc); }
+const key=new THREE.DirectionalLight(0xffffff,1.9); key.position.set(2,3,4); scene.add(key);
 const rimC=new THREE.DirectionalLight(0x00e5ff,1.3); rimC.position.set(-4,2,-3); scene.add(rimC);
 const rimB=new THREE.DirectionalLight(0x2f8cff,1.0); rimB.position.set(4,1,-3); scene.add(rimB);
 camera.add(new THREE.DirectionalLight(0xffffff,.7)); scene.add(camera);
@@ -2206,7 +2210,7 @@ function loop(now){ let dt=Math.min(.05,(now-last)/1000); last=now; if(UX.ST.pau
   Vis.tick(now/1000,camera); motion.update(); renderer.render(scene,camera); if(meshes.length) updatePins();
 }
 renderer.xr.enabled=true; renderer.setAnimationLoop(loop);
-window.__app={R:()=>renderer,S:()=>scene,M:()=>motion,fexp:()=>{frac.A.material.clippingPlanes=[];frac.A.material.needsUpdate=true;frac.B.material.clippingPlanes=[];frac.B.material.needsUpdate=true;},fdbg:()=>frac&&{a:frac.A.parent&&frac.A.parent.name,vis:frac.A.visible,pa:[frac.pA.normal.toArray(),frac.pA.constant],cen:frac.cen.toArray(),mat:frac.A.material.clippingPlanes.length,lcl:renderer.localClippingEnabled,size:frac.size},frac:id=>{const o=(groups[id]||[]).find(m=>m.userData.side==='r')||(groups[id]||[])[0]; if(o) fractureBone(o,true);},xray:v=>setXray(v),speed:v=>setSpeed(v),at:(k,t)=>{actRun=false;applyPose(ACTS[k].f(t));},only:k=>{meshes.forEach(o=>{if(o.userData.gpu)o.userData.gpu.visible=k!=="os"&&o.userData.kind===k; o.visible=o.userData.kind===k&&!(o.userData.gpu&&k!=="os");});},bench:()=>{const t0=performance.now();for(let i=0;i<20;i++){applyPose(ACTS.correr.f(i/20));motion.update();}return (performance.now()-t0)/20;},gpu:v=>{motion.gpuMode(v);actVis();},pose:P=>{actRun=false;applyPose(P);},cam:(a,b,c2,x,y,z)=>{anim=null;camera.position.set(a,b,c2);controls.target.set(x,y,z);},size:()=>home.size.y,act:k=>actStart(k),inj:k=>injShow(k),setMode,startGame,trobaPick,answerFirst:()=>document.querySelector('#rOpts button').click(),rState:()=>({rGame,rI,rScore,rCur}),rig:()=>rig,joint:j=>document.querySelector(`#joints button[data-j="${j}"]`).click(),locate,setMode,setBend,select,setIso,openSense,playRoute,controls,dolly,groups,
+window.__app={sel:(id)=>select(id,true),R:()=>renderer,S:()=>scene,M:()=>motion,fexp:()=>{frac.A.material.clippingPlanes=[];frac.A.material.needsUpdate=true;frac.B.material.clippingPlanes=[];frac.B.material.needsUpdate=true;},fdbg:()=>frac&&{a:frac.A.parent&&frac.A.parent.name,vis:frac.A.visible,pa:[frac.pA.normal.toArray(),frac.pA.constant],cen:frac.cen.toArray(),mat:frac.A.material.clippingPlanes.length,lcl:renderer.localClippingEnabled,size:frac.size},frac:id=>{const o=(groups[id]||[]).find(m=>m.userData.side==='r')||(groups[id]||[])[0]; if(o) fractureBone(o,true);},xray:v=>setXray(v),speed:v=>setSpeed(v),at:(k,t)=>{actRun=false;applyPose(ACTS[k].f(t));},only:k=>{meshes.forEach(o=>{if(o.userData.gpu)o.userData.gpu.visible=k!=="os"&&o.userData.kind===k; o.visible=o.userData.kind===k&&!(o.userData.gpu&&k!=="os");});},bench:()=>{const t0=performance.now();for(let i=0;i<20;i++){applyPose(ACTS.correr.f(i/20));motion.update();}return (performance.now()-t0)/20;},gpu:v=>{motion.gpuMode(v);actVis();},pose:P=>{actRun=false;applyPose(P);},cam:(a,b,c2,x,y,z)=>{anim=null;camera.position.set(a,b,c2);controls.target.set(x,y,z);},size:()=>home.size.y,act:k=>actStart(k),inj:k=>injShow(k),setMode,startGame,trobaPick,answerFirst:()=>document.querySelector('#rOpts button').click(),rState:()=>({rGame,rI,rScore,rCur}),rig:()=>rig,joint:j=>document.querySelector(`#joints button[data-j="${j}"]`).click(),locate,setMode,setBend,select,setIso,openSense,playRoute,controls,dolly,groups,
   setRoute:t=>{routeT=t}, zone:z=>document.querySelector(`#zones .z[data-z="${z}"]`).click(), quick:q=>document.querySelector(`.quick button[data-q="${q}"]`).click()};
 </script>
 <style>#homeBtn{display:none;flex:0 0 auto;width:40px;height:40px;line-height:40px;text-align:center;padding:0;font-size:20px;border-radius:12px;background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.45);color:#00e5ff;text-decoration:none}#homeBtn:hover{background:#00e5ff;color:#021}#homeBtn.fx{position:fixed;top:14px;left:12px;z-index:60}body.walking #homeBtn.fx{display:none!important}</style><a id="homeBtn" href="../index.html" title="Torna al laboratori central" aria-label="Torna al laboratori central">🔬</a><script>(function(){var b=document.getElementById("homeBtn");if(!(/github\.io|localhost|127\.0\.0\.1/.test(location.hostname)||location.protocol==="file:"))return;var t=document.getElementById("top");if(t)t.insertBefore(b,t.firstChild);else b.className="fx";b.style.display="block"})()</script>
