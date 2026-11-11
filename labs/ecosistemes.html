@@ -1205,7 +1205,7 @@ function loop(now){ let dt=Math.min(.05,(now-last)/1000); last=now; if(window.UX
  if(!paused) stepNature(dt,T); if(!Walk.on) stepFollow(dt); clouds.forEach((c,i)=>{ c.userData.cloud+=dt*.01; c.position.x=Math.cos(c.userData.cloud)*22; c.position.z=Math.sin(c.userData.cloud)*22; });
  if(fireG){ const a=fireG.geometry.attributes.position.array; fireG.userData.seed.forEach(([an,d,s],i)=>{const k=(s+T*.6)%1; a.set([Math.cos(an)*d+Math.sin(T+i)*.2,k*4,Math.sin(an)*d],i*3);}); fireG.geometry.attributes.position.needsUpdate=true; fireG.material.opacity=Math.max(0,1-(T%30)/30)*.9+.1; }
  if(selSp||showWeb||chain.length>1){ if(Math.floor(T*4)!==Math.floor((T-dt)*4)) drawWeb(); }
- Vis.tick(T,camera); LAND.tick(T); if(Walk.on) Walk.tick(dt); else controls.update(); if(FX){ composer.render(); if(dt>.05&&++slowF>40){ FX=false; } } else renderer.render(scene,camera); updatePins(); }
+ Vis.tick(T,camera); LAND.tick(T); if(Walk.on) Walk.tick(dt); else controls.update(); if(FX){ const _t0=performance.now(); composer.render(); if(performance.now()-_t0>38&&++slowF>45) FX=false; } else renderer.render(scene,camera); updatePins(); }
 try{ await loadModels(); MODELS.__ok=true; }catch(e){ console.warn('models',e); }
 buildWorld(); camera.position.set(0,12,21); controls.target.set(0,1,0);
 renderer.setAnimationLoop(loop);

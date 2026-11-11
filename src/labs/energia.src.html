@@ -112,6 +112,8 @@
 <script type="module">
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js'; import {RenderPass} from 'three/addons/postprocessing/RenderPass.js'; import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js'; import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {MeshoptDecoder} from 'three/addons/libs/meshopt_decoder.module.js';
 const NK=NatKit(THREE,GLTFLoader,MeshoptDecoder);
@@ -120,12 +122,13 @@ const {$,shuf,html,showCard,quiz,subtabs}=Kit; Kit.setPrefix('medilab_e_');
 /* ================= 3D ================= */
 const canvas=$('#c');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
-renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.outputColorSpace=THREE.SRGBColorSpace; renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-const scene=new THREE.Scene();
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.outputColorSpace=THREE.SRGBColorSpace; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.0; renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene(); { const pm=new THREE.PMREMGenerator(renderer); scene.environment=pm.fromScene(new RoomEnvironment(),.04).texture; scene.environmentIntensity=.35; pm.dispose(); }
 const SKY=new THREE.Color(0x6fb3e8), SKYD=new THREE.Color(0x8a8f96); scene.background=SKY.clone(); scene.fog=new THREE.Fog(0x9cc8ec,90,220);
 const camera=new THREE.PerspectiveCamera(45,1,0.1,800);
 const controls=new OrbitControls(camera,canvas); controls.enableDamping=true; controls.dampingFactor=.1; controls.rotateSpeed=.55; controls.zoomSpeed=.8; controls.maxPolarAngle=1.45; controls.minDistance=8; controls.maxDistance=160; controls.screenSpacePanning=false;
-function resize(){renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;
+const composer=new EffectComposer(renderer); composer.addPass(new RenderPass(scene,camera)); const bloom=new UnrealBloomPass(new THREE.Vector2(400,400),0.4,.45,1.25); composer.addPass(bloom); composer.addPass(new OutputPass()); let FX=true, slowF=0;
+function resize(){renderer.setSize(innerWidth,innerHeight,false); composer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;
  if(innerWidth>860) camera.setViewOffset(innerWidth,innerHeight,-190,0,innerWidth,innerHeight); else camera.setViewOffset(innerWidth,innerHeight,0,innerHeight*.2,innerWidth,innerHeight);
  camera.updateProjectionMatrix();}
 addEventListener('resize',resize); resize();
@@ -517,7 +520,7 @@ function loop(now){ let dt=Math.min(.05,(now-last)/1000); last=now; if(window.UX
  for(const [s,id] of smokes){ const amt= id==='fossil'? (mode==='fonts'?1-ren:1)*1 : 1; updSmoke(s,T+(s.id%7),amt); }
  if(mode==='fonts'){ scene.background.copy(SKYD).lerp(SKY,ren*.85+.15); scene.fog.color.copy(scene.background); scene.fog.near=40+ren*50; } else { scene.background.copy(SKY); scene.fog.color.set(0x9cc8ec); scene.fog.near=90; }
  updLive(dt); updFlow(dt);
- LAND.tick(T); if(Walk.on) Walk.tick(dt); else controls.update(); renderer.render(scene,camera); updatePins(); }
+ LAND.tick(T); if(Walk.on) Walk.tick(dt); else controls.update(); if(FX){ const _t0=performance.now(); composer.render(); if(performance.now()-_t0>38&&++slowF>45) FX=false; } else renderer.render(scene,camera); updatePins(); }
 renderer.setAnimationLoop(loop);
 await decorate(); scene.traverse(o=>{ if(o.isMesh&&o!==ground&&!o.castShadow){ o.castShadow=true; } });
 applyFilter(); applyMode(); $('#loading').remove(); Kit.initHelp('seen');
