@@ -2,3 +2,5 @@ node_modules/
 *.pyc
 __pycache__/
 .DS_Store
+video/univers/render/
+video/univers/sortida/_clips/

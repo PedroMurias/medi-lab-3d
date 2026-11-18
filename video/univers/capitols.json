@@ -1,0 +1,395 @@
+{
+ "titol": "Viatge per l'univers",
+ "unitat": "Coneixement del Medi 6è · Unitat 4: La Terra, el nostre planeta",
+ "fps": 24,
+ "durada": 75.0,
+ "fosa": 0.5,
+ "capitols": [
+  {
+   "num": 1,
+   "id": "bigbang",
+   "titol": "El big bang",
+   "ini": 0.0,
+   "fi": 6.0,
+   "subtitols": [
+    {
+     "text": "Fa uns 14.000 milions d'anys es va produir una gran explosió: el big bang.",
+     "ini": 0.3,
+     "fi": 2.8
+    },
+    {
+     "text": "D'aquí van sortir les estrelles, les galàxies i tots els astres.",
+     "ini": 3.3,
+     "fi": 5.8
+    }
+   ],
+   "etiquetes": [],
+   "lab": {
+    "mode": "univers",
+    "sub": "bigbang"
+   }
+  },
+  {
+   "num": 2,
+   "id": "galaxia",
+   "titol": "La Via Làctia",
+   "ini": 6.0,
+   "fi": 16.0,
+   "subtitols": [
+    {
+     "text": "Les galàxies són agrupacions de milions d'estrelles, planetes, gas i pols.",
+     "ini": 0.3,
+     "fi": 4.8
+    },
+    {
+     "text": "Vivim a la Via Làctia, una galàxia espiral. El sistema solar és al braç d'Orió.",
+     "ini": 5.3,
+     "fi": 9.8
+    }
+   ],
+   "etiquetes": [
+    {
+     "text": "Sistema solar · braç d'Orió",
+     "ini": 5.5,
+     "fi": 10.0
+    }
+   ],
+   "lab": {
+    "mode": "univers",
+    "sub": "galaxia"
+   },
+   "pregunta": {
+    "text": "Com es diu la nostra galàxia?",
+    "opcions": [
+     "Andròmeda",
+     "La Via Làctia",
+     "El braç d'Orió"
+    ],
+    "correcta": 1,
+    "quan": 16.0
+   }
+  },
+  {
+   "num": 3,
+   "id": "sistema",
+   "titol": "El sistema solar",
+   "ini": 16.0,
+   "fi": 34.0,
+   "subtitols": [
+    {
+     "text": "El Sol és una estrella. Al seu voltant giren vuit planetes.",
+     "ini": 0.3,
+     "fi": 8.8
+    },
+    {
+     "text": "Primer els rocosos; després del cinturó d'asteroides, els gegants.",
+     "ini": 9.3,
+     "fi": 17.8
+    }
+   ],
+   "etiquetes": [
+    {
+     "text": "Mercuri",
+     "ini": 0.0,
+     "fi": 3.0
+    },
+    {
+     "text": "Venus",
+     "ini": 0.0,
+     "fi": 4.42
+    },
+    {
+     "text": "La Terra",
+     "ini": 0.0,
+     "fi": 5.17
+    },
+    {
+     "text": "Mart",
+     "ini": 1.08,
+     "fi": 6.33
+    },
+    {
+     "text": "Júpiter",
+     "ini": 3.33,
+     "fi": 8.5
+    },
+    {
+     "text": "Cinturó d'asteroides",
+     "ini": 5.94,
+     "fi": 8.1
+    },
+    {
+     "text": "Saturn",
+     "ini": 6.08,
+     "fi": 10.83
+    },
+    {
+     "text": "Urà",
+     "ini": 10.08,
+     "fi": 13.92
+    },
+    {
+     "text": "Neptú",
+     "ini": 10.92,
+     "fi": 17.0
+    },
+    {
+     "text": "Plutó",
+     "ini": 13.83,
+     "fi": 18.0
+    }
+   ],
+   "lab": {
+    "mode": "sistema"
+   },
+   "pregunta": {
+    "text": "Quants planetes té el sistema solar?",
+    "opcions": [
+     "Set",
+     "Vuit",
+     "Nou"
+    ],
+    "correcta": 1,
+    "quan": 34.0
+   }
+  },
+  {
+   "num": 4,
+   "id": "rotacio",
+   "titol": "La rotació: el dia i la nit",
+   "ini": 34.0,
+   "fi": 42.0,
+   "subtitols": [
+    {
+     "text": "La Terra gira sobre si mateixa: és el moviment de rotació.",
+     "ini": 0.3,
+     "fi": 3.8
+    },
+    {
+     "text": "Una volta dura un dia. La cara que mira el Sol és de dia; l'altra, de nit.",
+     "ini": 4.3,
+     "fi": 7.8
+    }
+   ],
+   "etiquetes": [
+    {
+     "text": "Barcelona",
+     "ini": 1.0,
+     "fi": 7.5
+    }
+   ],
+   "lab": {
+    "mode": "terra",
+    "sub": "rotacio"
+   },
+   "pregunta": {
+    "text": "Què provoca la rotació?",
+    "opcions": [
+     "Les estacions",
+     "El dia i la nit",
+     "Les fases de la Lluna"
+    ],
+    "correcta": 1,
+    "quan": 42.0
+   }
+  },
+  {
+   "num": 5,
+   "id": "translacio",
+   "titol": "La translació: l'any i les estacions",
+   "ini": 42.0,
+   "fi": 52.0,
+   "subtitols": [
+    {
+     "text": "La Terra fa la volta al Sol en un any: és el moviment de translació.",
+     "ini": 0.3,
+     "fi": 4.8
+    },
+    {
+     "text": "Com que l'eix està inclinat, tenim estacions.",
+     "ini": 5.3,
+     "fi": 9.8
+    }
+   ],
+   "etiquetes": [
+    {
+     "text": "21 de març · primavera al nord",
+     "ini": 0.0,
+     "fi": 2.0
+    },
+    {
+     "text": "21 de juny · estiu al nord, hivern al sud",
+     "ini": 2.5,
+     "fi": 4.5
+    },
+    {
+     "text": "23 de setembre · tardor al nord",
+     "ini": 5.0,
+     "fi": 7.0
+    },
+    {
+     "text": "21 de desembre · hivern al nord, estiu al sud",
+     "ini": 7.5,
+     "fi": 9.5
+    }
+   ],
+   "lab": {
+    "mode": "terra",
+    "sub": "translacio"
+   },
+   "pregunta": {
+    "text": "Què provoca les estacions?",
+    "opcions": [
+     "La distància al Sol",
+     "La inclinació de la Terra i la translació",
+     "La Lluna"
+    ],
+    "correcta": 1,
+    "quan": 52.0
+   }
+  },
+  {
+   "num": 6,
+   "id": "lluna",
+   "titol": "La Lluna i les fases",
+   "ini": 52.0,
+   "fi": 61.0,
+   "subtitols": [
+    {
+     "text": "La Lluna no té llum pròpia: reflecteix la llum del Sol.",
+     "ini": 0.3,
+     "fi": 4.3
+    },
+    {
+     "text": "Segons on és, en veiem il·luminada una part o una altra: són les fases.",
+     "ini": 4.8,
+     "fi": 8.8
+    }
+   ],
+   "etiquetes": [
+    {
+     "text": "Lluna nova",
+     "ini": 0.0,
+     "fi": 0.63
+    },
+    {
+     "text": "Lluna creixent",
+     "ini": 1.23,
+     "fi": 2.31
+    },
+    {
+     "text": "Quart creixent",
+     "ini": 2.32,
+     "fi": 3.4
+    },
+    {
+     "text": "Gibosa creixent",
+     "ini": 3.2,
+     "fi": 4.28
+    },
+    {
+     "text": "Lluna plena",
+     "ini": 4.02,
+     "fi": 5.1
+    },
+    {
+     "text": "Gibosa minvant",
+     "ini": 4.83,
+     "fi": 5.91
+    },
+    {
+     "text": "Quart minvant",
+     "ini": 5.71,
+     "fi": 6.79
+    },
+    {
+     "text": "Lluna minvant",
+     "ini": 6.77,
+     "fi": 7.85
+    }
+   ],
+   "lab": {
+    "mode": "terra",
+    "sub": "lluna"
+   },
+   "pregunta": {
+    "text": "En quina fase no veiem la Lluna?",
+    "opcions": [
+     "Plena",
+     "Nova",
+     "Quart creixent"
+    ],
+    "correcta": 1,
+    "quan": 61.0
+   }
+  },
+  {
+   "num": 7,
+   "id": "zones",
+   "titol": "Les zones climàtiques",
+   "ini": 61.0,
+   "fi": 68.0,
+   "subtitols": [
+    {
+     "text": "Entre els tròpics hi ha la zona càlida.",
+     "ini": 0.3,
+     "fi": 3.3
+    },
+    {
+     "text": "Després hi ha les dues zones temperades i, als pols, les dues zones fredes.",
+     "ini": 3.8,
+     "fi": 6.8
+    }
+   ],
+   "etiquetes": [
+    {
+     "text": "Equador",
+     "ini": 2.1,
+     "fi": 3.5
+    },
+    {
+     "text": "Tròpics de Càncer i de Capricorn",
+     "ini": 3.5,
+     "fi": 4.9
+    },
+    {
+     "text": "Cercles polars",
+     "ini": 4.9,
+     "fi": 6.3
+    }
+   ],
+   "lab": {
+    "mode": "climes",
+    "sub": "zones"
+   },
+   "pregunta": {
+    "text": "Quina zona hi ha entre els dos tròpics?",
+    "opcions": [
+     "La zona càlida",
+     "Una zona temperada",
+     "Una zona freda"
+    ],
+    "correcta": 0,
+    "quan": 68.0
+   }
+  },
+  {
+   "num": 8,
+   "id": "final",
+   "titol": "Ara, explora-ho tu",
+   "ini": 68.0,
+   "fi": 75.0,
+   "subtitols": [
+    {
+     "text": "Al laboratori pots girar, apropar-te i tocar cada astre.",
+     "ini": 0.3,
+     "fi": 6.8
+    }
+   ],
+   "etiquetes": [],
+   "lab": {
+    "mode": "sistema"
+   }
+  }
+ ]
+}
