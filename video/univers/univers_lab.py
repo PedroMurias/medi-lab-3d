@@ -292,6 +292,7 @@ for pid, nom, r, d, per in PL:
             'pluto': lambda: mat_roca('pluto', [(0, (.45, .38, .32, 1)), (1, (.85, .78, .7, 1))], 3, .3)}
         o.data.materials.append(mats[pid]())
     o.rotation_euler = (math.radians({'ura': 98, 'terra': 23.44}.get(pid, 8)), 0, R.random() * 6.28)
+    o.visible_shadow = False  # sense ombres entre planetes (Júpiter enfosquia Saturn); el dia i la nit surten igual
     P[pid] = o
 # anells de Saturn
 bpy.ops.mesh.primitive_circle_add(vertices=256, radius=6.4, fill_type='NGON'); an = bpy.context.object; an.name = 'Anells'
@@ -304,7 +305,7 @@ ann = noise(ant, 55, 2, .5); ant.links.new(acb.outputs[0], ann.inputs['Vector'])
 arp = ramp(ant, [(0, (0, 0, 0, 1)), (.3, (.78, .7, .56, 1)), (.55, (.25, .22, .18, 1)), (.6, (.88, .82, .7, 1)), (1, (.32, .29, .24, 1))])
 ant.links.new(ann.outputs['Fac'], arp.inputs['Fac']); ant.links.new(arp.outputs['Color'], ab.inputs['Base Color']); ab.inputs['Roughness'].default_value = .9
 ant.links.new(ann.outputs['Fac'], ab.inputs['Alpha']); an.data.materials.append(am)
-an.parent = P['saturn']; an.rotation_euler = (0, 0, 0); put(an, 'ss')
+an.parent = P['saturn']; an.rotation_euler = (0, 0, 0); put(an, 'ss'); an.visible_shadow = False
 P['saturn'].rotation_euler = (math.radians(27), 0, 0)
 # cinturó d'asteroides (entre Mart i Júpiter)
 aco, acol, arad = [], [], []
@@ -314,7 +315,7 @@ for i in range(5000):
 mast, mnt, mb, mout = newmat('asteroides'); mat_ = mnt.nodes.new('ShaderNodeAttribute'); mat_.attribute_name = 'col'; mnt.links.new(mat_.outputs['Color'], mb.inputs['Base Color'])
 AST = punts('asteroides', aco, acol, arad, mast, 'ast')
 # Lluna
-LL = sphere('Lluna', .27, 96, 'lluna'); LL.data.materials.append(mat_lluna())
+LL = sphere('Lluna', .27, 96, 'lluna'); LL.data.materials.append(mat_lluna()); LL.visible_shadow = False
 # òrbites
 for pid, nom, r, d, per in PL:
     bpy.ops.mesh.primitive_torus_add(major_radius=d, minor_radius=.045, major_segments=384, minor_segments=6)
@@ -445,7 +446,7 @@ def pose(cap, t, T):
         eix.location = E; eix.rotation_euler = (0, TILT, 0); eix.scale = (1.4, 1.4, 2.0)
         for k, f in enumerate(FITES):
             ak = math.pi / 2 + k * math.pi / 2; f.location = (math.cos(ak) * 16, math.sin(ak) * 16, 0)
-        look((0, -17 + 3 * e, 50), (0, -.5, 0), 30)
+        look((0, -18 + 3 * e, 52), (0, -1.6, 0), 28)
     elif cap == 'lluna':
         show('ss', 'terra', 'lluna')
         E = orbit_pos('terra', .35); P['terra'].location = E; P['terra'].rotation_euler = (TILT, 0, T * .2)
@@ -523,17 +524,23 @@ def etiquetes(cap):
     """Calcula quan surt cada nom a la pantalla (per al reproductor i els subtítols)."""
     n = frames_of(cap); out = []
     if cap == 'sistema':
-        actiu = {}
+        seq = []
         for f in range(0, n, 2):
             pose(cap, f / (n - 1), f / A.fps); bpy.context.view_layer.update()
+            best = None
             for pid, nom, *_ in PL:
                 v = world_to_camera_view(sc, co, P[pid].matrix_world.translation)
-                vis = v.z > 0 and .2 < v.x < .8 and .1 < v.y < .9
-                if vis and pid not in actiu: actiu[pid] = f
-                if not vis and pid in actiu: out.append(dict(text=nom, ini=round(actiu.pop(pid) / A.fps, 2), fi=round(f / A.fps, 2)))
-        for pid, f0 in actiu.items(): out.append(dict(text=[x[1] for x in PL if x[0] == pid][0], ini=round(f0 / A.fps, 2), fi=round(n / A.fps, 2)))
-        out.append(dict(text="Cinturó d'asteroides", ini=round(n / A.fps * .33, 2), fi=round(n / A.fps * .45, 2)))
-        out.sort(key=lambda d: d['ini'])
+                if v.z > 0 and .08 < v.x < .92 and .05 < v.y < .95:
+                    sc_ = abs(v.x - .5) - .02 * [x[2] for x in PL if x[0] == pid][0]  # el més centrat (els grans guanyen empats)
+                    if best is None or sc_ < best[0]: best = (sc_, nom)
+            seq.append((f / A.fps, best[1] if best else None))
+        cur, t0 = None, 0
+        for tt, nm in seq + [(n / A.fps, None)]:
+            if nm != cur:
+                if cur and tt - t0 >= .8: out.append(dict(text=cur, ini=round(t0, 2), fi=round(tt, 2)))
+                cur, t0 = nm, tt
+        if out and not any(d['text'] == 'Mercuri' for d in out):  # Mercuri és petit i surt al principi: li donem la primera meitat
+            d0 = out[0]; mid = round((d0['ini'] + d0['fi']) / 2, 2); out.insert(0, dict(text='Mercuri', ini=d0['ini'], fi=mid)); d0['ini'] = mid
     if cap == 'translacio':
         D = n / A.fps
         for k, txt in enumerate(["21 de març · primavera al nord", "21 de juny · estiu al nord, hivern al sud", "23 de setembre · tardor al nord", "21 de desembre · hivern al nord, estiu al sud"]):

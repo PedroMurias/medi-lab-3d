@@ -91,51 +91,46 @@
     {
      "text": "Mercuri",
      "ini": 0.0,
-     "fi": 3.0
+     "fi": 1.25
     },
     {
      "text": "Venus",
-     "ini": 0.0,
-     "fi": 4.42
+     "ini": 1.25,
+     "fi": 2.5
     },
     {
      "text": "La Terra",
-     "ini": 0.0,
-     "fi": 5.17
+     "ini": 2.5,
+     "fi": 3.83
     },
     {
      "text": "Mart",
-     "ini": 1.08,
-     "fi": 6.33
+     "ini": 3.83,
+     "fi": 5.25
     },
     {
      "text": "Júpiter",
-     "ini": 3.33,
-     "fi": 8.5
-    },
-    {
-     "text": "Cinturó d'asteroides",
-     "ini": 5.94,
-     "fi": 8.1
+     "ini": 5.25,
+     "fi": 7.67
     },
     {
      "text": "Saturn",
-     "ini": 6.08,
-     "fi": 10.83
+     "ini": 7.67,
+     "fi": 10.58
     },
     {
      "text": "Urà",
-     "ini": 10.08,
-     "fi": 13.92
+     "ini": 10.58,
+     "fi": 12.83
     },
     {
      "text": "Neptú",
-     "ini": 10.92,
-     "fi": 17.0
+     "ini": 12.83,
+     "fi": 15.58
     },
     {
      "text": "Plutó",
-     "ini": 13.83,
+     "ini": 15.58,
      "fi": 18.0
     }
    ],
@@ -215,22 +210,22 @@
     {
      "text": "21 de març · primavera al nord",
      "ini": 0.0,
-     "fi": 2.0
+     "fi": 1.7
     },
     {
      "text": "21 de juny · estiu al nord, hivern al sud",
-     "ini": 2.5,
-     "fi": 4.5
+     "ini": 3.26,
+     "fi": 4.96
     },
     {
      "text": "23 de setembre · tardor al nord",
      "ini": 5.0,
-     "fi": 7.0
+     "fi": 6.7
     },
     {
      "text": "21 de desembre · hivern al nord, estiu al sud",
-     "ini": 7.5,
-     "fi": 9.5
+     "ini": 6.74,
+     "fi": 8.44
     }
    ],
    "lab": {
@@ -280,27 +275,27 @@
     {
      "text": "Quart creixent",
      "ini": 2.32,
-     "fi": 3.4
+     "fi": 3.2
     },
     {
      "text": "Gibosa creixent",
      "ini": 3.2,
-     "fi": 4.28
+     "fi": 4.02
     },
     {
      "text": "Lluna plena",
      "ini": 4.02,
-     "fi": 5.1
+     "fi": 4.83
     },
     {
      "text": "Gibosa minvant",
      "ini": 4.83,
-     "fi": 5.91
+     "fi": 5.71
     },
     {
      "text": "Quart minvant",
      "ini": 5.71,
-     "fi": 6.79
+     "fi": 6.77
     },
     {
      "text": "Lluna minvant",

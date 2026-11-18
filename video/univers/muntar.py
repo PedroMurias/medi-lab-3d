@@ -43,10 +43,11 @@ for c in M['capitols']:
     vf = []
     if SRC != FPS: vf.append(f'minterpolate=fps={FPS}:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1')
     if A.w: vf.append(f'scale={A.w}:-2:flags=lanczos')
+    vf.append('tpad=stop_mode=clone:stop_duration=1')  # la interpolació perd l'últim fotograma: el reomplim
     vf += [f'fade=t=in:st=0:d={FOSA}', f'fade=t=out:st={dur - FOSA}:d={FOSA}', 'format=yuv420p']
     out = os.path.join(tmp, '%02d.mp4' % c['num'])
     run(['ffmpeg', '-y', '-loglevel', 'error', '-framerate', str(SRC), '-start_number', str(first), '-i', os.path.join(d, 'f%04d.png'),
-         '-vf', ','.join(vf), '-t', str(dur), '-r', str(FPS), '-c:v', 'libx264', '-crf', str(A.crf), '-preset', 'medium', out])
+         '-vf', ','.join(vf), '-r', str(FPS), '-frames:v', str(int(round(dur * FPS))), '-c:v', 'libx264', '-crf', str(A.crf), '-preset', os.environ.get('PRESET', 'medium'), out])
     clips.append(out)
 
 # 2 · concatenar
@@ -99,5 +100,5 @@ try:
     run(['ffmpeg', '-y', '-loglevel', 'error', '-ss', str(t_port), '-i', 'viatge_univers.mp4', '-frames:v', '1', '-q:v', '3', 'portada.jpg'])
 finally:
     os.chdir(cwd)
-shutil.rmtree(tmp, ignore_errors=True)
+if not os.environ.get('KEEP'): shutil.rmtree(tmp, ignore_errors=True)
 print('Fet:', A.out)
