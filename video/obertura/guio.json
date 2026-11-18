@@ -1,0 +1,295 @@
+{
+ "titol": "De la porta de l'escola a tot l'univers",
+ "unitat": "Coneixement del Medi 6è · Unitat 4",
+ "fps": 24,
+ "durada": 99.0,
+ "escenes": [
+  {
+   "num": 3,
+   "id": "astronauta",
+   "ini": 0.0,
+   "fi": 8.0,
+   "etiquetes": [
+    {
+     "text": "Ara ets astronauta.",
+     "ini": 1.0,
+     "fi": 6.5,
+     "estil": "sub"
+    }
+   ],
+   "comptador": [
+    [
+     0,
+     "20.000 km"
+    ],
+    [
+     8.0,
+     "36.000 km"
+    ]
+   ]
+  },
+  {
+   "num": 4,
+   "id": "gir360",
+   "ini": 8.0,
+   "fi": 26.0,
+   "etiquetes": [
+    {
+     "text": "La Terra",
+     "ini": 0.0,
+     "fi": 2.62
+    },
+    {
+     "text": "La Lluna, el nostre satèl·lit",
+     "ini": 3.0,
+     "fi": 5.0
+    },
+    {
+     "text": "El Sol, una estrella",
+     "ini": 5.38,
+     "fi": 6.75
+    },
+    {
+     "text": "Venus",
+     "ini": 6.5,
+     "fi": 7.62
+    },
+    {
+     "text": "Orió",
+     "ini": 7.62,
+     "fi": 9.0
+    },
+    {
+     "text": "Júpiter",
+     "ini": 9.0,
+     "fi": 10.25
+    },
+    {
+     "text": "L'Ossa Major",
+     "ini": 10.88,
+     "fi": 12.38
+    },
+    {
+     "text": "Mart",
+     "ini": 12.62,
+     "fi": 14.0
+    },
+    {
+     "text": "Saturn",
+     "ini": 14.5,
+     "fi": 17.38
+    },
+    {
+     "text": "Tot això ens envolta.",
+     "ini": 14.8,
+     "fi": 17.7,
+     "estil": "sub"
+    }
+   ],
+   "comptador": [
+    [
+     0,
+     "36.000 km"
+    ],
+    [
+     18.0,
+     "384.400 km"
+    ]
+   ]
+  },
+  {
+   "num": 5,
+   "id": "planetes",
+   "ini": 26.0,
+   "fi": 63.0,
+   "etiquetes": [
+    {
+     "text": "Mercuri",
+     "sub": "Planeta rocós · el més proper al Sol",
+     "ini": 0.2,
+     "fi": 3.15
+    },
+    {
+     "text": "Venus",
+     "sub": "Planeta rocós · el més calent, uns 460 °C",
+     "ini": 4.4,
+     "fi": 6.75
+    },
+    {
+     "text": "Mart",
+     "sub": "Planeta rocós · el planeta vermell",
+     "ini": 8.0,
+     "fi": 10.35
+    },
+    {
+     "text": "Cinturó d'asteroides",
+     "sub": "Milers de roques entre Mart i Júpiter",
+     "ini": 11.6,
+     "fi": 14.95
+    },
+    {
+     "text": "Júpiter",
+     "sub": "Gegant gasós · el planeta més gran",
+     "ini": 16.2,
+     "fi": 19.35
+    },
+    {
+     "text": "Saturn",
+     "sub": "Gegant gasós · anells de gel i roca",
+     "ini": 20.6,
+     "fi": 23.95
+    },
+    {
+     "text": "Urà",
+     "sub": "Gegant de gel · gira de costat",
+     "ini": 25.2,
+     "fi": 27.75
+    },
+    {
+     "text": "Neptú",
+     "sub": "Gegant de gel · el planeta més llunyà",
+     "ini": 29.0,
+     "fi": 31.55
+    },
+    {
+     "text": "Plutó",
+     "sub": "Planeta nan · més enllà de Neptú",
+     "ini": 32.8,
+     "fi": 36.85
+    }
+   ],
+   "comptador": [
+    [
+     0,
+     "77 milions de km"
+    ],
+    [
+     4.2,
+     "41 milions de km"
+    ],
+    [
+     7.800000000000001,
+     "78 milions de km"
+    ],
+    [
+     11.4,
+     "300 milions de km"
+    ],
+    [
+     16.0,
+     "628 milions de km"
+    ],
+    [
+     20.4,
+     "1.275 milions de km"
+    ],
+    [
+     25.0,
+     "2.720 milions de km"
+    ],
+    [
+     28.8,
+     "4.350 milions de km"
+    ],
+    [
+     32.6,
+     "5.900 milions de km"
+    ]
+   ]
+  },
+  {
+   "num": 6,
+   "id": "foratnegre",
+   "ini": 63.0,
+   "fi": 75.0,
+   "etiquetes": [
+    {
+     "text": "Un forat negre!",
+     "ini": 1.0,
+     "fi": 4.5,
+     "estil": "sub"
+    },
+    {
+     "text": "Imagina que ens pogués portar a l'altra punta de la galàxia…",
+     "ini": 5.0,
+     "fi": 11.0,
+     "estil": "sub"
+    }
+   ],
+   "comptador": [
+    [
+     0,
+     "6.000 milions de km"
+    ],
+    [
+     12.0,
+     "???"
+    ]
+   ]
+  },
+  {
+   "num": 7,
+   "id": "galaxia",
+   "ini": 75.0,
+   "fi": 87.0,
+   "etiquetes": [
+    {
+     "text": "La Via Làctia, la nostra galàxia",
+     "ini": 2.5,
+     "fi": 7.0,
+     "estil": "sub"
+    },
+    {
+     "text": "Al centre hi ha un forat negre gegant",
+     "ini": 7.5,
+     "fi": 11.5,
+     "estil": "sub"
+    }
+   ],
+   "comptador": [
+    [
+     0,
+     "26.000 anys llum (del centre)"
+    ],
+    [
+     12.0,
+     "26.000 anys llum (del centre)"
+    ]
+   ]
+  },
+  {
+   "num": 8,
+   "id": "univers",
+   "ini": 87.0,
+   "fi": 99.0,
+   "etiquetes": [
+    {
+     "text": "Hi ha milers de milions de galàxies",
+     "ini": 1.5,
+     "fi": 7.5,
+     "estil": "sub"
+    },
+    {
+     "text": "Tot va començar fa uns 14.000 milions d'anys: el big bang",
+     "ini": 8.0,
+     "fi": 11.8,
+     "estil": "sub"
+    }
+   ],
+   "comptador": [
+    [
+     0,
+     "2,5 milions d'anys llum (Andròmeda)"
+    ],
+    [
+     7.199999999999999,
+     "milers de milions d'anys llum"
+    ],
+    [
+     12.0,
+     "∞"
+    ]
+   ]
+  }
+ ]
+}
