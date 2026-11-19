@@ -38,17 +38,25 @@ def textos(lay, dist=None, nom=None, sub=None, frase=None):
     if dist:
         f1 = ImageFont.truetype(FONT, int(24 * k)); f2 = ImageFont.truetype(FONTB, int(38 * k))
         x = w - int(180 * k); y = int(128 * k)
+        tw = max(d.textlength("DISTÀNCIA A L'ESCOLA", font=f1), d.textlength(dist, font=f2))
+        bx = Image.new('RGBA', lay.size, (0, 0, 0, 0)); ImageDraw.Draw(bx).rounded_rectangle((x - tw - int(22 * k), y - int(14 * k), x + int(22 * k), y + int(88 * k)), radius=int(16 * k), fill=(0, 6, 14, 120))
+        lay.alpha_composite(bx.filter(ImageFilter.GaussianBlur(6 * k))); d = ImageDraw.Draw(lay)
         d.text((x, y), "DISTÀNCIA A L'ESCOLA", font=f1, fill=CIAN + (220,), anchor='ra')
         d.text((x, y + int(32 * k)), dist, font=f2, fill=(255, 255, 255, 240), anchor='ra', stroke_width=max(1, int(2 * k)), stroke_fill=(0, 0, 0, 170))
     if nom:
         f3 = ImageFont.truetype(FONTB, int(60 * k)); f4 = ImageFont.truetype(FONT, int(32 * k))
         y = h - int(230 * k)
+        gl = Image.new('RGBA', lay.size, (0, 0, 0, 0)); tw = d.textlength(nom, font=f3)
+        ImageDraw.Draw(gl).ellipse((w // 2 - tw * .8, y - int(30 * k), w // 2 + tw * .8, y + int(110 * k)), fill=(0, 6, 14, 120))
+        lay.alpha_composite(gl.filter(ImageFilter.GaussianBlur(30 * k))); d = ImageDraw.Draw(lay)
         d.text((w // 2, y), nom, font=f3, fill=(255, 255, 255, 245), anchor='ma', stroke_width=max(1, int(2 * k)), stroke_fill=(0, 0, 0, 160))
         if sub:
             tw = d.textlength(nom, font=f3); d.line([(w // 2 - tw / 2, y + int(78 * k)), (w // 2 + tw / 2, y + int(78 * k))], fill=CIAN + (200,), width=max(2, int(3 * k)))
             d.text((w // 2, y + int(92 * k)), sub, font=f4, fill=(220, 240, 255, 240), anchor='ma', stroke_width=max(1, int(2 * k)), stroke_fill=(0, 0, 0, 200))
     if frase:
-        f5 = ImageFont.truetype(FONT, int(40 * k))
+        f5 = ImageFont.truetype(FONT, int(40 * k)); tw = d.textlength(frase, font=f5); yy = h - int(140 * k)
+        bx = Image.new('RGBA', lay.size, (0, 0, 0, 0)); ImageDraw.Draw(bx).rounded_rectangle((w // 2 - tw / 2 - int(34 * k), yy - int(16 * k), w // 2 + tw / 2 + int(34 * k), yy + int(64 * k)), radius=int(40 * k), fill=(0, 6, 14, 150))
+        lay.alpha_composite(bx.filter(ImageFilter.GaussianBlur(8 * k))); d = ImageDraw.Draw(lay)
         d.text((w // 2, h - int(140 * k)), frase, font=f5, fill=(255, 255, 255, 240), anchor='ma', stroke_width=max(1, int(2 * k)), stroke_fill=(0, 0, 0, 170))
     return lay
 
