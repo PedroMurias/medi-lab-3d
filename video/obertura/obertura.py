@@ -30,7 +30,7 @@ ap.add_argument('--fps', type=int, default=24); ap.add_argument('--gpu', action=
 ap.add_argument('--out', default=os.path.join(HERE, 'render')); ap.add_argument('--meta', action='store_true')
 A = ap.parse_args(argv)
 
-ESC = [('astronauta', 8), ('gir360', 18), ('planetes', 37), ('foratnegre', 12), ('galaxia', 12), ('univers', 12)]
+ESC = [('astronauta', 8), ('gir360', 28), ('planetes', 55), ('foratnegre', 12), ('galaxia', 12), ('univers', 12)]
 NUM0 = 3  # la primera escena d'aquest script és la 3 del guió
 
 # ================================================================== escena base
@@ -265,6 +265,19 @@ llum = bpy.data.lights.new('llum_sol', 'POINT'); llum.shadow_soft_size = 2.5; ll
 lfo = llum.node_tree.nodes.new('ShaderNodeLightFalloff'); lfo.inputs['Strength'].default_value = 12
 llum.node_tree.links.new(lfo.outputs['Constant'], llum.node_tree.nodes['Emission'].inputs['Strength'])
 LO = bpy.data.objects.new('llum_sol', llum); COLL['ss'].objects.link(LO)
+def mat_tex(name, fn, nfn=None, rough=.85, strength=1.0):
+    """Planeta amb textura real (Solar System Scope, CC BY 4.0)."""
+    m, nt, b, out = newmat(name); t = img(nt, fn)
+    if strength != 1.0:
+        hs = nt.nodes.new('ShaderNodeHueSaturation'); hs.inputs['Value'].default_value = strength
+        nt.links.new(t.outputs['Color'], hs.inputs['Color']); nt.links.new(hs.outputs['Color'], b.inputs['Base Color'])
+    else: nt.links.new(t.outputs['Color'], b.inputs['Base Color'])
+    b.inputs['Roughness'].default_value = rough
+    if nfn:
+        tn = img(nt, nfn, True); nm = nt.nodes.new('ShaderNodeNormalMap'); nm.inputs['Strength'].default_value = .8
+        nt.links.new(tn.outputs['Color'], nm.inputs['Color']); nt.links.new(nm.outputs['Normal'], b.inputs['Normal'])
+    return m
+REAL = os.path.exists(os.path.join(TEX, 'jupitermap.jpg'))
 MATS = {
     'mercuri': lambda: mat_roca('mercuri', [(0, (.22, .21, .2, 1)), (1, (.55, .52, .48, 1))], 4, .45),
     'venus': lambda: mat_bandes('venus', [(0, (.72, .58, .34, 1)), (.5, (.92, .82, .6, 1)), (1, (.8, .68, .45, 1))], 2.5, 2.4, 5),
@@ -274,6 +287,16 @@ MATS = {
     'ura': lambda: mat_bandes('ura', [(0, (.55, .8, .84, 1)), (1, (.68, .88, .9, 1))], 1, .3, 5),
     'neptu': lambda: mat_bandes('neptu', [(0, (.1, .2, .6, 1)), (.5, (.24, .4, .85, 1)), (1, (.14, .24, .64, 1))], 1.5, .8, 9),
     'pluto': lambda: mat_roca('pluto', [(0, (.45, .38, .32, 1)), (1, (.85, .78, .7, 1))], 3, .3)}
+if REAL:
+    MATS.update({'mercuri': lambda: mat_tex('mercuri', 'mercurymap.jpg', 'mercurynormal.jpg'),
+                 'mart': lambda: mat_tex('mart', 'marsmap2k.jpg', 'marsnormal2k.jpg'),
+                 'jupiter': lambda: mat_tex('jupiter', 'jupitermap.jpg', rough=.7),
+                 'saturn': lambda: mat_tex('saturn', 'saturnmap.jpg', rough=.7),
+                 'ura': lambda: mat_tex('ura', 'uranusmap.jpg', rough=.6),
+                 'neptu': lambda: mat_tex('neptu', 'neptunemap.jpg', rough=.6)})
+    # Sol amb la superfície real
+    _t = img(snt, 'sunmap.jpg'); _m = snt.nodes.new('ShaderNodeMix'); _m.data_type = 'RGBA'; _m.inputs[0].default_value = .7
+    snt.links.new(srp.outputs['Color'], _m.inputs[6]); snt.links.new(_t.outputs['Color'], _m.inputs[7]); snt.links.new(_m.outputs[2], se.inputs['Color'])
 P = {}
 PANG = {}
 for i, (pid, nom, r, d) in enumerate(PL):
@@ -294,7 +317,17 @@ ant.links.new(aln.outputs['Value'], amr.inputs['Value']); acb = ant.nodes.new('S
 ann = noise(ant, 55, 2, .5); ant.links.new(acb.outputs[0], ann.inputs['Vector'])
 arp = ramp(ant, [(0, (0, 0, 0, 1)), (.3, (.78, .7, .56, 1)), (.55, (.25, .22, .18, 1)), (.6, (.88, .82, .7, 1)), (1, (.32, .29, .24, 1))])
 ant.links.new(ann.outputs['Fac'], arp.inputs['Fac']); ant.links.new(arp.outputs['Color'], ab_.inputs['Base Color']); ab_.inputs['Roughness'].default_value = .9
-ant.links.new(ann.outputs['Fac'], ab_.inputs['Alpha']); an.data.materials.append(am); an.parent = P['saturn']; an.location = (0, 0, 0); put(an, 'ss'); no_shadow(an)
+ant.links.new(ann.outputs['Fac'], ab_.inputs['Alpha'])
+if REAL:
+    # textura radial (meitat esquerra de la imatge): coordenades de l'objecte -> uv
+    _sep = ant.nodes.new('ShaderNodeSeparateXYZ'); ant.links.new(atc.outputs['Object'], _sep.inputs[0])
+    _u = ant.nodes.new('ShaderNodeMath'); _u.operation = 'MULTIPLY_ADD'; _u.inputs[1].default_value = .25 / 6.4; _u.inputs[2].default_value = .25
+    _v = ant.nodes.new('ShaderNodeMath'); _v.operation = 'MULTIPLY_ADD'; _v.inputs[1].default_value = .5 / 6.4; _v.inputs[2].default_value = .5
+    ant.links.new(_sep.outputs[0], _u.inputs[0]); ant.links.new(_sep.outputs[1], _v.inputs[0])
+    _uv = ant.nodes.new('ShaderNodeCombineXYZ'); ant.links.new(_u.outputs[0], _uv.inputs[0]); ant.links.new(_v.outputs[0], _uv.inputs[1])
+    _rt = img(ant, 'saturnringcolortrans.png'); _rt.extension = 'CLIP'; ant.links.new(_uv.outputs[0], _rt.inputs['Vector'])
+    ant.links.new(_rt.outputs['Color'], ab_.inputs['Base Color']); ant.links.new(_rt.outputs['Alpha'], ab_.inputs['Alpha'])
+an.data.materials.append(am); an.parent = P['saturn']; an.location = (0, 0, 0); put(an, 'ss'); no_shadow(an)
 # cinturó d'asteroides (punts) + roques grans a prop de la càmera
 aco, acol, arad = [], [], []
 for i in range(9000):
@@ -443,8 +476,10 @@ def show(*names):
     for n, c in COLL.items(): c.hide_render = n not in names
 
 # escena 5: parades del viatge
-STOPS = [('mercuri', 3.3), ('venus', 3.6), ('mart', 3.6), ('asteroides', 4.6), ('jupiter', 4.4), ('saturn', 4.6), ('ura', 3.8), ('neptu', 3.8), ('pluto', 5.3)]
-assert abs(sum(d for _, d in STOPS) - 37) < .01
+STOPS = [('mercuri', 3.8), ('venus', 7.4), ('mart', 7.4), ('asteroides', 4.4), ('jupiter', 7.4), ('saturn', 8.0), ('ura', 4.0), ('neptu', 7.4), ('pluto', 5.2)]
+assert abs(sum(d for _, d in STOPS) - 55) < .01
+# escena 4: el gir de 360° s'atura a la Lluna i al Sol (segons, graus)
+GIR_KEYS = [(0, 'terra', 0), (3.2, 'lluna', 0), (9.0, 'lluna', 4), (11.8, 'sol', 0), (17.6, 'sol', 4), (28.0, 'terra', 360)]
 WARP_T = .9  # segons de salt al principi de cada parada
 def stop_target(sid):
     if sid == 'asteroides': return (mu.Vector((math.cos(AST_ANG) * 22, math.sin(AST_ANG) * 22, 0)) * .55 + COM_POS * .45), 1.2
@@ -453,9 +488,15 @@ def stop_cam(sid, u):
     """u: 0..1 dins de la parada (després del salt). Mig gir al voltant de l'astre, sempre amb el Sol de costat."""
     c, r = stop_target(sid); sdir = (-c).normalized(); side = mu.Vector((-sdir.y, sdir.x, 0))
     dist = {'saturn': 15, 'asteroides': 6}.get(sid, max(2.6, r * 3.6))
-    a = lerp(-.9, .5, u)
+    a = lerp(.25, .95, u)   # la càmera entre el Sol i l'astre: en veiem la cara de dia
     off = (side * math.cos(a) + sdir * math.sin(a)) * dist + mu.Vector((0, 0, dist * .22))
     return c + off, c
+
+def gir_deg(T):
+    ks = [(t, GIR[n] + o + (0 if GIR[n] >= GIR['terra'] or n == 'terra' else 360)) for t, n, o in GIR_KEYS]
+    for (t0, d0), (t1, d1) in zip(ks, ks[1:]):
+        if T <= t1: return lerp(d0, d1, ease((T - t0) / (t1 - t0)))
+    return ks[-1][1]
 
 def pose(esc, t, T):
     e = ease(t)
@@ -488,7 +529,7 @@ def pose(esc, t, T):
         sdir = SUN_DIR; SUNL.rotation_euler = (-sdir).to_track_quat('-Z', 'Y').to_euler()
         LLUNA.location = CAM4 + circ(GIR['lluna']) * 9
         CEL_ROOT.location = CAM4; SOLDISC.location = CAM4 + sdir * CEL_R * .95
-        deg = GIR['terra'] + 360 * e
+        deg = gir_deg(T)
         fwd = circ(deg, 0)
         look(CAM4, CAM4 + fwd, 24, roll=0)
         # les línies de les constel·lacions s'encenen quan les mirem
@@ -568,9 +609,31 @@ def nframes(esc): return [d for e, d in ESC if e == esc][0] * A.fps
 # ================================================================== guió (rètols i comptador) → guio.json
 TEXTS = {
     'astronauta': [("Ara ets astronauta.", 1.0, 6.5)],
-    'gir360': [], 'planetes': [], 'foratnegre': [("Un forat negre!", 1.0, 4.5), ("Imagina que ens pogués portar a l'altra punta de la galàxia…", 5.0, 11.0)],
-    'galaxia': [("La Via Làctia, la nostra galàxia", 2.5, 7.0), ("Al centre hi ha un forat negre gegant", 7.5, 11.5)],
-    'univers': [("Hi ha milers de milions de galàxies", 1.5, 7.5), ("Tot va començar fa uns 14.000 milions d'anys: el big bang", 8.0, 11.8)]}
+    'gir360': [], 'planetes': [], 'foratnegre': [("Imagina que ens pogués portar a l'altra punta de la galàxia…", 6.6, 11.6)],
+    'galaxia': [("La Via Làctia, la nostra galàxia", 2.0, 6.6), ("Al centre hi ha un forat negre gegant", 7.0, 11.6)],
+    'univers': [("Tot va començar fa uns 14.000 milions d'anys: el big bang", 7.4, 11.8)]}
+# rètols de dades curioses: (nom, dada, explicació)
+DADA = {'lluna': ("La Lluna", "Sempre ens mostra la mateixa cara.", "Gira sobre si mateixa al mateix ritme que fa la volta a la Terra."),
+        'sol': ("El Sol, una estrella", "Dins seu hi cabrien més d'un milió de Terres.", "És l'estrella més propera i ens dona llum i calor."),
+        'venus': ("Venus", "Un dia dura més que un any.", "Un dia: 243 dies terrestres. Una volta al Sol: 225."),
+        'mart': ("Mart", "Té el volcà més alt del Sistema Solar.", "L'Olimp fa uns 22 km: gairebé tres Everests."),
+        'jupiter': ("Júpiter", "Té una tempesta més gran que la Terra.", "La Gran Taca Vermella fa segles que bufa."),
+        'saturn': ("Saturn", "Suraria en una banyera gegant.", "És més lleuger que l'aigua."),
+        'neptu': ("Neptú", "Hi bufa el vent més fort del Sistema Solar.", "Fins a 2.000 km/h, més ràpid que un avió."),
+        'foratnegre': ("Un forat negre", "D'aquí no en pot escapar res, ni la llum.", "Per això el veiem negre."),
+        'univers': ("L'univers", "Hi ha milers de milions de galàxies.", "Mirar lluny és mirar el passat: la seva llum va sortir fa milions d'anys.")}
+# veu en off (Pau): (segons dins de l'escena, text)
+NARR = {'astronauta': [(1.2, "Ara ets astronauta. Mira al teu voltant.")],
+        'gir360': [(3.6, "Aquesta és la Lluna. Sempre ens mostra la mateixa cara."), (12.2, "I aquest és el Sol, una estrella. Dins seu hi cabrien més d'un milió de Terres."),
+                   (24.6, "Tot això ens envolta. Anem-hi!")],
+        'planetes': [],   # es construeix a partir de les parades
+        'foratnegre': [(1.0, "Un forat negre! D'aquí no en pot escapar res, ni la llum."), (6.8, "Imagina que ens pogués portar a l'altra punta de la galàxia…")],
+        'galaxia': [(2.2, "La Via Làctia, la nostra galàxia. Al centre hi ha un forat negre gegant.")],
+        'univers': [(1.0, "Hi ha milers de milions de galàxies."), (7.4, "I tot va començar fa uns catorze mil milions d'anys, amb el big bang.")]}
+NARR_PL = {'mercuri': "Mercuri, el més proper al Sol.", 'venus': "Venus. Aquí un dia dura més que un any.", 'mart': "Mart té el volcà més alt del Sistema Solar.",
+           'asteroides': "Milers de roques entre Mart i Júpiter.", 'jupiter': "Júpiter té una tempesta més gran que la Terra.",
+           'saturn': "Saturn és tan lleuger que suraria en una banyera gegant.", 'ura': "Urà gira de costat.",
+           'neptu': "A Neptú hi bufa el vent més fort del Sistema Solar.", 'pluto': "I Plutó, un planeta nan."}
 DADES = {'mercuri': "Planeta rocós · el més proper al Sol", 'venus': "Planeta rocós · el més calent, uns 460 °C", 'mart': "Planeta rocós · el planeta vermell",
          'asteroides': "Milers de roques entre Mart i Júpiter", 'jupiter': "Gegant gasós · el planeta més gran", 'saturn': "Gegant gasós · anells de gel i roca",
          'ura': "Gegant de gel · gira de costat", 'neptu': "Gegant de gel · el planeta més llunyà", 'pluto': "Planeta nan · més enllà de Neptú"}
@@ -594,13 +657,19 @@ def etiquetes(esc):
                 if not vis and nm in actiu:
                     t0 = actiu.pop(nm)
                     if f / A.fps - t0 > .6: out.append(dict(text=nm, ini=round(t0, 2), fi=round(f / A.fps, 2)))
-        out.append(dict(text="Tot això ens envolta.", ini=round(D - 3.2, 2), fi=round(D - .3, 2), estil='sub'))
+        out = [o for o in out if o['text'] not in ('La Lluna, el nostre satèl·lit', 'El Sol, una estrella')]
+        for k, (a, b) in (('lluna', (3.4, 9.2)), ('sol', (12.0, 17.8))):
+            n_, d_, s_ = DADA[k]; out.append(dict(text=n_, dada=d_, sub=s_, ini=a, fi=b, estil='dada'))
+        out.append(dict(text="Tot això ens envolta.", ini=round(D - 3.4, 2), fi=round(D - .3, 2), estil='sub'))
     if esc == 'planetes':
         acc = 0
         for k, (sid, dur) in enumerate(STOPS):
             a0 = acc + (WARP_T if k else 0) + .2
-            out.append(dict(text=NOMS[sid], sub=DADES[sid], ini=round(a0, 2), fi=round(acc + dur - .15, 2)))
+            if sid in DADA: n_, d_, s_ = DADA[sid]; out.append(dict(text=n_, dada=d_, sub=s_, ini=round(a0, 2), fi=round(acc + dur - .15, 2), estil='dada'))
+            else: out.append(dict(text=NOMS[sid], sub=DADES[sid], ini=round(a0, 2), fi=round(acc + dur - .15, 2)))
             acc += dur
+    if esc == 'foratnegre': n_, d_, s_ = DADA['foratnegre']; out.append(dict(text=n_, dada=d_, sub=s_, ini=1.0, fi=6.2, estil='dada'))
+    if esc == 'univers': n_, d_, s_ = DADA['univers']; out.append(dict(text=n_, dada=d_, sub=s_, ini=1.0, fi=7.0, estil='dada'))
     for txt, a, b in TEXTS.get(esc, []): out.append(dict(text=txt, ini=a, fi=b, estil='sub'))
     return sorted(out, key=lambda d: d['ini'])
 
@@ -622,7 +691,12 @@ def comptador(esc):
 def escriu_meta():
     caps, t0 = [], 0.0
     for i, (eid, dur) in enumerate(ESC):
-        caps.append(dict(num=NUM0 + i, id=eid, ini=round(t0, 2), fi=round(t0 + dur, 2), etiquetes=etiquetes(eid), comptador=comptador(eid))); t0 += dur
+        nar = list(NARR.get(eid, []))
+        if eid == 'planetes':
+            acc = 0
+            for k, (sid, d) in enumerate(STOPS): nar.append((round(acc + (WARP_T if k else 0) + .3, 2), NARR_PL[sid])); acc += d
+        caps.append(dict(num=NUM0 + i, id=eid, ini=round(t0, 2), fi=round(t0 + dur, 2), etiquetes=etiquetes(eid), comptador=comptador(eid),
+                         veu=[dict(t=round(t0 + a, 2), text=x) for a, x in nar])); t0 += dur
     json.dump(dict(titol="De la porta de l'escola a tot l'univers", unitat="Coneixement del Medi 6è · Unitat 4", fps=A.fps, durada=t0, escenes=caps),
               open(os.path.join(HERE, 'guio.json'), 'w', encoding='utf8'), ensure_ascii=False, indent=1)
     print('guio.json escrit:', t0, 's')
