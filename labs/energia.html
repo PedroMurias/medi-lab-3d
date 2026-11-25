@@ -1212,6 +1212,21 @@ const FTX=(()=>{ const mk=(fn,w,h,rx,ry)=>{ const cv=document.createElement('can
    put('bus_stop',TOWN.x-5,TOWN.z-15+3.45,Math.PI); put('bus_stop',TOWN.x+15,TOWN.z+5+3.45,Math.PI);
    const fx=TOWN.x+5, fz=TOWN.z+5; put('advertising_column_01_big',fx-3.4,fz-3.4,0); put('mailbox_01_yellow',fx+3.4,fz-3.4,-Math.PI/2); for(let i=-2;i<=2;i++){ put('traffic_bollard_01_metal_medium',fx+i*1.2,fz+3.55,0); }
   }); }
+ /* cotxes més realistes (procedurals) */
+ { const sideShape=()=>{ const s=new THREE.Shape(); s.moveTo(-2.2,.32); s.lineTo(-2.22,.72); s.quadraticCurveTo(-2.18,.95,-1.95,.98); s.lineTo(-1.3,1.02); s.lineTo(1.25,1.0); s.quadraticCurveTo(1.9,.93,2.15,.82); s.quadraticCurveTo(2.25,.7,2.22,.38); s.lineTo(2.0,.3);
+    s.lineTo(1.72,.3); s.absarc(1.35,.32,.37,0,Math.PI,false); s.lineTo(-.98,.3); s.absarc(-1.35,.32,.37,0,Math.PI,false); s.lineTo(-2.2,.32); return s; };
+  const cab=new THREE.Shape(); cab.moveTo(-1.42,.98); cab.quadraticCurveTo(-1.05,1.36,-.75,1.43); cab.lineTo(.3,1.45); cab.quadraticCurveTo(.75,1.4,1.22,.98); cab.closePath();
+  const roof=new THREE.Shape(); roof.moveTo(-.78,1.42); roof.lineTo(.3,1.44); roof.lineTo(.32,1.48); roof.lineTo(-.8,1.47); roof.closePath();
+  const bodyG=new THREE.ExtrudeGeometry(sideShape(),{depth:1.62,bevelEnabled:true,bevelThickness:.09,bevelSize:.07,bevelSegments:3,curveSegments:10}); bodyG.translate(0,0,-.81); bodyG.rotateY(-Math.PI/2);
+  const cabG=new THREE.ExtrudeGeometry(cab,{depth:1.4,bevelEnabled:true,bevelThickness:.05,bevelSize:.04,bevelSegments:2,curveSegments:8}); cabG.translate(0,0,-.7); cabG.rotateY(-Math.PI/2);
+  const roofG=new THREE.ExtrudeGeometry(roof,{depth:1.36,bevelEnabled:true,bevelThickness:.04,bevelSize:.03,bevelSegments:2}); roofG.translate(0,0,-.68); roofG.rotateY(-Math.PI/2);
+  const tireG=new THREE.CylinderGeometry(.33,.33,.24,22); tireG.rotateZ(Math.PI/2); const rimG=new THREE.CylinderGeometry(.21,.21,.02,16); rimG.rotateZ(Math.PI/2);
+  const glassM=new THREE.MeshStandardMaterial({color:0x141c26,roughness:.06,metalness:.85}), tireM=new THREE.MeshStandardMaterial({color:0x151515,roughness:.9}), rimM=new THREE.MeshStandardMaterial({color:0xc8ccd0,roughness:.25,metalness:.95}), plM=new THREE.MeshStandardMaterial({color:0x202224,roughness:.7}), hlM=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xfff2d0,emissiveIntensity:.6,roughness:.1}), tlM=new THREE.MeshStandardMaterial({color:0x8a0a0a,emissive:0xff2020,emissiveIntensity:.5,roughness:.2});
+  const PAL=[0xc8ccd2,0x1d2330,0xf2f2f0,0x8a1c1c,0x2b4a7a,0x5a5e63,0x0f0f10,0x7a8a6a];
+  NK.car=(col)=>{ const g=new THREE.Group(); const pm=new THREE.MeshPhysicalMaterial({color:R()<.6?PAL[Math.floor(R()*PAL.length)]:col,metalness:.55,roughness:.32,clearcoat:1,clearcoatRoughness:.08}); const add=(geo,m,x=0,y=0,z=0)=>{ const o=new THREE.Mesh(geo,m); o.position.set(x,y,z); o.castShadow=true; g.add(o); return o; };
+   add(bodyG,pm); add(cabG,glassM); add(roofG,pm); for(const [x,z] of [[-.8,1.35],[.8,1.35],[-.8,-1.35],[.8,-1.35]]){ add(tireG,tireM,x,.33,z); add(rimG,rimM,x+Math.sign(x)*.125,.33,z); }
+   add(new THREE.BoxGeometry(1.7,.18,.12),plM,0,.4,2.27); add(new THREE.BoxGeometry(1.7,.18,.12),plM,0,.4,-2.27); for(const x of [-.6,.6]){ add(new THREE.BoxGeometry(.38,.1,.06),hlM,x,.72,2.24); add(new THREE.BoxGeometry(.36,.1,.06),tlM,x,.78,-2.24); } for(const x of [-.92,.92]) add(new THREE.BoxGeometry(.1,.08,.18),pm,x,1.05,.95);
+   g.scale.setScalar(.42); return g; }; }
 
  for(let bx=0;bx<4;bx++) for(let bz=0;bz<4;bz++){ const cx=TOWN.x-15+bx*10, cz=TOWN.z-15+bz*10; const sw=box(7.4,.2,7.4,walk); sw.position.set(cx,TH+.1,cz); sw.receiveShadow=true; town.add(sw); town.userData.treeSpots=town.userData.treeSpots||[]; if(R()<.7) town.userData.treeSpots.push([cx+(R()<.5?-3.4:3.4),cz+(R()-.5)*5]);
   const central=(bx===1||bx===2)&&(bz===1||bz===2);
