@@ -37,6 +37,20 @@ window.GR = (function () {
     }
     return afterLogin(u);
   }
+  /* ---- entrada amb Google (mestres i administradors, com a Explora) ---- */
+  async function loginGoogle() {
+    await sdk();
+    const p = new fb.auth.GoogleAuthProvider(); p.setCustomParameters({ prompt: 'select_account' });
+    let u = null;
+    try { u = (await auth.signInWithPopup(p)).user; }
+    catch (e) { const c = (e && e.code) || '';
+      if (/popup-blocked|operation-not-supported|web-storage-unsupported/.test(c)) { await auth.signInWithRedirect(p); return null; }
+      if (/popup-closed|cancelled/.test(c)) return null;
+      throw new Error('No s\'ha pogut entrar amb Google (' + c + ').'); }
+    const acc = await afterLogin(u);
+    if (!acc.teacher && !acc.email.endsWith('@' + DOMAIN)) { await logout(); throw new Error('Aquest compte de Google (' + acc.email + ') no és de cap mestre/a donat d\'alta a Explora.'); }
+    return acc;
+  }
   async function afterLogin(u) {
     const email = (u.email || '').toLowerCase();
     let teacher = false, admin = false, name = nameOf(email), cls = null, clsName = '';
@@ -103,5 +117,5 @@ window.GR = (function () {
   async function studentGames(uid, limit = 40) { await sdk(); if (!ACC || !ACC.teacher) return []; const q = await db.collection('gr_users').doc(uid).collection('games').orderBy('t', 'desc').limit(limit).get(); const a = []; q.forEach(d => a.push({ id: d.id, ...d.data() })); return a; }
   async function teacherClasses() { await sdk(); if (!ACC || !ACC.teacher) return []; const out = []; const q = ACC.admin ? await db.collection('classes').get() : await db.collection('classes').where('teacher', '==', ACC.email).get(); q.forEach(d => out.push({ id: d.id, ...d.data() })); return out; }
 
-  return { get acc() { return ACC; }, login, logout, resume, record, points, classBoard, myGames, me, student, studentGames, teacherClasses, weekKey, onChange: f => listeners.push(f), available: () => location.protocol === 'https:' && !/claude\.ai|claudeusercontent/.test(location.hostname) };
+  return { get acc() { return ACC; }, login, loginGoogle, logout, resume, record, points, classBoard, myGames, me, student, studentGames, teacherClasses, weekKey, onChange: f => listeners.push(f), available: () => location.protocol === 'https:' && !/claude\.ai|claudeusercontent/.test(location.hostname) };
 })();
