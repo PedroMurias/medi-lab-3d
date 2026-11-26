@@ -24,6 +24,22 @@ const MEDI=window.RQ.filter(q=>!q[5]);           // sense les imatges de captura
 const fx=(q,lvl)=>({q:q[2],o:q[3],e:q[4]||'',l:q[1]});
 const fromArr=(arr,tops,crown)=>{ let p=arr.filter(q=>tops.has(q[0])); return p; };
 
+/* ---------- banderes: nivell i opcions enganyoses ---------- */
+const tier=c=>(window.FLAG_TIER||{})[c[2]]||2;
+/* Fàcil: només països molt coneguts · Normal: coneguts i mitjans · Difícil: mitjans i difícils (sobretot difícils) */
+function pickCountry(h,tops,needCap){ const all=window.COUNTRIES.filter(c=>tops.has('fl-'+c[3])&&(!needCap||c[1])); if(!all.length) return null;
+  const easyMode=window.GENQ.level==='facil';
+  let pool=easyMode?all.filter(c=>tier(c)===1):h?all.filter(c=>tier(c)>=2):all.filter(c=>tier(c)<=2);
+  if(h){ const hard=pool.filter(c=>tier(c)===3); if(hard.length&&Math.random()<0.7) pool=hard; }
+  return pickA(pool.length?pool:all); }
+/* Fàcil: opcions d'altres continents (noms ben diferents) · Normal: mateix continent · Difícil: banderes semblants primer */
+function flagDistractors(c,h){ const same=shuffle(window.COUNTRIES.filter(x=>x!==c&&x[3]===c[3])), rest=shuffle(window.COUNTRIES.filter(x=>x!==c&&x[3]!==c[3]));
+  const easyMode=window.GENQ.level==='facil';
+  if(easyMode) return rest.filter(x=>tier(x)<=2).concat(same);
+  if(!h) return same.concat(rest);
+  const grp=(window.FLAG_LIKE||[]).filter(gp=>gp.includes(c[2])).flat(); const like=shuffle(window.COUNTRIES.filter(x=>x!==c&&grp.includes(x[2])));
+  const seen=new Set([c[2]]); return like.concat(same,rest).filter(x=>!seen.has(x[2])&&seen.add(x[2])); }
+
 /* ---------- generadors ---------- */
 function numQ(q,ans,cands,e,l){ const rr=x=>Math.round(x*1000)/1000; ans=rr(ans); cands=cands.map(rr); const set=new Set([ans]); const o=[ans]; for(const c of shuffle(cands)){ if(o.length>=4)break; if(c>0&&!set.has(c)){set.add(c);o.push(c)} } let k=1; while(o.length<4){ const c=ans+k*(k%2?1:-1)*Math.max(1,Math.round(ans*.1)); if(c>0&&!set.has(c)){set.add(c);o.push(c)} k++ } return {q,o:o.map(nf),e,l}; }
 const GEN={
@@ -66,13 +82,13 @@ const GEN={
   if(t===1) return {q:`What is the past participle of «${v[0]}»?`,o:[v[2],v[0]+(v[0].endsWith('e')?'d':'ed'),others[0][2],others[1][2]],e:`${v[0]} – ${v[1]} – ${v[2]}.`,l:2};
   const uq=a=>{const o=[],s=new Set();for(const x of a){if(x&&!s.has(x)){s.add(x);o.push(x)}if(o.length>=4)break}return o};
   return {q:`Complete: I have never ___ (${v[0]}) that before.`,o:uq([v[2],v[1],v[0],v[0]+'ing',others[0][2],others[1][2]]),e:`After «have» we use the past participle: ${v[0]} – ${v[1]} – ${v[2]}.`,l:3}},
- flag:(h,tops)=>{ const pool=window.COUNTRIES.filter(c=>tops.has('fl-'+c[3])); const c=pickA(pool); const same=shuffle(window.COUNTRIES.filter(x=>x!==c&&x[3]===c[3])); const rest=shuffle(window.COUNTRIES.filter(x=>x!==c&&x[3]!==c[3]));
-  if(h&&c[1]&&R(0,1)){ const ds=same.filter(x=>x[1]).concat(rest.filter(x=>x[1])).slice(0,3); return {q:'Quina és la capital del país d\'aquesta bandera?',o:[c[1],...ds.map(x=>x[1])],e:`És la bandera ${de(c[0])}; la capital és ${c[1]}.`,img:window.FLAGS[c[2]],flag:1,l:3}; }
-  return {q:'De quin país és aquesta bandera?',o:[c[0],...same.concat(rest).slice(0,3).map(x=>x[0])],e:`És la bandera ${de(c[0])}${c[1]?'; la capital és '+c[1]:''}.`,img:window.FLAGS[c[2]],flag:1,l:h?3:2}},
- cap:(h,tops)=>{ const pool=window.COUNTRIES.filter(c=>c[1]&&tops.has('fl-'+c[3])); const c=pickA(pool); const ds=shuffle(window.COUNTRIES.filter(x=>x!==c&&x[1]&&x[3]===c[3])).concat(shuffle(window.COUNTRIES.filter(x=>x[1]&&x[3]!==c[3]))).slice(0,3);
+ flag:(h,tops)=>{ const c=pickCountry(h,tops); if(!c) return null; const ds=flagDistractors(c,h);
+  if(h&&c[1]&&R(0,1)){ const dd=ds.filter(x=>x[1]).slice(0,3); return {q:'Quina és la capital del país d\'aquesta bandera?',o:[c[1],...dd.map(x=>x[1])],e:`És la bandera ${de(c[0])}; la capital és ${c[1]}.`,img:window.FLAGS[c[2]],flag:1,l:3}; }
+  return {q:'De quin país és aquesta bandera?',o:[c[0],...ds.slice(0,3).map(x=>x[0])],e:`És la bandera ${de(c[0])}${c[1]?'; la capital és '+c[1]:''}.`,img:window.FLAGS[c[2]],flag:1,l:h?3:tier(c)===1?1:2}},
+ cap:(h,tops)=>{ const c=pickCountry(h,tops,true); if(!c) return null; const ds=flagDistractors(c,h).filter(x=>x[1]).slice(0,3);
   if(h||R(0,2)===0) return {q:`De quin país és capital ${c[1]}?`,o:[c[0],...ds.map(x=>x[0])],e:`${c[1]} és la capital ${de(c[0])}.`,l:3};
-  return {q:`Quina és la capital ${de(c[0])}?`,o:[c[1],...ds.map(x=>x[1])],e:`La capital ${de(c[0])} és ${c[1]}.`,l:2}}
+  return {q:`Quina és la capital ${de(c[0])}?`,o:[c[1],...ds.map(x=>x[1])],e:`La capital ${de(c[0])} és ${c[1]}.`,l:tier(c)===1?1:2}}
 };
 
-return {GEN,shuffle,pickA};
+return {GEN,shuffle,pickA,level:'normal'};
 })();

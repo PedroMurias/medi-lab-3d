@@ -9,7 +9,8 @@ const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
 /* ---------- ENGLISH · world ---------- */
 const CC=window.COUNTRIES, EC=window.EN_COUNTRY;
 const byCont=c=>CC.filter(x=>x[3]===c[3]&&x!==c), others=c=>CC.filter(x=>x[3]!==c[3]);
-const pool=t=>CC.filter(c=>!t||!t.size||[...t].some(k=>k==='en-world'||k==='fl-'+c[3]))||CC;
+const tierOf=c=>(window.FLAG_TIER||{})[c[2]]||2;
+const pool=t=>{ const base=CC.filter(c=>!t||!t.size||[...t].some(k=>k==='en-world'||k==='fl-'+c[3])); const lv=window.GENQ.level; const f=lv==='facil'?base.filter(c=>tierOf(c)===1):lv==='dificil'?base.filter(c=>tierOf(c)>=2&&(tierOf(c)===3||Math.random()<0.4)):base.filter(c=>tierOf(c)<=2); return f.length?f:base.length?base:CC; };
 GEN['en-world']=(h,t)=>{
  const c=pickA(pool(t)), e=EC[c[2]], ds=shuffle(byCont(c)).concat(shuffle(others(c))), k=R(0,h?5:4);
  if(k===0) return {q:'Which country is this flag from?',o:uniq([e[0],...ds.map(x=>EC[x[2]][0])],4),e:`It's the flag of ${e[0]}.`,img:window.FLAGS[c[2]],flag:1,l:1};

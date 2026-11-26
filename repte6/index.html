@@ -1124,6 +1124,7 @@
         }
         function buildPhase1Questions(n) {
             const L = curLevel();
+            window.GENQ.level = L.id;
             const srcs = activeSources().map(({ src, t }) => { const fixed = src.fixed ? src.fixed(t) : []; return { src, t, fixed: orderByLevel(fixed, L), gens: src.gens ? src.gens(t) : [] }; })
                                         .filter(s => s.fixed.length || s.gens.length);
             const out = [], seen = new Set();
