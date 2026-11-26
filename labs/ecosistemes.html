@@ -1251,9 +1251,9 @@ window.EspPlay=function(C){
  const st=document.createElement('style'); st.textContent=css; document.head.appendChild(st);
 
  /* ---------- finestra ---------- */
- function open(title,tag,sub){ close(); token++; const w=h(`<div id="ep"><div class="epc"><div class="eph"><div class="ephi"></div><div class="ephx"><small class="ephk"></small><h2></h2><p class="sub"></p></div><span class="tag"></span><button class="x" aria-label="Tanca">✕</button></div><div class="bd"></div></div></div>`);
+ function open(title,tag,sub){ close(); token++; const w=h(`<div id="ep"><div class="epc">${epDeco(title,'')}<div class="eph"><div class="ephi"></div><div class="ephx"><small class="ephk"></small><h2></h2><p class="sub"></p></div><span class="tag"></span><button class="x" aria-label="Tanca">✕</button></div><div class="bd"></div></div></div>`);
   const tg=String(tag||''); const m=tg.match(/^(\p{Extended_Pictographic}[\uFE0F\u200D\p{Extended_Pictographic}]*)\s*(.*)$/u); const ic=m?m[1]:'✨', kt=(m?m[2]:tg)||title;
-  w.querySelector('h2').textContent=title; w.querySelector('.tag').textContent=tg; w.querySelector('.ephi').textContent=ic; w.querySelector('.ephk').textContent=(kt+' · 6è de Primària').toUpperCase(); w.querySelector('.sub').innerHTML=sub||''; if(!sub) w.querySelector('.sub').remove();
+  w.querySelector('h2').textContent=title; w.querySelector('.tag').textContent=tg; w.querySelector('.ephi').textContent=ic; w.querySelector('.epdeco .sil').textContent=ic; w.querySelector('.ephk').textContent=(kt+' · 6è de Primària').toUpperCase(); w.querySelector('.sub').innerHTML=sub||''; if(!sub) w.querySelector('.sub').remove();
   w.querySelector('.x').onclick=close; w.onclick=e=>{ if(e.target===w) close(); }; document.body.appendChild(w); return w.querySelector('.bd'); }
  let close=function(){ token++; document.getElementById('ep')?.remove(); }
  const alive=t=>t===token&&document.getElementById('ep');
@@ -1370,6 +1370,18 @@ window.EspPlay=function(C){
  @keyframes dDrift{0%,100%{translate:0 0}50%{translate:0 -8px}} @keyframes dSpin{to{rotate:360deg}}
  @media (max-width:700px){ #ep .cmdeco .sil{font-size:60px!important} } #ep .cmdeco .big{font-size:110px} #ep .cmdeco .fl{font-size:30px} }
  
+ 
+ #ep .epdeco{position:absolute;inset:0;pointer-events:none;z-index:0;border-radius:inherit;overflow:hidden;opacity:.75}
+ #ep .epdeco svg{position:absolute;inset:0;width:100%;height:100%}
+ #ep .epdeco .wv{fill:rgba(0,229,255,.05)}
+ #ep .epdeco .ln{fill:none;stroke:rgba(140,220,255,.22);stroke-width:1.3}
+ #ep .epdeco .ln text{fill:rgba(140,220,255,.4);stroke:none;font:700 11px Orbitron,monospace;letter-spacing:.12em}
+ #ep .epdeco .dash{stroke-dasharray:5 6} #ep .epdeco .fillc{fill:rgba(140,220,255,.2)}
+ #ep .epdeco .gA{animation:dSpin 40s linear infinite} #ep .epdeco .gB{animation:dSpin 26s linear infinite reverse}
+ #ep .epdeco .sil{position:absolute;right:3%;bottom:6%;font-size:150px;line-height:1;opacity:.07;filter:grayscale(1) brightness(2.4) sepia(1) hue-rotate(150deg) saturate(2.2)}
+ #ep .epc{background:linear-gradient(rgba(0,229,255,.035) 1px,transparent 1px) 0 0/28px 28px,linear-gradient(90deg,rgba(0,229,255,.035) 1px,transparent 1px) 0 0/28px 28px,radial-gradient(ellipse at 90% 0%,rgba(0,229,255,.12),transparent 50%),linear-gradient(170deg,#11283b,#0b1823 70%)}
+ #ep .epc>.eph,#ep .epc>.bd{position:relative;z-index:1}
+ 
  #cmBack{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);z-index:59;border:0;border-radius:99px;padding:12px 20px;font-weight:900;font-size:15px;cursor:pointer;color:#06131c;background:linear-gradient(135deg,#7dffb2,#00e5ff);box-shadow:0 8px 24px rgba(0,0,0,.4)}
  .epbar3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:6px 0 10px} .epbar3 button{border:0;border-radius:14px;padding:10px 4px;font-size:13px;font-weight:800;cursor:pointer;color:#06131c;line-height:1.15} .epbar3 button:nth-child(1){background:linear-gradient(135deg,#7dffb2,#3fd3c8)} .epbar3 button:nth-child(2){background:linear-gradient(135deg,#c08bff,#8f9bff)} .epbar3 button:nth-child(3){background:linear-gradient(135deg,#ffd23f,#ff9f43)} .epbar3 small{display:block;font-size:10.5px;opacity:.75;font-weight:700}
  `;
@@ -1377,6 +1389,9 @@ window.EspPlay=function(C){
  const ICO=[[/\b(1[0-9]{3}|segles?|anys?)\b/i,'📅'],[/territori|mapa|situació/i,'🗺️'],[/límit|frontera/i,'🧭'],[/unió europea|europea/i,'🇪🇺'],[/organitz|govern|comunitat|provínci|ajuntament/i,'🏛️'],[/illa/i,'🏝️'],[/vessant|cabal|torrent/i,'💧'],[/ecosistema|bioma/i,'🌿'],[/cadena|aliment/i,'🍃'],[/univers|estrella|galàxia/i,'🌌'],[/planeta|terra\b/i,'🪐'],[/os\b|ossos|esquelet/i,'🦴'],[/múscul/i,'💪'],[/nervi|cervell|encèfal|medul/i,'🧠'],[/sentit|vista|ull/i,'👁️'],[/circuit|corrent/i,'🔌'],[/central/i,'🏭'],[/renovable|font/i,'♻️'],[/factor/i,'🔎'],[/règim/i,'📈'],[/sector/i,'💼'],[/migraci/i,'🧳'],[/fàbric|taller|indústr/i,'🏭'],[/màquin/i,'🔧'],[/vapor|carbó|energi|electric/i,'⚡'],[/tren|transport/i,'🚂'],[/hores/i,'⏱️'],[/sou|diner|preu/i,'💰'],[/sindicat|vaga|obrer/i,'✊'],[/rei|reina|monarquia|corona/i,'👑'],[/constituci|llei|estatut|declaraci/i,'📜'],[/vot|elecci|sufragi/i,'🗳️'],[/guerra|batalla|exèrcit|soldat/i,'⚔️'],[/república/i,'🏛️'],[/dictadura|franquisme|censura|repressi/i,'⛓️'],[/dona|dones/i,'👩'],[/escola|educaci/i,'🏫'],[/poble|gent|població|ciutadan/i,'👥'],[/llengua|català|literatura/i,'📖'],[/art|pintor|modernis/i,'🎨'],[/exili/i,'🧳'],[/napoleó|emperador/i,'🎖️'],[/igualtat|drets|llibertat/i,'⚖️'],[/regne unit|europa|frança|espanya|món/i,'🌍'],[/aigua|riu|pluja|mar/i,'💧'],[/sol\b|calor|clima/i,'☀️'],[/muntany|relleu/i,'⛰️'],[/planta|arbre|bosc/i,'🌳'],[/animal/i,'🐾'],[/ciutat|casa/i,'🏙️']];
  const icon=n=>n.i||((ICO.find(([r])=>r.test(n.t))||[])[1])||(n.d===1?'📌':'');
  function prep(n,d=0,col=null,i=0){ n.d=d; n.c=d===0?'#00e5ff':d===1?BC[i%BC.length]:col; n.open=d<1; (n.ch||[]).forEach((c,j)=>prep(c,d+1,n.c,j)); return n; }
+ function gearP(cx,cy,r,t,cls){ let d=''; const N=12; for(let k=0;k<N*2;k++){ const a0=k*Math.PI/N, a1=(k+1)*Math.PI/N, rr=k%2?r:r+t; d+=(k?'L':'M')+(cx+rr*Math.cos(a0)).toFixed(1)+','+(cy+rr*Math.sin(a0)).toFixed(1)+'L'+(cx+rr*Math.cos(a1)).toFixed(1)+','+(cy+rr*Math.sin(a1)).toFixed(1); } return `<g class="${cls}" style="transform-origin:${cx}px ${cy}px"><path d="${d}Z"/><circle cx="${cx}" cy="${cy}" r="${r*.55}"/><circle cx="${cx}" cy="${cy}" r="${r*.18}"/></g>`; }
+ function epDeco(title,ic){ let tk=''; for(let k=0;k<=30;k++){ const x=40+k*30; tk+=`<line x1="${x}" y1="582" x2="${x}" y2="${k%5?575:568}"/>`; }
+  return `<div class="epdeco"><svg viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice"><path class="wv" d="M0,500 C200,440 340,580 540,520 C740,460 840,540 1000,500 L1000,600 L0,600Z"/><g class="ln">${gearP(930,70,46,10,'gA')}${gearP(870,140,24,7,'gB')}<g transform="translate(70,470)"><circle r="44"/><circle r="30" class="dash"/><line x1="-54" y1="0" x2="54" y2="0"/><line x1="0" y1="-54" x2="0" y2="54"/><path d="M0,-40 L7,0 L0,40 L-7,0Z" class="fillc"/></g>${tk}<line x1="40" y1="582" x2="940" y2="582"/><path class="dash" d="M140,560 C300,500 460,500 620,560"/><text x="960" y="592" style="text-anchor:end">${String(title||'').toUpperCase().slice(0,40)}</text></g></svg><div class="sil">${ic||''}</div></div>`; }
  function deco(el,D){ const ics=[]; const add=n=>{ const i=icon(n); if(i&&!ics.includes(i)) ics.push(i); }; add(D); (D.ch||[]).forEach(add);
   const gear=(cx,cy,r,t,cls)=>{ let d=''; const N=12; for(let k=0;k<N*2;k++){ const a0=k*Math.PI/N, a1=(k+1)*Math.PI/N, rr=k%2?r:r+t; d+=(k?'L':'M')+(cx+rr*Math.cos(a0)).toFixed(1)+','+(cy+rr*Math.sin(a0)).toFixed(1)+'L'+(cx+rr*Math.cos(a1)).toFixed(1)+','+(cy+rr*Math.sin(a1)).toFixed(1); } return `<g class="${cls}" style="transform-origin:${cx}px ${cy}px"><path d="${d}Z"/><circle cx="${cx}" cy="${cy}" r="${r*.55}"/><circle cx="${cx}" cy="${cy}" r="${r*.18}"/></g>`; };
   let ticks=''; for(let k=0;k<=40;k++){ const x=60+k*22; ticks+=`<line x1="${x}" y1="572" x2="${x}" y2="${k%5?564:556}"/>`; } let tl=''; for(let k=0;k<=24;k++){ const y=40+k*20; tl+=`<line x1="972" y1="${y}" x2="${k%4?964:956}" y2="${y}"/>`; }
