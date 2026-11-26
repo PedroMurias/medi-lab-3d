@@ -67,7 +67,15 @@ window.GR = (function () {
     save(); emit(); return ACC;
   }
   async function logout() { try { await sdk(); await auth.signOut(); } catch (e) { /* */ } ACC = null; save(); emit(); }
-  async function resume() { if (!ACC) return null; try { await sdk(); const u = await new Promise(res => { const off = auth.onAuthStateChanged(x => { off(); res(x); }); }); if (u) return afterLogin(u); } catch (e) { /* sense connexió: es manté el compte desat */ } return ACC; }
+  /* Reprèn la sessió: compte desat, o tornada de l'entrada amb Google per redirecció (mòbil) */
+  async function resume() {
+    try { await sdk();
+      try { const rr = await auth.getRedirectResult(); if (rr && rr.user) { const acc = await afterLogin(rr.user); if (!acc.teacher && !acc.email.endsWith('@' + DOMAIN)) { await logout(); ACC = null; } return ACC; } } catch (e) { /* cap redirecció pendent */ }
+      const u = await new Promise(res => { const off = auth.onAuthStateChanged(x => { off(); res(x); }); });
+      if (u) return afterLogin(u);
+    } catch (e) { /* sense connexió: es manté el compte desat */ }
+    return ACC;
+  }
 
   /* ---- setmana escolar (clau AAAA-WW) ---- */
   function weekKey(d = new Date()) { const x = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = x.getUTCDay() || 7; x.setUTCDate(x.getUTCDate() + 4 - day); const y = x.getUTCFullYear(); const w = Math.ceil((((x - Date.UTC(y, 0, 1)) / 864e5) + 1) / 7); return y + '-' + String(w).padStart(2, '0'); }

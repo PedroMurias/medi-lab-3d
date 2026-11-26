@@ -1479,7 +1479,7 @@
             const err = document.getElementById('lg-err'), b = document.getElementById('lg-google'); err.textContent = '';
             if (!window.GR || !GR.available()) { err.textContent = 'Aquí no es pot entrar amb el compte. Juga com a convidat.'; return; }
             b.disabled = true;
-            try { const acc = await GR.loginGoogle(); if (acc) { playSFX('correct'); guestMode = false; showWelcome(); } }
+            try { sessionStorage.setItem('egr6_glogin', '1'); const acc = await GR.loginGoogle(); sessionStorage.removeItem('egr6_glogin'); if (acc) { playSFX('correct'); guestMode = false; showWelcome(); } else err.textContent = 'Si s\'ha obert la finestra de Google i s\'ha tancat sense entrar, torna-ho a provar.'; }
             catch (ex) { err.textContent = ex.message || 'No s\'ha pogut entrar amb Google.'; playSFX('wrong'); }
             b.disabled = false;
         }
@@ -1501,7 +1501,7 @@
             catch (ex) { err.textContent = ex.message || 'No s\'ha pogut entrar.'; playSFX('wrong'); }
             btn.disabled = false;
         }
-        if (window.GR) { GR.onChange(renderAccount); if (GR.available()) GR.resume().then(acc => { renderAccount(); if (acc) showWelcome(); }).catch(() => {}); }
+        if (window.GR) { GR.onChange(renderAccount); if (GR.available()) { const le = document.getElementById('lg-err'); if (le && sessionStorage.getItem('egr6_glogin')) le.textContent = 'Entrant amb Google…'; GR.resume().then(acc => { renderAccount(); sessionStorage.removeItem('egr6_glogin'); if (acc) showWelcome(); else if (le && le.textContent === 'Entrant amb Google…') le.textContent = 'No s\'ha pogut completar l\'entrada amb Google. Torna-ho a provar.'; }).catch(() => {}); } }
 
         /* Estadístiques d'una partida per al registre */
         function gameStats() {
