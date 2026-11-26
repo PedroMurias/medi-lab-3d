@@ -1972,7 +1972,7 @@ SLOW['Espelma']={dur:11,cam:[1.5,2.8,5.2],target:[.6,1.15,.3],
 /* ---------- reproductor ---------- */
 function openSlow(name){ const D=SLOW[name]; if(!D) return; const B=PLAY.open(`${name} a càmera lenta`,'🐢 Mira-ho a poc a poc',"Mira com es transforma l'energia. Amb <b>🐢 Càmera lenta</b> s'atura a cada pas.");
  B.insertAdjacentHTML('beforeend',`<div class="slBox" id="slBox"><div class="slTime" id="slT">▶ 1×</div></div><div class="slCap" id="slCap">Prem <b>▶ Mira-ho</b> o <b>🐢 Càmera lenta</b>.</div><div class="slBar"><button id="slPlay">▶ Mira-ho</button><button id="slSlow">🐢 Càmera lenta</button><button id="slNext" disabled>⏭ Pas següent</button><button id="slRe">↺</button><div class="prog" id="slProg"><i></i>${D.steps.map(s=>`<b style="left:${s[0]/D.dur*100}%"></b>`).join('')}</div></div>`);
- const V=mini3d(B.querySelector('#slBox'),{cam:D.cam,target:D.target}); V.O.minDistance=1; V.O.maxDistance=9; const sc=D.build(V.S); sc._cam=V.C;
+ const V=mini3d(B.querySelector('#slBox'),{cam:D.cam,target:D.target}); V.O.minDistance=1; V.O.maxDistance=Math.max(9,Math.hypot(...D.cam.map((v,i)=>v-D.target[i]))*1.4); const sc=D.build(V.S); sc._cam=V.C;
  let T=0, speed=0, slow=false, stepI=0, wait=false; const cap=B.querySelector('#slCap'), tl=B.querySelector('#slT'), nx=B.querySelector('#slNext');
  const setCap=(i)=>{ const s=D.steps[i]; cap.innerHTML=`<small style="opacity:.7">Pas ${i+1} de ${D.steps.length}</small><br>${s[1]}${trHTML(s[2],s[3])}`; const k=[...(s[2]||[]),...(s[3]||[])]; sc.arrows(i===D.steps.length-1&&s[3]?s[3]:[]); };
  const start=(sl)=>{ slow=sl; T=0; stepI=0; wait=false; speed=sl?.28:1; nx.disabled=true; B.querySelector('#slPlay').classList.toggle('on',!sl); B.querySelector('#slSlow').classList.toggle('on',sl); sc.arrows([]); cap.innerHTML=sl?'🐢 Càmera lenta…':'▶'; };
@@ -1982,6 +1982,265 @@ function openSlow(name){ const D=SLOW[name]; if(!D) return; const B=PLAY.open(`$
   tl.textContent=(wait?'⏸ ':speed>0?(slow?'🐢 ':'▶ '):'⏹ ')+(slow?'0,25×':'1×')+' · '+T.toFixed(1)+' s'; B.querySelector('#slProg i').style.width=(T/D.dur*100)+'%'; sc.update(T,t); });
  sc.update(0,0); window.__slSeek=(x,i)=>{ T=x; speed=0; wait=true; slow=true; if(i!=null){ stepI=i; setCap(i); } }; }
 window.openSlow=openSlow; window.SLOW=SLOW;
+
+/* ===== Càmera lenta: 11 objectes més ===== */
+SFX.so=['🔊','Sonora','#ff9ad5'];
+const ECOL={ele:'#ffe14d',ter:'#ff7a3c',lum:'#fff3b0',qui:'#b6ff3b',mec:'#7fd0ff',so:'#ff9ad5'};
+const clamp01=x=>x<0?0:x>1?1:x, sm=(T,a,b)=>clamp01((T-a)/(b-a)), eas=t=>{ t=clamp01(t); return t*t*(3-2*t); };
+function KIT(S,{bg=0x0b1018,dim=.45}={}){
+ const M=o=>new THREE.MeshStandardMaterial(o);
+ const add=(g,m,x=0,y=0,z=0,p=S)=>{ const o=new THREE.Mesh(g,m); o.position.set(x,y,z); o.castShadow=o.receiveShadow=true; p.add(o); return o; };
+ S.background=new THREE.Color(bg); S.environmentIntensity=.3; S.children.filter(o=>o.isLight).forEach(l=>l.intensity*=dim);
+ const ticks=[];
+ const K={M,add,ticks,
+  wood(w=6,d=4){ const c=document.createElement('canvas'); c.width=c.height=512; const g=c.getContext('2d'); g.fillStyle='#6b4428'; g.fillRect(0,0,512,512); for(let i=0;i<140;i++){ g.strokeStyle=`rgba(${Math.random()<.5?'40,22,10':'150,100,60'},.25)`; g.lineWidth=1+Math.random()*2.5; const y=Math.random()*512; g.beginPath(); g.moveTo(0,y); g.bezierCurveTo(170,y+8,340,y-8,512,y+Math.random()*6); g.stroke(); } const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return add(new THREE.BoxGeometry(w,.12,d),M({map:t,roughness:.55}),0,-.06,0); },
+  floor(col=0x2c3440,w=14,d=10){ return add(new THREE.BoxGeometry(w,.1,d),M({color:col,roughness:.9}),0,-.05,0); },
+  wall(z=-1.6,col=0x3b4656,w=8,h=5){ return add(new THREE.BoxGeometry(w,h,.1),M({color:col,roughness:.95}),0,h/2,z); },
+  socket(x,y,z){ const g=new THREE.Group(); g.position.set(x,y,z); S.add(g); add(new THREE.BoxGeometry(.5,.5,.06),M({color:0xf2f2f2,roughness:.4}),0,0,0,g); add(new THREE.BoxGeometry(.24,.3,.22),M({color:0xe8e8e8,roughness:.5}),0,0,.13,g); return g; },
+  cable(pts,col=0x1d1d1d,r=.035){ const c=new THREE.CatmullRomCurve3(pts.map(p=>new THREE.Vector3(...p))); add(new THREE.TubeGeometry(c,64,r,8,false),M({color:col,roughness:.6})); return c; },
+  /* partícules que viatgen per un camí */
+  flow(pts,type,{n=14,size=.13,speed=.35,curve=null}={}){ const c=curve||new THREE.CatmullRomCurve3(pts.map(p=>new THREE.Vector3(...p))); const P=[]; for(let i=0;i<n;i++){ const s=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex(hexA(ECOL[type],1),hexA(ECOL[type],0)),transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,opacity:0})); s.scale.setScalar(size); s.userData.ph=i/n; S.add(s); P.push(s); }
+   const f={on:0,c,set(v){ f.on=v; }}; ticks.push((T,t)=>{ P.forEach(s=>{ const u=(t*speed+s.userData.ph)%1; s.position.copy(c.getPointAt(u)); s.material.opacity=f.on*Math.sin(u*Math.PI)*.95; s.visible=f.on>0.01; }); }); return f; },
+  /* ones de calor que pugen */
+  heat(x,y,z,{n=16,w=.4,h=1.2,col='rgba(255,110,40,.9)'}={}){ const P=[]; for(let i=0;i<n;i++){ const s=addSpr(S,glowTex(col,'rgba(255,60,0,0)'),.2,.2); s.userData.ph=i/n; s.userData.x=(Math.random()-.5)*w; s.userData.z=(Math.random()-.5)*w*.6; P.push(s); } const f={on:0}; ticks.push((T,t)=>{ P.forEach(s=>{ s.visible=f.on>.01; if(!s.visible) return; const u=(t*.4+s.userData.ph)%1; s.position.set(x+s.userData.x+Math.sin(u*8+s.userData.ph*20)*.06,y+u*h,z+s.userData.z); s.material.opacity=f.on*.35*Math.sin(u*Math.PI); s.scale.setScalar(.14+u*.32); }); }); return f; },
+  glow(x,y,z,s,inner,outer){ const g=addSpr(S,glowTex(inner,outer),s,s); g.position.set(x,y,z); g.material.opacity=0; return g; },
+  /* ones de so */
+  sound(x,y,z,dir=[1,0,0]){ const G=new THREE.Group(); G.position.set(x,y,z); G.lookAt(x+dir[0],y+dir[1],z+dir[2]); S.add(G); const R=[]; for(let i=0;i<3;i++){ const r=new THREE.Mesh(new THREE.TorusGeometry(.2,.012,6,32,Math.PI*.7),new THREE.MeshBasicMaterial({color:0xff9ad5,transparent:true,opacity:0})); r.rotation.y=Math.PI/2; r.rotation.x=-Math.PI*.35; G.add(r); R.push(r); } const f={on:0}; ticks.push((T,t)=>{ R.forEach((r,i)=>{ const u=(t*.8+i/3)%1; r.position.z=u*.8; r.scale.setScalar(.6+u*1.6); r.material.opacity=f.on*(1-u); }); }); return f; },
+  arrows:{}, arr(type,from,dir,len){ const a=new THREE.ArrowHelper(new THREE.Vector3(...dir).normalize(),new THREE.Vector3(...from),len,new THREE.Color(ECOL[type]).getHex(),.16,.1); S.add(a); (K.arrows[type]=K.arrows[type]||[]).push(a); a.visible=false; return a; },
+  showArr(keys){ for(const q in K.arrows) K.arrows[q].forEach(a=>a.visible=keys.includes(q)); },
+  tick(T,t){ ticks.forEach(f=>f(T,t)); } };
+ return K; }
+function hexA(h,a){ const n=parseInt(h.slice(1),16); return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`; }
+const sunSpr=(K,x,y,z,s=1.6)=>{ const a=K.glow(x,y,z,s,'rgba(255,250,210,1)','rgba(255,200,60,0)'); const b=K.glow(x,y,z,s*2.4,'rgba(255,220,120,.45)','rgba(255,160,40,0)'); a.material.opacity=b.material.opacity=1; a.material.blending=b.material.blending=THREE.AdditiveBlending; return [a,b]; };
+const mkSlow=(dur,cam,target,steps,build)=>({dur,cam,target,steps,build});
+
+/* ---------- RADIADOR ---------- */
+SLOW['Radiador']=mkSlow(11,[3.2,2.4,4.6],[0,1,0],[
+ [.6,"L'<b>electricitat</b> arriba des de la central pels cables fins a l'<b>endoll</b>.",['ele'],null],
+ [3.0,"El corrent entra al radiador i passa per la <b>resistència</b>, un fil de metall que costa de travessar: el fil s'escalfa molt.",['ele'],['ter']],
+ [5.6,"La calor passa a les aletes i a l'<b>aire</b>: l'energia ja és <b>tèrmica</b>. L'aire calent puja.",['ter'],null],
+ [8.2,"L'aire calent circula per tota l'habitació. Gairebé tota l'<b>energia elèctrica</b> es converteix en <b>calor</b>.",['ele'],['ter']]],
+ S=>{ const K=KIT(S); K.floor(0x5a4636); K.wall(-1.2,0x4a5a6a); const sk=K.socket(-2.4,.6,-1.12);
+  const c=K.cable([[-2.4,.6,-.95],[-2.2,.08,-.7],[-1.6,.05,-.6],[-1.15,.3,-.62]]);
+  const R=new THREE.Group(); R.position.set(0,0,-.75); S.add(R); const finM=K.M({color:0xe9ecef,metalness:.4,roughness:.35,emissive:0xff3a10,emissiveIntensity:0});
+  for(let i=0;i<9;i++) K.add(new THREE.BoxGeometry(.18,1.3,.3),finM,-.96+i*.24,1.0,0,R); K.add(new THREE.BoxGeometry(2.3,.1,.32),finM,0,.35,0,R); K.add(new THREE.BoxGeometry(2.3,.1,.32),finM,0,1.65,0,R);
+  for(const x of [-1,1]) K.add(new THREE.BoxGeometry(.1,.35,.25),K.M({color:0x666b70,metalness:.5}),x,.17,0,R);
+  const coil=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(Array.from({length:40},(_,i)=>new THREE.Vector3(-1+i*.05,.5+.05*Math.sin(i*1.6),.2+.05*Math.cos(i*1.6)))),120,.018,6,false),K.M({color:0x7a5a40,emissive:0xff4010,emissiveIntensity:0})); R.add(coil);
+  const fE=K.flow([[-2.4,.6,-.95],[-2.2,.08,-.7],[-1.6,.05,-.6],[-1.15,.3,-.62],[-1,.5,-.55],[1,.5,-.55]],'ele',{n:18});
+  const hw=K.heat(0,1.75,-.75,{w:2.2,h:1.6,n:26}); const circ=K.flow([[0,1.8,-.6],[.6,3,0],[2,3.2,1],[2.6,1.2,1.4],[1.6,.3,.8],[.6,.3,-.2],[0,.6,-.5]],'ter',{n:22,size:.18,speed:.12});
+  const L=new THREE.PointLight(0xff5a20,0,4,2); L.position.set(0,.9,-.4); S.add(L);
+  K.arr('ele',[-2.4,1.1,-1],[1,0,0],.7); K.arr('ter',[0,2.0,-.6],[0,1,0],.8); K.arr('ter',[.9,1.9,-.5],[.5,1,.6],.7); K.arr('ter',[-.9,1.9,-.5],[-.5,1,.6],.7);
+  return {arrows:k=>K.showArr(k), update(T,t){ fE.set(sm(T,.3,.9)); const hot=sm(T,3,5); coil.material.emissiveIntensity=hot*2.5*(1+.05*Math.sin(t*9)); finM.emissiveIntensity=sm(T,5,8)*.22; L.intensity=hot*2.5; hw.on=sm(T,5.4,6.4); circ.set(sm(T,8,9)); K.tick(T,t); }}; });
+
+/* ---------- VENTILADOR ---------- */
+SLOW['Ventilador']=mkSlow(11,[3.4,2.2,4.2],[0,1.4,0],[
+ [.6,"L'<b>energia elèctrica</b> arriba de l'endoll pel cable.",['ele'],null],
+ [2.8,"Dins del <b>motor</b> hi ha imants i bobines de coure. El corrent crea una <b>força magnètica</b> que fa girar l'eix.",['ele'],['mec']],
+ [5.4,"L'eix fa girar les <b>aspes</b>, que empenyen l'aire: <b>energia mecànica</b> (moviment).",['mec'],null],
+ [8.2,"Una mica d'energia es perd en <b>calor</b>: per això el motor s'escalfa una mica.",['ele'],['mec','ter']]],
+ S=>{ const K=KIT(S); K.wood(6,4); K.socket(-2.6,.7,-1.6); K.wall(-1.7,0x3b4656);
+  const base=K.M({color:0xf1f3f5,roughness:.4}); K.add(new THREE.CylinderGeometry(.55,.62,.12,40),base,0,.06,0); K.add(new THREE.CylinderGeometry(.06,.06,1.2,16),base,0,.7,0);
+  const head=new THREE.Group(); head.position.set(0,1.45,0); S.add(head);
+  const mot=K.add(new THREE.CylinderGeometry(.26,.26,.5,32),new THREE.MeshPhysicalMaterial({color:0xdde3ea,transparent:true,opacity:.35,roughness:.2}),0,0,-.1,head); mot.rotation.x=Math.PI/2;
+  const coilM=K.M({color:0xc87533,metalness:.8,roughness:.3,emissive:0xff6a20,emissiveIntensity:0}); const coil=K.add(new THREE.TorusGeometry(.15,.05,10,24),coilM,0,0,-.1,head);
+  const mag=K.add(new THREE.BoxGeometry(.08,.22,.3),K.M({color:0xd83030}),-.2,0,-.1,head); const mag2=K.add(new THREE.BoxGeometry(.08,.22,.3),K.M({color:0x3050d8}),.2,0,-.1,head);
+  const rot=new THREE.Group(); rot.position.z=.25; head.add(rot); K.add(new THREE.CylinderGeometry(.09,.09,.12,20),base,0,0,0,rot).rotation.x=Math.PI/2;
+  for(let i=0;i<3;i++){ const b=K.add(new THREE.BoxGeometry(.32,.75,.02),K.M({color:0x6fb7ff,transparent:true,opacity:.85,roughness:.3}),0,.42,0,rot); const p=new THREE.Group(); p.add(b); p.rotation.z=i*Math.PI*2/3; b.rotation.y=.35; rot.add(p); }
+  const cage=K.add(new THREE.TorusGeometry(.92,.012,6,64),K.M({color:0xcfd6de,metalness:.6}),0,0,.25,head);
+  const field=[]; for(let i=0;i<3;i++){ const r=K.add(new THREE.TorusGeometry(.24,.006,6,40),new THREE.MeshBasicMaterial({color:0x7fd0ff,transparent:true,opacity:0}),0,0,-.1,head); field.push(r); }
+  const fE=K.flow([[-2.6,.7,-1.45],[-2.2,.05,-1],[-.8,.05,-.4],[-.2,.12,0],[0,.8,0],[0,1.45,-.25]],'ele',{n:18});
+  const air=K.flow([[0,1.45,.4],[0,1.45,3.5]],'mec',{n:24,size:.1,speed:.9}); const air2=K.flow([[.4,1.7,.4],[.6,1.8,3.4]],'mec',{n:18,size:.08,speed:.8}); const air3=K.flow([[-.4,1.2,.4],[-.6,1.1,3.4]],'mec',{n:18,size:.08,speed:.85});
+  const hw=K.heat(0,1.7,-.15,{w:.3,h:.6,n:10}); let ang=0, spd=0;
+  K.arr('mec',[0,1.45,1.2],[0,0,1],.9); K.arr('ter',[0,1.85,-.15],[0,1,0],.5);
+  return {arrows:k=>K.showArr(k), update(T,t){ fE.set(sm(T,.3,.9)); const m=sm(T,2.8,4); coilM.emissiveIntensity=m*1.2; field.forEach((r,i)=>{ const u=(t*.8+i/3)%1; r.scale.setScalar(1+u*1.5); r.material.opacity=m*(1-u)*.8; });
+   const target=sm(T,3.5,6)*14; spd+=(target-spd)*.05; ang+=spd*.016; rot.rotation.z=-ang; const a=sm(T,5.4,6.2); air.set(a); air2.set(a*.8); air3.set(a*.8); hw.on=sm(T,8,9)*.6; head.rotation.y=Math.sin(t*.3)*.15; K.tick(T,t); }}; });
+
+/* ---------- LLANTERNA ---------- */
+SLOW['Llanterna']=mkSlow(10,[1.6,1.9,3.6],[.3,.6,0],[
+ [.5,"Les <b>piles</b> guarden <b>energia química</b> a dins.",['qui'],null],
+ [2.6,"Prems el <b>botó</b>: es tanca el circuit i les piles transformen l'energia química en <b>energia elèctrica</b>.",['qui'],['ele']],
+ [5.0,"El corrent arriba a la <b>bombeta</b> i es transforma en <b>energia lluminosa</b> (i una mica de calor).",['ele'],['lum','ter']],
+ [7.6,"Resum: <b>química → elèctrica → lluminosa</b>. Quan les piles s'esgoten, ja no queda energia química.",['qui'],['ele','lum']]],
+ S=>{ const K=KIT(S,{dim:.25}); K.wood(6,4); const G=new THREE.Group(); G.position.set(-.4,.32,0); G.rotation.z=-Math.PI/2; S.add(G);
+  K.add(new THREE.CylinderGeometry(.26,.26,1.9,32,1,true),new THREE.MeshPhysicalMaterial({color:0x9fb3c8,transparent:true,opacity:.22,roughness:.1,side:THREE.DoubleSide}),0,0,0,G);
+  const pM=K.M({color:0x3a8a3a,roughness:.4,emissive:0x7dff4a,emissiveIntensity:0}); const p1=K.add(new THREE.CylinderGeometry(.18,.18,.6,24),pM,0,.45,0,G); const p2=K.add(new THREE.CylinderGeometry(.18,.18,.6,24),pM,0,-.2,0,G);
+  for(const y of [.77,.12]) K.add(new THREE.CylinderGeometry(.06,.06,.05,12),K.M({color:0xc0c0c0,metalness:.9}),0,y,0,G);
+  const head=K.add(new THREE.CylinderGeometry(.36,.27,.35,32,1,true),K.M({color:0xd4dbe2,metalness:.9,roughness:.15,side:THREE.DoubleSide}),0,-1.1,0,G);
+  const bulbM=K.M({color:0xfff6d8,emissive:0xffe9a0,emissiveIntensity:0,transparent:true,opacity:.9}); const bulb=K.add(new THREE.SphereGeometry(.09,16,12),bulbM,0,-1.05,0,G);
+  const btnM=K.M({color:0x222222}); const btn=K.add(new THREE.BoxGeometry(.12,.2,.1),btnM,-.27,-.55,0,G);
+  const beam=new THREE.Mesh(new THREE.ConeGeometry(.9,3.2,32,1,true),new THREE.MeshBasicMaterial({color:0xfff2b0,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide})); beam.position.set(0,-2.75,0); G.add(beam);
+  const spot=K.glow(-3.6,.4,0,1.4,'rgba(255,245,200,.9)','rgba(255,230,150,0)');
+  const halo=K.glow(.0,0,0,.6,'rgba(255,250,220,1)','rgba(255,220,120,0)'); G.add(halo); halo.position.set(0,-1.05,0);
+  const L=new THREE.SpotLight(0xfff0c0,0,8,.45,.5,1.5); L.position.set(-1.45,.32,0); L.target.position.set(-5,.2,0); S.add(L,L.target);
+  const loop=K.flow([[-.4+.0,.62,0],[.6,.62,0],[.7,.5,0],[.6,.36,.02],[-1.0,.36,.02],[-1.45,.32,0],[-1.2,.15,.0],[.6,.15,0],[.8,.32,0]],'ele',{n:20,size:.08,speed:.45});
+  K.arr('lum',[-1.6,.35,0],[-1,0,0],.9); K.arr('lum',[-1.6,.5,0],[-1,.35,0],.7); K.arr('lum',[-1.6,.2,0],[-1,-.3,0],.7); K.arr('ter',[-1.45,.55,0],[0,1,0],.4); K.arr('qui',[.1,.75,0],[0,1,0],.4);
+  return {arrows:k=>K.showArr(k), update(T,t){ pM.emissiveIntensity=(sm(T,.4,1.2)*(1-sm(T,4,6)*.6))*.6*(1+.2*Math.sin(t*3)); const on=T>2.8; btn.position.x=on?-.22:-.27; btnM.color.set(on?0x2a6a2a:0x222222);
+   loop.set(sm(T,2.9,3.6)); const l=sm(T,5,5.8); bulbM.emissiveIntensity=l*4; beam.material.opacity=l*.13; spot.material.opacity=l*.9; halo.material.opacity=l; L.intensity=l*30; K.tick(T,t); }}; });
+
+/* ---------- AEROGENERADOR ---------- */
+SLOW['Aerogenerador']=mkSlow(12,[7,4.6,11],[.8,3,0],[
+ [.6,"El <b>Sol</b> escalfa l'aire de manera desigual i es forma el <b>vent</b>: aire en moviment (<b>energia mecànica</b>).",['lum'],['mec']],
+ [3.4,"El vent empeny les <b>aspes</b> i les fa girar.",['mec'],null],
+ [6.0,"Les aspes fan girar un <b>generador</b> amb imants i bobines que produeix <b>energia elèctrica</b>.",['mec'],['ele']],
+ [9.0,"Els <b>cables</b> porten l'electricitat a les cases. És una energia <b>renovable</b>: el vent no s'acaba.",['ele'],null]],
+ S=>{ const K=KIT(S,{bg:0x2a4a6a,dim:1}); S.environmentIntensity=.6; K.add(new THREE.CylinderGeometry(9,9,.1,48),K.M({color:0x4f7a3a,roughness:1}),0,-.05,0); sunSpr(K,-6,8,-6);
+  const tw=K.M({color:0xf2f4f6,roughness:.4}); K.add(new THREE.CylinderGeometry(.14,.26,5.2,20),tw,0,2.6,0);
+  const nac=K.add(new THREE.BoxGeometry(.5,.45,1.3),new THREE.MeshPhysicalMaterial({color:0xf2f4f6,transparent:true,opacity:.45,roughness:.3}),0,5.35,-.1);
+  const genM=K.M({color:0xc87533,metalness:.8,roughness:.3,emissive:0xffd23f,emissiveIntensity:0}); const gen=K.add(new THREE.CylinderGeometry(.16,.16,.5,20),genM,0,5.35,-.2); gen.rotation.x=Math.PI/2;
+  const hub=new THREE.Group(); hub.position.set(0,5.35,.62); S.add(hub); K.add(new THREE.SphereGeometry(.18,20,14),tw,0,0,0,hub);
+  for(let i=0;i<3;i++){ const p=new THREE.Group(); p.rotation.z=i*Math.PI*2/3; hub.add(p); const b=K.add(new THREE.BoxGeometry(.22,2.6,.05),tw,0,1.35,0,p); b.rotation.y=.25; }
+  const house=new THREE.Group(); house.position.set(4.2,0,1.6); S.add(house); K.add(new THREE.BoxGeometry(1.2,.9,1),K.M({color:0xe6d3b3}),0,.45,0,house); const roof=K.add(new THREE.ConeGeometry(.95,.6,4),K.M({color:0xa0483a}),0,1.2,0,house); roof.rotation.y=Math.PI/4;
+  const winM=K.M({color:0x223040,emissive:0xffd27a,emissiveIntensity:0}); K.add(new THREE.BoxGeometry(.35,.3,.02),winM,0,.5,.51,house);
+  const wind=[]; for(let i=0;i<5;i++) wind.push(K.flow([[-7,2.5+i*.8,1],[-3,2.7+i*.8,1.2],[0,2.6+i*.75,.8],[3,2.8+i*.8,.6]],'mec',{n:10,size:.16,speed:.25+i*.03}));
+  const el=K.flow([[0,5.3,-.2],[0,4,0],[0,.3,0],[1.5,.15,.6],[3,.15,1.2],[4.2,.5,1.6]],'ele',{n:22,size:.16,speed:.4});
+  K.arr('mec',[-2.5,4,.8],[1,0,0],1.2); K.arr('ele',[.3,3,0],[0,-1,0],1); K.arr('lum',[-5,7,-5],[1,-1,1],1.3);
+  let ang=0, spd=0; return {arrows:k=>K.showArr(k), update(T,t){ const w=sm(T,.6,2); wind.forEach(f=>f.set(w)); const target=sm(T,3.4,5)*2.4; spd+=(target-spd)*.03; ang+=spd*.016; hub.rotation.z=-ang; genM.emissiveIntensity=sm(T,6,7)*1.5*(.8+.2*Math.sin(t*12)); el.set(sm(T,6.6,7.6)); winM.emissiveIntensity=sm(T,8.8,9.6)*2; K.tick(T,t); }}; });
+
+/* ---------- COTXE ---------- */
+SLOW['Cotxe']=mkSlow(12,[4.5,2.6,5.4],[0,.6,0],[
+ [.6,"La <b>gasolina</b> guarda <b>energia química</b>. Ve del petroli. Va del dipòsit al motor.",['qui'],null],
+ [3.2,"Al <b>motor</b>, la gasolina crema en petites explosions: <b>química → tèrmica</b>.",['qui'],['ter']],
+ [5.8,"L'escalfor empeny els <b>pistons</b>, que fan girar les <b>rodes</b>: <b>energia mecànica</b>.",['ter'],['mec']],
+ [8.8,"Molta energia es perd en <b>calor</b>, <b>soroll</b> i <b>fum</b>: per això els cotxes contaminen.",['qui'],['mec','ter','so']]],
+ S=>{ const K=KIT(S,{dim:.8}); const road=K.add(new THREE.BoxGeometry(30,.1,3),K.M({color:0x2c2f33,roughness:.9}),0,-.05,0); const lines=[]; for(let i=0;i<12;i++) lines.push(K.add(new THREE.BoxGeometry(.8,.012,.08),K.M({color:0xf2f2f2}),-12+i*2.4,.01,0));
+  const car=new THREE.Group(); S.add(car); const body=new THREE.MeshPhysicalMaterial({color:0xd8343a,metalness:.4,roughness:.3,transparent:true,opacity:.55,clearcoat:1});
+  K.add(new THREE.BoxGeometry(3,.55,1.3),body,0,.55,0,car); K.add(new THREE.BoxGeometry(1.6,.5,1.2),body,-.2,1.05,0,car);
+  const wheels=[]; for(const x of [-1,1]) for(const z of [-.66,.66]){ const w=K.add(new THREE.CylinderGeometry(.32,.32,.2,24),K.M({color:0x151515,roughness:.8}),x,.32,z,car); w.rotation.x=Math.PI/2; K.add(new THREE.BoxGeometry(.4,.05,.05),K.M({color:0xb0b0b0}),0,0,0,w); wheels.push(w); }
+  const eng=K.add(new THREE.BoxGeometry(.7,.4,.7),K.M({color:0x6b7078,metalness:.6,roughness:.4,emissive:0xff5a10,emissiveIntensity:0}),1.05,.6,0,car);
+  const pist=[]; for(let i=0;i<3;i++) pist.push(K.add(new THREE.CylinderGeometry(.07,.07,.25,12),K.M({color:0xd0d0d0,metalness:.9}),.85+i*.2,.9,0,car));
+  const tank=K.add(new THREE.BoxGeometry(.5,.25,.8),K.M({color:0x2f6a2f,emissive:0x7dff4a,emissiveIntensity:0}),-1.15,.45,0,car);
+  const fuel=K.flow([[-1.15,.45,0],[-.4,.35,.2],[.4,.4,.2],[1.05,.6,0]],'qui',{n:14,size:.1});
+  const boom=K.glow(1.05,.75,0,.9,'rgba(255,240,180,1)','rgba(255,90,10,0)'); car.add(boom); boom.position.set(1.05,.75,0); boom.material.blending=THREE.AdditiveBlending;
+  const smoke=[]; for(let i=0;i<16;i++){ const s=addSpr(S,glowTex('rgba(120,120,120,.6)','rgba(60,60,60,0)'),.3,.3,false); s.userData.ph=i/16; smoke.push(s); }
+  const hw=K.heat(1.05,.9,0,{w:.5,h:.9,n:12}); const snd=K.sound(1.6,.7,.7,[0,0,1]);
+  K.arr('mec',[0,.2,1],[1,0,0],1); K.arr('ter',[1.05,1.2,0],[0,1,0],.6); K.arr('qui',[-1.15,.8,0],[1,0,0],.6);
+  let x=0, v=0; return {arrows:k=>K.showArr(k), update(T,t){ tank.material.emissiveIntensity=sm(T,.5,1.2)*.8*(1-sm(T,9,12)*.5); fuel.set(sm(T,1,1.6)); const burn=sm(T,3.2,4); const pulse=Math.max(0,Math.sin(t*22)); boom.material.opacity=burn*pulse; eng.material.emissiveIntensity=burn*(.3+.5*pulse);
+   pist.forEach((p,i)=>p.position.y=.9+burn*.08*Math.sin(t*22+i*2.1)); const go=sm(T,5.8,7.5); v+=(go*3-v)*.03; x+=v*.016; wheels.forEach(w=>w.rotation.y-=v*.05);
+   car.position.x=0; lines.forEach((l,i)=>{ l.position.x=((-12+i*2.4-x)%28.8+28.8)%28.8-14.4; });
+   smoke.forEach(s=>{ const on=burn>.2; s.visible=on; if(!on) return; const u=(t*.5+s.userData.ph)%1; s.position.set(-1.6-u*1.6,.35+u*.6,.4); s.scale.setScalar(.2+u*.7); s.material.opacity=.35*(1-u)*burn; });
+   hw.on=sm(T,8.8,9.6); snd.on=sm(T,8.8,9.6); fuel.c&&0; K.tick(T,t);
+   /* les partícules del combustible segueixen el cotxe */ }}; });
+
+/* ---------- PLANTA ---------- */
+SLOW['Planta']=mkSlow(12,[3,2.8,4.6],[-.5,1.7,0],[
+ [.6,"La <b>llum del Sol</b> arriba a les fulles: és <b>energia lluminosa</b>.",['lum'],null],
+ [3.0,"Les fulles tenen <b>clorofil·la</b>, que capta la llum. Les arrels porten <b>aigua</b> i les fulles agafen <b>diòxid de carboni</b> de l'aire.",['lum'],null],
+ [6.0,"Amb tot això la planta fa la <b>fotosíntesi</b>: fabrica el seu aliment i guarda l'energia com a <b>energia química</b>.",['lum'],['qui']],
+ [9.0,"Aquesta energia química queda a les fulles, als fruits i a la fusta. Quan mengem plantes, l'aprofitem.",['qui'],null]],
+ S=>{ const K=KIT(S,{bg:0x16324a,dim:.9}); K.wood(6,4); sunSpr(K,-2.6,4.2,-1.5,1.1);
+  K.add(new THREE.CylinderGeometry(.45,.35,.6,32),K.M({color:0xb5562e,roughness:.8}),0,.3,0); K.add(new THREE.CylinderGeometry(.42,.42,.04,32),K.M({color:0x3a2616,roughness:1}),0,.58,0);
+  const stem=K.add(new THREE.CylinderGeometry(.035,.05,1.3,10),K.M({color:0x3f7a2a}),0,1.2,0);
+  const leafM=K.M({color:0x3f9a3a,roughness:.5,emissive:0x7dff4a,emissiveIntensity:0,side:THREE.DoubleSide}); const leaves=[];
+  for(let i=0;i<6;i++){ const l=new THREE.Mesh(new THREE.CircleGeometry(.28,20),leafM); l.scale.set(1,.5,1); const a=i*2.1; l.position.set(Math.cos(a)*.28,.9+i*.17,Math.sin(a)*.28); l.rotation.set(-1.1,a,0); S.add(l); leaves.push(l); }
+  const fruit=K.add(new THREE.SphereGeometry(.11,16,12),K.M({color:0xd83030,roughness:.4}),.2,1.25,.12); fruit.scale.setScalar(.01);
+  const rays=[]; for(let i=0;i<4;i++) rays.push(K.flow([[-2.6,4.2,-1.5],[leaves[i+1].position.x,leaves[i+1].position.y,leaves[i+1].position.z]],'lum',{n:10,size:.12,speed:.5}));
+  const water=K.flow([[.1,.4,.1],[0,.6,0],[0,1.2,0],[0,1.7,0]],'mec',{n:10,size:.07,speed:.3}); const co2=K.flow([[1.6,1.6,.6],[.9,1.5,.4],[.3,1.4,.2]],'mec',{n:8,size:.09,speed:.25});
+  const sug=K.flow([[0,1.75,0],[0,1.3,0],[.15,1.25,.1],[.2,1.25,.12]],'qui',{n:12,size:.08,speed:.3}); const sug2=K.flow([[0,1.5,0],[0,.9,0],[0,.6,0]],'qui',{n:10,size:.07,speed:.25});
+  K.arr('lum',[-1.6,3.2,-1],[1,-1,.6],.8); K.arr('qui',[.3,1.4,.2],[1,0,0],.5);
+  return {arrows:k=>K.showArr(k), update(T,t){ rays.forEach(f=>f.set(sm(T,.5,1.4))); leafM.emissiveIntensity=sm(T,3,4)*.35*(1+.15*Math.sin(t*3)); water.set(sm(T,3.2,4)); co2.set(sm(T,3.6,4.4)); sug.set(sm(T,6,7)); sug2.set(sm(T,6.4,7.4)); fruit.scale.setScalar(.01+sm(T,7,10.5)); K.tick(T,t); }}; });
+
+/* ---------- NEN CORRENT ---------- */
+SLOW['Nen corrent']=mkSlow(11,[3.6,2,4.2],[0,1,0],[
+ [.6,"Els <b>aliments</b> guarden <b>energia química</b>.",['qui'],null],
+ [2.8,"El cos digereix els aliments i, amb l'<b>oxigen</b> que respirem, n'allibera l'energia a les cèl·lules.",['qui'],null],
+ [5.2,"Els <b>músculs</b> fan servir aquesta energia per moure's: <b>energia mecànica</b>.",['qui'],['mec']],
+ [8.2,"També fem <b>calor</b>: per això quan corres tens calor i sues.",['qui'],['mec','ter']]],
+ S=>{ const K=KIT(S,{bg:0x1a2c3e,dim:.9}); const tr=K.add(new THREE.BoxGeometry(16,.1,2.4),K.M({color:0xb0482f,roughness:.9}),0,-.05,0); const marks=[]; for(let i=0;i<10;i++) marks.push(K.add(new THREE.BoxGeometry(.06,.012,2.4),K.M({color:0xffffff}),-8+i*1.6,.01,0));
+  const skin=K.M({color:0xe8b48a,roughness:.7}), shirt=K.M({color:0x2f7fd8,roughness:.7,emissive:0xff5a10,emissiveIntensity:0}), pants=K.M({color:0x2a2f3a});
+  const kid=new THREE.Group(); S.add(kid); K.add(new THREE.CapsuleGeometry(.24,.5,6,12),shirt,0,1.25,0,kid); K.add(new THREE.SphereGeometry(.2,20,16),skin,0,1.82,0,kid);
+  const limb=(m,y,len)=>{ const p=new THREE.Group(); p.position.y=y; kid.add(p); K.add(new THREE.CapsuleGeometry(.07,len,4,8),m,0,-len/2-.05,0,p); return p; };
+  const la=limb(skin,1.5,.42), ra=limb(skin,1.5,.42), ll=limb(pants,.92,.55), rl=limb(pants,.92,.55); la.position.z=.3; ra.position.z=-.3; ll.position.z=.12; rl.position.z=-.12;
+  const apple=K.add(new THREE.SphereGeometry(.1,14,10),K.M({color:0xd83030}),0,1.45,.38); const food=K.flow([[.15,1.75,.1],[.1,1.5,0],[0,1.25,0]],'qui',{n:10,size:.08,speed:.4});
+  const body=K.flow([[0,1.3,0],[0,1.0,.12],[0,.5,.12],[0,1.0,-.12],[0,.5,-.12],[0,1.4,.3],[0,1.4,-.3]],'qui',{n:18,size:.07,speed:.5});
+  const breath=K.flow([[.6,1.85,0],[.2,1.8,0],[0,1.4,0]],'mec',{n:8,size:.07,speed:.4}); const hw=K.heat(0,1.6,0,{w:.4,h:.9,n:14});
+  const sweat=[]; for(let i=0;i<6;i++){ const d=K.add(new THREE.SphereGeometry(.025,8,6),K.M({color:0x9fd8ff,transparent:true,opacity:0}),0,0,0,kid); d.userData.ph=i/6; sweat.push(d); }
+  K.arr('mec',[0,.4,.6],[1,0,0],.8); K.arr('ter',[0,2.1,0],[0,1,0],.5);
+  let ph=0, x=0, v=0; return {arrows:k=>K.showArr(k), update(T,t){ apple.visible=T<2.6; apple.position.y=1.45+sm(T,.6,2.4)*.35; apple.scale.setScalar(1-sm(T,1.8,2.6)*.9); food.set(sm(T,1.8,2.6)*(1-sm(T,4,5)));
+   breath.set(sm(T,2.8,3.4)); body.set(sm(T,3.2,4)); const run=sm(T,5.2,6.5); v+=(run*2.6-v)*.04; ph+=v*.09; x+=v*.016;
+   la.rotation.z=Math.sin(ph)*1*run; ra.rotation.z=-Math.sin(ph)*1*run; ll.rotation.z=-Math.sin(ph)*.9*run; rl.rotation.z=Math.sin(ph)*.9*run; kid.position.y=Math.abs(Math.sin(ph))*.08*run; kid.rotation.z=-.12*run;
+   marks.forEach((m,i)=>m.position.x=((-8+i*1.6-x)%16+16)%16-8); hw.on=sm(T,8.2,9); shirt.emissiveIntensity=sm(T,8.2,9.5)*.15;
+   sweat.forEach(d=>{ const u=(t*.7+d.userData.ph)%1; d.position.set(.12,1.85-u*.5,(d.userData.ph-.5)*.3); d.material.opacity=sm(T,8.4,9)*(1-u); }); K.tick(T,t); }}; });
+
+/* ---------- PLACA SOLAR ---------- */
+SLOW['Placa solar']=mkSlow(12,[5.2,3.6,7.4],[-.2,2,0],[
+ [.6,"La <b>llum del Sol</b> (energia lluminosa) arriba a la placa.",['lum'],null],
+ [3.0,"La placa té <b>cel·les de silici</b>. Quan la llum les toca, mou els <b>electrons</b> i es crea un corrent.",['lum'],['ele']],
+ [6.0,"Surt <b>energia elèctrica</b> pel cable: la podem fer servir a casa o guardar-la en una <b>bateria</b>.",['ele'],null],
+ [9.0,"De nit la placa no produeix res, perquè no hi ha llum.",['lum'],['ele']]],
+ S=>{ const K=KIT(S,{bg:0x2a4a6a,dim:1}); S.environmentIntensity=.6; K.add(new THREE.CylinderGeometry(7,7,.1,48),K.M({color:0x5a7a42,roughness:1}),0,-.05,0); const sun=sunSpr(K,-4,6,-3,1.4);
+  const c=document.createElement('canvas'); c.width=256; c.height=160; const g=c.getContext('2d'); g.fillStyle='#0d2a5a'; g.fillRect(0,0,256,160); g.strokeStyle='#8fb0d8'; g.lineWidth=2; for(let x=0;x<=256;x+=32){ g.beginPath(); g.moveTo(x,0); g.lineTo(x,160); g.stroke(); } for(let y=0;y<=160;y+=32){ g.beginPath(); g.moveTo(0,y); g.lineTo(256,y); g.stroke(); } const tex=new THREE.CanvasTexture(c); tex.colorSpace=THREE.SRGBColorSpace;
+  const pM=K.M({map:tex,metalness:.6,roughness:.25,emissive:0x2a6aff,emissiveIntensity:0}); const panel=K.add(new THREE.BoxGeometry(2.4,.06,1.5),pM,-.6,1.1,0); panel.rotation.z=.45; K.add(new THREE.BoxGeometry(.08,1.1,.08),K.M({color:0x888}),-.6,.55,0);
+  const sparks=[]; for(let i=0;i<14;i++){ const s=K.glow(0,0,0,.18,'rgba(255,255,255,1)','rgba(120,180,255,0)'); s.material.blending=THREE.AdditiveBlending; s.userData.ph=Math.random(); s.userData.u=(Math.random()-.5)*2; s.userData.v=(Math.random()-.5)*1.3; sparks.push(s); }
+  const rays=[]; for(let i=0;i<4;i++) rays.push(K.flow([[-4,6,-3],[-1.2+i*.4,1.4-i*.18,(i%2-.5)*.6]],'lum',{n:10,size:.14,speed:.45}));
+  const house=new THREE.Group(); house.position.set(3,0,.6); S.add(house); K.add(new THREE.BoxGeometry(1.2,.9,1),K.M({color:0xe6d3b3}),0,.45,0,house); const roof=K.add(new THREE.ConeGeometry(.95,.6,4),K.M({color:0xa0483a}),0,1.2,0,house); roof.rotation.y=Math.PI/4;
+  const winM=K.M({color:0x223040,emissive:0xffd27a,emissiveIntensity:0}); K.add(new THREE.BoxGeometry(.35,.3,.02),winM,0,.5,.51,house);
+  const bat=K.add(new THREE.BoxGeometry(.4,.5,.3),K.M({color:0x2f6a2f,emissive:0x7dff4a,emissiveIntensity:0}),1.6,.25,1.4);
+  K.cable([[0,.8,0],[.6,.05,.3],[2.4,.05,.6],[2.6,.3,.6]]); const el=K.flow([[0,.8,0],[.6,.05,.3],[2.4,.05,.6],[2.6,.3,.6]],'ele',{n:16,size:.12,speed:.45}); const el2=K.flow([[.6,.05,.3],[1.2,.05,1],[1.6,.25,1.4]],'ele',{n:8,size:.1,speed:.4});
+  K.arr('ele',[1.2,.3,.45],[1,0,.1],.8); K.arr('lum',[-2.8,4.4,-2],[1,-1.3,.8],1);
+  return {arrows:k=>K.showArr(k), update(T,t){ const night=sm(T,9.3,10.3); S.background.setRGB(.16*(1-night)+.02,.29*(1-night)+.03,.42*(1-night)+.07); sun.forEach(s=>s.material.opacity=1-night);
+   rays.forEach(f=>f.set(sm(T,.5,1.4)*(1-night))); const cell=sm(T,3,4)*(1-night); pM.emissiveIntensity=cell*.5;
+   sparks.forEach(s=>{ s.position.set(-.6+s.userData.u*Math.cos(.45),1.1+s.userData.u*Math.sin(.45)+.06,s.userData.v*.5); s.material.opacity=cell*Math.max(0,Math.sin(t*6+s.userData.ph*20)); });
+   el.set(sm(T,6,6.8)*(1-night)); el2.set(sm(T,6.6,7.4)*(1-night)); winM.emissiveIntensity=sm(T,6.8,7.6)*2*(1-night*.0); bat.material.emissiveIntensity=sm(T,7,8)*.6; K.tick(T,t); }}; });
+
+/* ---------- TORRADORA ---------- */
+SLOW['Torradora']=mkSlow(11,[2.4,2.2,3.4],[0,.7,0],[
+ [.6,"L'<b>energia elèctrica</b> arriba de l'endoll pel cable.",['ele'],null],
+ [2.8,"El corrent passa per uns fils de metall (<b>resistències</b>) que s'escalfen tant que es posen <b>vermells</b>.",['ele'],['ter','lum']],
+ [5.6,"La <b>calor</b> (energia tèrmica) torra el pa. També fa una mica de llum vermella.",['ter'],null],
+ [8.6,"Quan el pa està fet, una molla el fa <b>saltar</b>. Compte: no hi fiquis mai res de metall!",['ele'],['ter','lum']]],
+ S=>{ const K=KIT(S,{dim:.5}); K.wood(6,4); K.wall(-1.5,0x6a7480); K.socket(-1.6,.8,-1.42);
+  K.cable([[-1.6,.8,-1.25],[-1.4,.06,-.9],[-.8,.06,-.4],[-.55,.3,-.2]]); const el=K.flow([[-1.6,.8,-1.25],[-1.4,.06,-.9],[-.8,.06,-.4],[-.55,.3,-.2]],'ele',{n:14,size:.1});
+  const bodyM=new THREE.MeshPhysicalMaterial({color:0xd0d6dc,metalness:.8,roughness:.25,transparent:true,opacity:.55}); K.add(new THREE.BoxGeometry(1.1,.75,.7),bodyM,0,.4,0);
+  const coilM=K.M({color:0x6a4a3a,emissive:0xff3010,emissiveIntensity:0}); const coils=[]; for(const z of [-.2,-.05,.05,.2]) for(let i=0;i<5;i++){ const c=K.add(new THREE.BoxGeometry(.9,.02,.02),coilM,0,.15+i*.12,z); coils.push(c); }
+  const breadM=K.M({color:0xf0d8a8,roughness:.9}); const br=[K.add(new THREE.BoxGeometry(.8,.7,.06),breadM,0,.55,-.12),K.add(new THREE.BoxGeometry(.8,.7,.06),breadM,0,.55,.12)];
+  const lever=K.add(new THREE.BoxGeometry(.12,.06,.12),K.M({color:0x222}),.62,.6,0); const glowS=K.glow(0,.8,0,1.3,'rgba(255,120,40,.6)','rgba(255,60,0,0)'); glowS.material.blending=THREE.AdditiveBlending;
+  const hw=K.heat(0,.9,0,{w:.7,h:1,n:16}); const L=new THREE.PointLight(0xff5020,0,3,2); L.position.set(0,.8,0); S.add(L);
+  K.arr('ter',[0,1.1,0],[0,1,0],.5); K.arr('lum',[.6,.6,.4],[1,0,1],.5);
+  return {arrows:k=>K.showArr(k), update(T,t){ el.set(sm(T,.4,1)*(1-sm(T,8.6,9))); const hot=sm(T,2.8,4)*(1-sm(T,8.6,9.6)); coilM.emissiveIntensity=hot*3*(1+.05*Math.sin(t*11)); glowS.material.opacity=hot*.8; L.intensity=hot*3; hw.on=sm(T,5.6,6.4)*(1-sm(T,9,10));
+   const toast=sm(T,5.6,8.4); breadM.color.setRGB(.94-toast*.5,.85-toast*.55,.66-toast*.55); const pop=eas(sm(T,8.6,8.9)); br.forEach(b=>b.position.y=.55-.15*(1-pop)*sm(T,.2,.6)+pop*.35); lever.position.y=.6-.3*sm(T,.2,.6)*(1-pop); K.tick(T,t); }}; });
+
+/* ---------- FOGUERA ---------- */
+SLOW['Foguera']=mkSlow(11,[3,2.2,3.8],[0,.6,0],[
+ [.6,"La <b>fusta</b> guarda l'<b>energia química</b> que l'arbre va fabricar amb la llum del Sol.",['qui'],null],
+ [3.0,"Encenem el foc: la fusta crema amb l'<b>oxigen</b> de l'aire.",['qui'],null],
+ [5.6,"L'energia química es transforma en <b>calor</b> (tèrmica) i <b>llum</b> (lluminosa).",['qui'],['ter','lum']],
+ [8.4,"La llum de la foguera va ser, fa anys, <b>llum del Sol</b> guardada a l'arbre!",['lum'],['qui','ter','lum']]],
+ S=>{ const K=KIT(S,{bg:0x070a10,dim:.2}); K.add(new THREE.CylinderGeometry(6,6,.1,40),K.M({color:0x3a3326,roughness:1}),0,-.05,0);
+  for(let i=0;i<10;i++){ const a=i/10*Math.PI*2; K.add(new THREE.DodecahedronGeometry(.18,0),K.M({color:0x777777,roughness:.9}),Math.cos(a)*.85,.1,Math.sin(a)*.85); }
+  const logM=K.M({color:0x5a3a22,roughness:.9,emissive:0xff4010,emissiveIntensity:0}); for(let i=0;i<5;i++){ const l=K.add(new THREE.CylinderGeometry(.08,.1,1.2,10),logM,0,.35,0); l.rotation.set(.9,i*Math.PI*2/5,0); l.position.set(Math.cos(i*1.256)*.25,.35,Math.sin(i*1.256)*.25); }
+  const fl=[]; for(let i=0;i<7;i++){ const s=addSpr(S,glowTex('rgba(255,250,220,1)','rgba(255,130,20,.95)',96,160,true),.5,.9); s.userData.ph=i/7; s.userData.x=(Math.random()-.5)*.4; s.userData.z=(Math.random()-.5)*.4; fl.push(s); }
+  const halo=K.glow(0,.8,0,4,'rgba(255,170,80,.5)','rgba(255,100,20,0)'); halo.material.blending=THREE.AdditiveBlending;
+  const sp=[]; for(let i=0;i<20;i++){ const s=addSpr(S,glowTex('rgba(255,240,180,1)','rgba(255,120,0,0)'),.05,.05); s.userData.ph=Math.random(); s.userData.x=(Math.random()-.5)*.6; s.userData.z=(Math.random()-.5)*.6; sp.push(s); }
+  const L=new THREE.PointLight(0xff8a3a,0,10,1.6); L.position.set(0,1,0); L.castShadow=true; S.add(L);
+  const ox=[]; for(let i=0;i<4;i++){ const a=i*Math.PI/2; ox.push(K.flow([[Math.cos(a)*2,.3,Math.sin(a)*2],[Math.cos(a)*.6,.35,Math.sin(a)*.6]],'mec',{n:8,size:.09,speed:.35})); }
+  const hw=K.heat(0,1.4,0,{w:.6,h:1.6,n:22}); const tree=K.add(new THREE.ConeGeometry(.6,1.6,8),K.M({color:0x2f7a3a,transparent:true,opacity:0}),-2.2,1.2,-1.6);
+  const glowLog=K.glow(0,.35,0,1.2,'rgba(180,255,120,.6)','rgba(120,255,60,0)'); glowLog.material.blending=THREE.AdditiveBlending;
+  K.arr('ter',[0,1.7,0],[0,1,0],.7); K.arr('lum',[.6,1,0],[1,0,0],.8); K.arr('lum',[-.6,1,0],[-1,0,0],.8); K.arr('qui',[-1.6,1,-1.2],[1,-.4,.8],.8);
+  return {arrows:k=>K.showArr(k), update(T,t){ glowLog.material.opacity=sm(T,.5,1.3)*(1-sm(T,3,4))*(.7+.3*Math.sin(t*3)); tree.material.opacity=sm(T,.5,1.5)*(1-sm(T,3,4))*.6+sm(T,8.4,9.4)*.6;
+   const f=sm(T,3,4.5); ox.forEach(o=>o.set(sm(T,3.2,4)*(1-sm(T,5.6,6.4)*.6))); logM.emissiveIntensity=f*.8*(1+.2*Math.sin(t*7));
+   fl.forEach(s=>{ const u=(t*.9+s.userData.ph)%1; s.visible=f>.02; s.position.set(s.userData.x*(1-u),.5+u*.7*f,s.userData.z*(1-u)); s.scale.set(.5*f*(1-u*.6),.95*f*(1-u*.3)*(1+.1*Math.sin(t*17+s.userData.ph*9)),1); s.material.opacity=f*(1-u*.8); });
+   halo.material.opacity=f*(.8+.15*Math.sin(t*13)); L.intensity=f*14*(1+.1*Math.sin(t*17)+.08*Math.sin(t*29));
+   sp.forEach(s=>{ const u=(t*.5+s.userData.ph)%1; s.visible=f>.3; s.position.set(s.userData.x+Math.sin(u*9)*.1,.6+u*2.2,s.userData.z); s.material.opacity=f*(1-u); }); hw.on=sm(T,5.6,6.4); K.tick(T,t); }}; });
+
+/* ---------- MÒBIL CARREGANT ---------- */
+SLOW['Mòbil carregant']=mkSlow(13,[1.2,1.3,1.8],[.2,.1,0],[
+ [.6,"L'<b>energia elèctrica</b> de l'endoll arriba pel <b>carregador</b> i el cable.",['ele'],null],
+ [3.0,"A la <b>bateria</b>, l'electricitat provoca canvis en unes substàncies i queda guardada com a <b>energia química</b>.",['ele'],['qui']],
+ [6.2,"Mentre carrega, el mòbil s'escalfa una mica: una part es perd en <b>calor</b>.",['ele'],['ter']],
+ [8.8,"Quan el fas servir, la bateria torna a fer <b>energia elèctrica</b> per a la pantalla (<b>lluminosa</b>) i l'altaveu (<b>so</b>).",['qui'],['ele','lum','so']]],
+ S=>{ const K=KIT(S,{dim:.45}); K.wood(6,4); K.wall(-1.2,0x5a6676); K.socket(-1.4,.8,-1.12);
+  K.add(new THREE.BoxGeometry(.32,.32,.22),K.M({color:0xf5f5f5,roughness:.4}),-1.4,.8,-.9);
+  K.cable([[-1.4,.75,-.8],[-1.2,.04,-.4],[-.4,.03,-.1],[-.05,.03,0]],0xf0f0f0,.02); const el=K.flow([[-1.4,.75,-.8],[-1.2,.04,-.4],[-.4,.03,-.1],[-.05,.03,0],[.25,.06,0]],'ele',{n:14,size:.09});
+  const ph=new THREE.Group(); ph.position.set(.4,.04,0); S.add(ph); K.add(new THREE.BoxGeometry(.9,.05,.45),K.M({color:0x1c1f24,metalness:.4,roughness:.3}),0,0,0,ph);
+  const c=document.createElement('canvas'); c.width=256; c.height=128; const g=c.getContext('2d'); const tex=new THREE.CanvasTexture(c); tex.colorSpace=THREE.SRGBColorSpace;
+  const scrM=new THREE.MeshBasicMaterial({map:tex}); const scr=new THREE.Mesh(new THREE.PlaneGeometry(.82,.4),scrM); scr.rotation.x=-Math.PI/2; scr.position.y=.027; ph.add(scr);
+  const batM=K.M({color:0x2f6a2f,transparent:true,opacity:.0,emissive:0x7dff4a,emissiveIntensity:0}); K.add(new THREE.BoxGeometry(.5,.03,.3),batM,0,.0,0,ph);
+  const hw=K.heat(.4,.12,0,{w:.5,h:.5,n:10}); const snd=K.sound(.85,.12,0,[1,.3,0]); const glow=K.glow(.4,.15,0,1.1,'rgba(140,200,255,.5)','rgba(80,140,255,0)'); glow.material.blending=THREE.AdditiveBlending;
+  K.arr('ele',[-.9,.15,-.2],[1,0,.2],.5); K.arr('lum',[.4,.15,0],[0,1,0],.5); K.arr('so',[.9,.15,0],[1,.3,0],.4); K.arr('ter',[.4,.2,-.2],[0,1,0],.4);
+  let lastPct=-1, lastUse=-1; const draw=(pct,use,t)=>{ g.fillStyle=use?'#1d3a6a':'#060708'; g.fillRect(0,0,256,128); if(use){ g.fillStyle='#ffd23f'; g.font='bold 22px sans-serif'; g.fillText('♪ ♫',20,44); g.fillStyle='#fff'; g.font='16px sans-serif'; g.fillText('Música',20,80); }
+   g.strokeStyle='#fff'; g.lineWidth=3; g.strokeRect(150,44,80,40); g.fillRect(230,56,6,16); g.fillStyle=pct<.2?'#ff5a5a':'#7dff4a'; g.fillRect(154,48,72*pct,32); g.fillStyle='#fff'; g.font='bold 16px sans-serif'; g.fillText(Math.round(pct*100)+'%',160,108); tex.needsUpdate=true; };
+  return {arrows:k=>K.showArr(k), update(T,t){ el.set(sm(T,.5,1.2)*(1-sm(T,8.4,8.8))); const pct=.08+.92*sm(T,3,8.4)-sm(T,9.2,13)*.25; const use=T>8.8; batM.emissiveIntensity=sm(T,3,4)*.5*(1-sm(T,9,10)*.5); batM.opacity=sm(T,3,4)*.6;
+   const p=Math.round(pct*100); if(p!==lastPct||use!==lastUse){ draw(Math.max(0,Math.min(1,pct)),use,t); lastPct=p; lastUse=use; } hw.on=sm(T,6.2,7)*(1-sm(T,8.8,9.6)*.5); snd.on=sm(T,9,9.6); glow.material.opacity=use?.7:0; K.tick(T,t); }}; });
 
 const PLAY=EspPlay({CM:ENER_CM,go:k=>{ if(mode!=='central') setMode('central'); setTimeout(()=>selectCentral(k),50); },act:(window.ENERACT||{})});
 let casa3d=null; function stageCasa(){ if(casa3d) casa3d.dispose(); ST.innerHTML='<div class="stbox" id="casaBox" style="width:100%;height:100%;align-items:stretch"></div>'; const box=$('#casaBox'); try{ casa3d=Casa3D(box,{APPS,ROOMS,EFF,onToggle:a=>{ casaStats(); casaInfo(a); }}); }catch(e){ console.warn('casa3d',e); casa3d=null; box.innerHTML='<svg id="house" viewBox="0 0 600 410"></svg>'; } drawHouse(); }
