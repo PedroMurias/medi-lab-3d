@@ -263,7 +263,47 @@ body{background:radial-gradient(ellipse at 50% 38%,#ffffff 0%,#f7eff4 42%,#e8dce
 @media (max-width:860px){#stage{left:8px;right:8px;top:60px;bottom:auto;height:calc(60% - 70px);padding:4px}.av{font-size:64px}}
 </style>
 </head>
-<body>
+<body><script id="mlux">/* UX comú: pantalla de càrrega + mode lleuger */
+(function(){
+ var FACTS={
+  'energia':["Un llamp té prou energia per tenir encesa una bombeta durant mesos.","El Sol envia a la Terra en una hora més energia de la que gastem en un any.","Una bombeta LED gasta unes 8 vegades menys que una d'antiga."],
+  'ecosistem':["Un sol arbre pot donar casa a centenars d'espècies diferents.","Les plantes fabriquen l'oxigen que respirem.","Una formiga pot aixecar 50 vegades el seu pes."],
+  'espanya':["L'Aneto, als Pirineus, fa 3.404 metres.","El Tajo és el riu més llarg de la península: 1.007 km.","Les Canàries tenen el cim més alt d'Espanya: el Teide (3.715 m)."],
+  'univers':["La llum del Sol triga uns 8 minuts a arribar a la Terra.","A Júpiter hi cabrien més de 1.300 Terres.","A la Lluna, les petjades dels astronautes duraran milions d'anys."],
+  'temps':["La Revolució Francesa va començar el 1789.","El primer tren de la península va unir Barcelona i Mataró el 1848.","Les dones van poder votar per primer cop a Espanya el 1933."],
+  'ciutadania':["Catalunya té 947 municipis.","La Constitució espanyola és del 1978.","A Espanya es pot votar a partir dels 18 anys."],
+  'cos':["El cos humà té 206 ossos.","El cor batega unes 100.000 vegades cada dia.","Si estiréssim tots els vasos sanguinis, farien més de dues voltes a la Terra."],
+  'adolesc':["Durant l'adolescència es pot créixer fins a 10 cm en un any.","El cervell no acaba de madurar fins als 25 anys, aproximadament.","Un nadó té uns 300 ossos; després alguns s'uneixen."],
+  '':["Toca, gira i explora: cada laboratori amaga descobriments."]};
+ var t=(document.title||'').toLowerCase(), F=FACTS[''];
+ for(var k in FACTS){ if(k&&t.indexOf(k)>=0){ F=FACTS[k]; break; } }
+ var st=document.createElement('style');
+ st.textContent='#mlLoad{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:radial-gradient(circle at 50% 40%,#13284a,#050b16 70%);color:#eaf4ff;font-family:"Space Grotesk",system-ui,sans-serif;transition:opacity .6s}'+
+ '#mlLoad .r{width:64px;height:64px;border-radius:50%;border:5px solid rgba(0,229,255,.18);border-top-color:#00e5ff;animation:mlspin 1s linear infinite}'+
+ '#mlLoad b{font-size:20px;letter-spacing:.5px}#mlLoad p{max-width:min(520px,86vw);text-align:center;font-size:16px;line-height:1.45;margin:0;opacity:.9}#mlLoad small{opacity:.6}'+
+ '@keyframes mlspin{to{transform:rotate(360deg)}}'+
+ '#mlLite{position:fixed;right:10px;bottom:10px;z-index:70;border:1px solid rgba(0,229,255,.4);background:rgba(6,14,28,.82);color:#cfefff;font:600 12px "Space Grotesk",system-ui,sans-serif;padding:6px 11px;border-radius:999px;cursor:pointer;backdrop-filter:blur(4px)}#mlLite.on{background:#1f8a5a;color:#fff;border-color:#7dffb2}'+
+ '#mlToast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);z-index:9998;background:rgba(6,14,28,.94);color:#fff;border:1px solid rgba(255,210,63,.5);border-radius:14px;padding:10px 14px;font:500 14px "Space Grotesk",system-ui;display:flex;gap:10px;align-items:center;max-width:92vw}#mlToast button{border:0;border-radius:9px;padding:6px 12px;font:700 13px inherit;cursor:pointer}';
+ document.head.appendChild(st);
+ var L=document.createElement('div'); L.id='mlLoad'; L.innerHTML='<div class="r"></div><b>Carregant el laboratori…</b><p>💡 <i>Saps que…?</i> '+F[Math.floor(Math.random()*F.length)]+'</p><small>La primera vegada pot trigar una mica.</small>';
+ var add=function(){ if(document.body&&!document.getElementById('mlLoad')) document.body.insertBefore(L,document.body.firstChild); };
+ if(document.body) add(); else document.addEventListener('DOMContentLoaded',add);
+ var hide=function(){ if(!L.parentNode) return; L.style.opacity='0'; setTimeout(function(){ L.remove(); },650); };
+ setTimeout(hide,25000);
+ var lite=false; try{ lite=localStorage.getItem('mlLite')==='1'; }catch(e){}
+ var R=null,S=null,rendered=0;
+ function applyLite(on){ lite=on; try{ localStorage.setItem('mlLite',on?'1':'0'); }catch(e){} var b=document.getElementById('mlLite'); if(b){ b.classList.toggle('on',on); b.textContent=on?'🐢 Mode lleuger: sí':'⚡ Mode lleuger'; }
+  if(!R) return; R.__ppr=R.__ppr||R.getPixelRatio(); R.setPixelRatio(on?Math.min(1,R.__ppr)*0.75:R.__ppr); R.shadowMap.enabled=!on; try{ var c=R.domElement; R.setSize(c.clientWidth,c.clientHeight,false); }catch(e){}
+  if(S) S.traverse(function(o){ if(o.isLight&&o.castShadow!==undefined){ if(on){ o.userData.__cs=o.castShadow; o.castShadow=false; } else if(o.userData.__cs!=null) o.castShadow=o.userData.__cs; } if(o.material){ (Array.isArray(o.material)?o.material:[o.material]).forEach(function(m){ m.needsUpdate=true; }); } }); }
+ window.__LITE=function(renderer,scene){ R=renderer; S=scene;
+  var orig=R.render.bind(R); R.render=function(a,b){ orig(a,b); if(++rendered===2) setTimeout(hide,400); };
+  var b=document.createElement('button'); b.id='mlLite'; b.type='button'; b.onclick=function(){ applyLite(!lite); }; document.body.appendChild(b);
+  if(lite) setTimeout(function(){ applyLite(true); },1500); else applyLite(false);
+  /* detecció automàtica: si va molt lent, ho proposa */
+  setTimeout(function(){ if(lite) return; var n=0,t0=performance.now(); (function f(){ n++; if(performance.now()-t0<3000) requestAnimationFrame(f); else { var fps=n/3; if(fps<22){ var T=document.createElement('div'); T.id='mlToast'; T.innerHTML='🐢 Sembla que va lent ('+Math.round(fps)+' fps). <button style="background:#1f8a5a;color:#fff">Activa el mode lleuger</button><button style="background:#24405a;color:#fff">No</button>'; document.body.appendChild(T); var bs=T.querySelectorAll('button'); bs[0].onclick=function(){ applyLite(true); T.remove(); }; bs[1].onclick=function(){ T.remove(); }; setTimeout(function(){ T.isConnected&&T.remove(); },12000); } } })(); },6000); };
+ window.addEventListener('load',function(){ setTimeout(function(){ if(!R) hide(); },1500); });
+})();
+</script>
 <canvas id="c"></canvas>
 <div id="loading"><i></i>CARREGANT…</div>
 <header id="top" class="glass">
@@ -923,7 +963,7 @@ const CICLE=[[1,5,'#e0475b','Menstruació','Es desprèn part de la paret de l\'�
 const ST=$('#stage>div');
 /* ================= 3D: escenari comú ================= */
 const canvas=$('#c');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,powerPreference:'high-performance'}); renderer.setClearColor(0x000000,0); renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.15;
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,powerPreference:'high-performance'}); setTimeout(()=>window.__LITE&&__LITE(renderer,scene),0); renderer.setClearColor(0x000000,0); renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.15;
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.outputColorSpace=THREE.SRGBColorSpace;
 const scene=new THREE.Scene(); scene.background=null; scene.fog=new THREE.Fog(0xefe6ee,30,90);
 const camera=new THREE.PerspectiveCamera(40,1,0.01,400);
