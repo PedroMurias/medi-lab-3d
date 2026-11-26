@@ -130,7 +130,19 @@
         html[data-theme="light"] #p1-options-grid button.opt-ko { background: #FDE8E9 !important; border-color: #E5484D !important; }
         html[data-theme="light"] #p1-options-grid button.opt-ko .opt-letter { background: #E5484D !important; color: #fff !important; }
         html[data-theme="light"] #p1-options-grid button.opt-dim { opacity: .55; }
-        html[data-theme="light"] #p1-feedback-bar { background: #fff !important; }
+        html[data-theme="light"] #p1-feedback-bar { background: #fff !important; border-width: 2px !important; box-shadow: 0 6px 18px rgba(47,107,255,.10); }
+        html[data-theme="light"] #p1-feedback-bar.bg-emerald-500\/10 { background: #E3F8EE !important; border-color: #1DB47A !important; }
+        html[data-theme="light"] #p1-feedback-bar.bg-rose-500\/10 { background: #FDE8E9 !important; border-color: #E5484D !important; }
+        html[data-theme="light"] #p1-feedback-title { font-size: 1.05rem !important; }
+        html[data-theme="light"] #p1-feedback-desc { color: #0E1B5B !important; font-size: .9rem !important; }
+        /* Pantalla final: caixes blanques i text fosc */
+        html[data-theme="light"] :is(#screen-results, #screen-mode-results) .glass-panel { background: rgba(255,255,255,.9) !important; }
+        html[data-theme="light"] :is(#res-review-container, #res-p1-review, #res-badges, #mr-review, #mr-badges, #mr-podium > div, #mr-stats > div, #screen-results .grid > div) { background: #FFFFFF !important; border: 2px solid #C9D8F5 !important; box-shadow: 0 4px 14px rgba(47,107,255,.08); }
+        html[data-theme="light"] :is(#res-review-list, #res-p1-review, #mr-review) .bg-rose-500\/10 { background: #FDE8E9 !important; border-color: #F1A7AB !important; }
+        html[data-theme="light"] :is(#res-review-list, #res-p1-review, #mr-review) .bg-emerald-500\/20 { background: #E3F8EE !important; border-color: #1DB47A !important; color: #0F8F5F !important; }
+        html[data-theme="light"] :is(#res-review-list, #res-p1-review, #mr-review) :is(.text-slate-200, .text-slate-300) { color: #0E1B5B !important; }
+        html[data-theme="light"] :is(#res-review-list, #res-p1-review, #mr-review) .text-slate-400 { color: #3B4B86 !important; }
+        html[data-theme="light"] #screen-board details summary { background: #fff; } html[data-theme="light"] #screen-board details { background: #fff !important; }
         html[data-theme="light"] #p1-cat-badge { background: rgba(47,107,255,.10) !important; color: #0E1B5B !important; border-color: #BFD0F5 !important; }
         html[data-theme="light"] #rosco-input, html[data-theme="light"] #rosco-clue-card .bg-slate-950\/70 { background: #fff !important; }
 
@@ -1280,7 +1292,7 @@
             box.classList.remove('hidden');
             box.innerHTML = `<div class="flex items-center justify-between mb-3"><h3 class="font-display font-extrabold text-sm sm:text-base text-white flex items-center gap-2"><span>📖</span> Preguntes per repassar</h3><span class="text-xs font-bold text-slate-400">${wrong.length}</span></div>
                 <div class="max-h-52 overflow-y-auto space-y-2 pr-1">${wrong.map(c => `<div class="p-3 rounded-xl border bg-rose-500/10 border-rose-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div><p class="text-[10px] font-bold text-slate-400 uppercase">${c.icon} ${escHTML(c.cat)}</p><p class="text-xs text-slate-200 leading-snug">${escHTML(c.q)}</p><p class="text-[11px] text-slate-400 mt-0.5">${escHTML(c.info)}</p></div>
+                    <div><p class="text-[10px] font-bold text-slate-400 uppercase">${c.icon} ${escHTML(c.cat)}</p><p class="text-xs text-slate-200 leading-snug">${escHTML(c.q)}</p>${c.chosen != null && c.chosen >= 0 ? `<p class="text-[11px] text-rose-300 font-bold mt-0.5">Has respost: ${escHTML(c.options[c.chosen])}</p>` : c.chosen === -1 ? '<p class="text-[11px] text-rose-300 font-bold mt-0.5">Sense resposta (temps esgotat)</p>' : ''}<p class="text-[11px] text-slate-400 mt-0.5">${escHTML(c.info)}</p></div>
                     <span class="px-2.5 py-1 rounded-lg bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 font-display font-extrabold text-xs shrink-0 self-start sm:self-center">${escHTML(c.options[c.answer])}</span></div>`).join('')}</div>`;
             btn.classList.toggle('hidden', game.mode === 'retry');
         }
@@ -1406,7 +1418,7 @@
                 box.innerHTML = `<div class="flex flex-col sm:flex-row sm:items-center gap-3">
                     <div class="flex-1 flex items-center gap-3 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-400/30">
                         <span class="text-3xl">${escHTML(game.avatar)}</span>
-                        <div><p class="font-display font-black text-lg text-white leading-tight">${escHTML(acc.name)}</p><p class="text-xs text-emerald-200">${acc.teacher ? 'Mestre/a' : (acc.clsName ? 'Classe ' + escHTML(acc.clsName) : 'Alumne/a')} · ${escHTML(acc.email)}</p></div>
+                        <div><p class="font-display font-black text-lg text-white leading-tight">${escHTML(acc.name)}</p><p class="text-xs text-emerald-200">${acc.admin ? 'Administrador/a' : acc.teacher ? 'Mestre/a' : (acc.clsName ? 'Classe ' + escHTML(acc.clsName) : 'Alumne/a')} · ${escHTML(acc.email)}</p></div>
                     </div>
                     <button type="button" onclick="openBoard()" class="px-5 py-3.5 rounded-2xl bg-amber-400 border-amber-700 text-slate-950 font-display font-black text-sm btn-arcade flex items-center justify-center gap-2">🏆 Classificació i progrés</button>
                     <button type="button" onclick="changeUser()" class="px-4 py-3.5 rounded-2xl bg-white/5 border border-white/10 text-slate-300 text-xs font-bold hover:bg-white/10">Canviar d'usuari</button></div>`;
@@ -1469,7 +1481,9 @@
             const perTopic = {}; game.p1Questions.forEach(c => { const k = c.icon + ' ' + c.cat; perTopic[k] = perTopic[k] || [k, 0, 0]; perTopic[k][2]++; if (!game.wrongCards.includes(c)) perTopic[k][1]++; });
             const rosco = game.mode === 'concurs' ? game.roscoItems.filter(i => i.status === 'correct').length : null;
             return { mode: game.mode, lvl: selLevelId, src: activeSources().map(s => s.src.id), ok: game.p1Correct, total, rosco, gold: game.mode === 'cofres' ? game.gold : null,
-                streak: game.p1BestStreak, perTopic: Object.values(perTopic), wrongQ: game.wrongCards.map(c => c.q) };
+                streak: game.p1BestStreak, perTopic: Object.values(perTopic), wrongQ: game.wrongCards.map(c => c.q),
+                answers: game.p1Questions.map(c => ({ q: String(c.q).slice(0, 160), cat: c.cat, a: c.chosen == null ? null : c.chosen < 0 ? '' : String(c.options[c.chosen]).slice(0, 80), ok: String(c.options[c.answer]).slice(0, 80), c: c.chosen === c.answer })),
+                roscoA: game.mode === 'concurs' ? game.roscoItems.map(i => ({ l: i.letter, clue: String(i.clue).slice(0, 140), a: String(i.userAnswer || '').slice(0, 60), ok: String(i.displayAnswer || '').slice(0, 60), st: i.status })) : null };
         }
         async function recordGame(noteId) {
             lastPts = null; const el = document.getElementById(noteId); if (!el) return;
@@ -1488,14 +1502,16 @@
             boardCls = GR.acc.cls || boardCls; renderBoardTabs(); loadBoard();
         }
         function renderBoardTabs() {
-            const acc = GR.acc, tabs = [['comp', '🏆 Competició'], ['me', '📈 El meu progrés']]; if (acc.teacher) tabs.push(['cls', '🧑‍🏫 La classe']);
+            const acc = GR.acc, tabs = [['comp', '🏆 Competició'], ['me', '📈 El meu progrés']]; if (acc.teacher) tabs.push(['cls', acc.admin ? '🧑‍🏫 Panell del mestre (admin)' : '🧑‍🏫 Panell del mestre']);
             document.getElementById('board-tabs').innerHTML = tabs.map(([id, n]) => `<button type="button" data-btab="${id}" class="px-4 py-2 rounded-xl border-2 font-display font-bold text-sm ${boardTab === id ? 'bg-cyan-500/20 border-cyan-400 text-white' : 'bg-slate-950/60 border-slate-800 text-slate-400'}">${n}</button>`).join('');
         }
         document.addEventListener('click', e => {
             const t = e.target.closest('[data-btab]'); if (t) { boardTab = t.dataset.btab; renderBoardTabs(); loadBoard(); return; }
             const r = e.target.closest('[data-brange]'); if (r) { boardRange = r.dataset.brange; loadBoard(); return; }
-            const c = e.target.closest('[data-bcls]'); if (c) { boardCls = c.dataset.bcls; loadBoard(); }
+            const c = e.target.closest('[data-bcls]'); if (c) { boardCls = c.dataset.bcls; boardStu = null; loadBoard(); return; }
+            const st = e.target.closest('[data-bstu]'); if (st) { boardStu = st.dataset.bstu; loadBoard(); }
         });
+        let boardStu = null;
         const pct = (ok, n) => n ? Math.round(100 * ok / n) : 0;
         const fmtDate = t => new Date(t).toLocaleDateString('ca-ES', { day: '2-digit', month: '2-digit' });
         async function loadBoard() {
@@ -1503,6 +1519,7 @@
             try {
                 if (boardTab === 'comp') return renderComp(el);
                 if (boardTab === 'me') return renderMe(el);
+                if (boardStu) return renderStudent(el, boardStu);
                 return renderClass(el);
             } catch (e) { el.innerHTML = `<p class="text-rose-300 text-sm py-6 text-center">No s'ha pogut carregar (${escHTML(e.code || e.message)}).</p>`; }
         }
@@ -1548,12 +1565,57 @@
             el.innerHTML = `<div class="flex gap-2 flex-wrap mb-4 items-center">${classes.map(c => `<button type="button" data-bcls="${c.id}" class="px-3 py-1.5 rounded-lg border text-xs font-bold ${boardCls === c.id ? 'bg-amber-400/20 border-amber-400 text-amber-100' : 'bg-slate-950/60 border-slate-700 text-slate-400'}">${escHTML(c.name || c.course || c.id)}</button>`).join('')}
                 <button type="button" onclick="copySummary()" class="ml-auto px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-xs font-bold text-white">📋 Copiar CSV</button></div>
                 <p id="mr-copied" class="hidden text-xs text-emerald-300 font-bold mb-2"></p>
+                <p class="text-xs text-slate-400 mb-3">Toca un alumne/a per veure la seva evolució i totes les respostes de cada partida.</p>
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                   <div class="lg:col-span-2 overflow-x-auto"><table class="w-full text-xs"><thead><tr class="text-slate-400 text-left"><th class="py-1.5 pr-2">#</th><th>Alumne/a</th><th class="text-right">Partides</th><th class="text-right">Punts</th><th class="text-right">Setmana</th><th class="text-right">Encerts</th><th class="text-right">Rosco</th><th class="text-right">Últim</th></tr></thead>
-                  <tbody>${rows.map((r, i) => { const p = pct(r.ok, r.total); const idle = r.updated && Date.now() - r.updated > 7 * 864e5; return `<tr class="border-t border-white/5 ${idle ? 'opacity-60' : ''}"><td class="py-1.5 pr-2 text-slate-500">${i + 1}</td><td class="font-bold text-white">${escHTML(r.name)}</td><td class="text-right">${r.games || 0}</td><td class="text-right text-amber-300 font-bold">${r.pts || 0}</td><td class="text-right">${r.wk === week ? r.ptsW || 0 : 0}</td><td class="text-right ${p >= 80 ? 'text-emerald-300' : p >= 60 ? 'text-amber-300' : 'text-rose-300'} font-bold">${p}%</td><td class="text-right">${r.bestRosco || 0}</td><td class="text-right text-slate-400">${r.updated ? fmtDate(r.updated) : '–'}</td></tr>`; }).join('') || '<tr><td colspan="8" class="py-4 text-center text-slate-500">Cap partida guardada encara.</td></tr>'}</tbody></table></div>
+                  <tbody>${rows.map((r, i) => { const p = pct(r.ok, r.total); const idle = r.updated && Date.now() - r.updated > 7 * 864e5; return `<tr data-bstu="${escHTML(r.uid)}" class="border-t border-white/5 cursor-pointer hover:bg-cyan-500/10 ${idle ? 'opacity-60' : ''}"><td class="py-1.5 pr-2 text-slate-500">${i + 1}</td><td class="font-bold text-white">${escHTML(r.name)} <span class="text-cyan-300 text-[10px] font-normal">veure ›</span></td><td class="text-right">${r.games || 0}</td><td class="text-right text-amber-300 font-bold">${r.pts || 0}</td><td class="text-right">${r.wk === week ? r.ptsW || 0 : 0}</td><td class="text-right ${p >= 80 ? 'text-emerald-300' : p >= 60 ? 'text-amber-300' : 'text-rose-300'} font-bold">${p}%</td><td class="text-right">${r.bestRosco || 0}</td><td class="text-right text-slate-400">${r.updated ? fmtDate(r.updated) : '–'}</td></tr>`; }).join('') || '<tr><td colspan="8" class="py-4 text-center text-slate-500">Cap partida guardada encara.</td></tr>'}</tbody></table></div>
                   <div><h4 class="font-display font-bold text-sm text-white mb-2">Les 10 més fallades</h4><div class="space-y-1.5 mb-4">${worst.map(([q, n]) => `<div class="px-3 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-slate-200 flex justify-between gap-2"><span>${escHTML(q)}</span><span class="text-rose-300 font-bold shrink-0">×${n}</span></div>`).join('') || '<p class="text-xs text-slate-500">Cap encara.</p>'}</div>
                   <h4 class="font-display font-bold text-sm text-white mb-2">Per matèria (tota la classe)</h4><div class="space-y-1.5">${Object.entries(topics).sort((a, b) => b[1].n - a[1].n).map(([k, v]) => { const p = pct(v.ok, v.n); return `<div class="px-3 py-1.5 rounded-lg bg-slate-950/60 text-xs flex items-center gap-2"><span class="flex-1 text-slate-200 truncate">${escHTML(k)}</span><div class="w-24 h-2 rounded-full bg-slate-800 overflow-hidden"><div class="h-full ${p >= 80 ? 'bg-emerald-400' : p >= 60 ? 'bg-amber-400' : 'bg-rose-400'}" style="width:${p}%"></div></div><span class="w-9 text-right font-bold">${p}%</span></div>`; }).join('') || '<p class="text-xs text-slate-500">Cap encara.</p>'}</div></div>
                 </div>`;
+        }
+
+        /* ---- Fitxa d'un alumne/a (només mestres) ---- */
+        async function renderStudent(el, uid) {
+            const [m, games] = await Promise.all([GR.student(uid), GR.studentGames(uid, 40)]);
+            const back = `<button type="button" data-bcls="${escHTML(boardCls || '')}" class="px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-xs font-bold text-white">‹ Tornar a la classe</button>`;
+            if (!m) { el.innerHTML = `${back}<p class="text-slate-400 text-sm py-6 text-center">Aquest alumne/a encara no té cap partida guardada.</p>`; return; }
+            const stat = (l, v, c) => `<div class="p-3 rounded-2xl bg-${c}-500/10 border border-${c}-400/30 text-center"><p class="text-[10px] font-bold uppercase text-${c}-300">${l}</p><p class="font-display font-black text-2xl text-white">${v}</p></div>`;
+            const chrono = games.slice().reverse();
+            const W = 560, H = 120, n = chrono.length;
+            const px = i => n > 1 ? 30 + i * (W - 60) / (n - 1) : W / 2, py = p => 10 + (100 - p) * (H - 30) / 100;
+            const pts = chrono.map((g, i) => [px(i), py(pct(g.ok, g.total)), pct(g.ok, g.total), g]);
+            const chart = n ? `<svg viewBox="0 0 ${W} ${H}" class="w-full h-32">
+                ${[0, 50, 100].map(v => `<line x1="30" x2="${W - 30}" y1="${py(v)}" y2="${py(v)}" stroke="currentColor" stroke-opacity=".12"/><text x="4" y="${py(v) + 4}" font-size="10" fill="currentColor" fill-opacity=".6">${v}%</text>`).join('')}
+                ${n > 1 ? `<polyline fill="none" stroke="#2F6BFF" stroke-width="3" stroke-linejoin="round" points="${pts.map(p => p[0] + ',' + p[1]).join(' ')}"/>` : ''}
+                ${pts.map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="${p[2] >= 80 ? '#1DB47A' : p[2] >= 60 ? '#FFC93C' : '#E5484D'}"><title>${fmtDate(p[3].t)} · ${p[2]}%</title></circle>`).join('')}
+                ${pts.map((p, i) => n <= 12 || i % Math.ceil(n / 12) === 0 ? `<text x="${p[0]}" y="${H - 4}" font-size="9" text-anchor="middle" fill="currentColor" fill-opacity=".6">${fmtDate(p[3].t)}</text>` : '').join('')}
+            </svg>` : '<p class="text-xs text-slate-500">Cap partida.</p>';
+            const topics = Object.entries(m.topics || {}).sort((a, b) => b[1].n - a[1].n);
+            const worst = Object.values(m.wrong || {}).sort((a, b) => b.n - a.n).slice(0, 8);
+            const modeName = id => (MODES.find(x => x.id === id) || {}).name || id;
+            const modeIcon = id => (MODES.find(x => x.id === id) || {}).icon || '🎮';
+            const ansRow = a => `<div class="flex items-start gap-2 px-2.5 py-1.5 rounded-lg ${a.c ? 'bg-emerald-500/10' : 'bg-rose-500/10'} text-xs"><span class="shrink-0">${a.c ? '✅' : '❌'}</span><div class="flex-1 min-w-0"><p class="text-slate-200 leading-snug">${escHTML(a.q)}</p>${a.c ? `<p class="text-[11px] text-emerald-300">${escHTML(a.ok)}</p>` : `<p class="text-[11px] text-rose-300">Va respondre: <b>${a.a ? escHTML(a.a) : 'sense resposta'}</b> · Correcta: <b class="text-emerald-300">${escHTML(a.ok)}</b></p>`}</div><span class="text-[10px] text-slate-500 shrink-0 hidden sm:inline">${escHTML(a.cat || '')}</span></div>`;
+            const roscoRow = r => `<span title="${escHTML(r.clue)}&#10;Resposta: ${escHTML(r.ok)}${r.a ? '&#10;Va dir: ' + escHTML(r.a) : ''}" class="inline-flex items-center justify-center w-7 h-7 rounded-lg font-display font-black text-xs ${r.st === 'correct' ? 'bg-emerald-500 text-white' : r.st === 'wrong' ? 'bg-rose-500 text-white' : 'bg-slate-700 text-slate-200'}">${r.l}</span>`;
+            const gameCard = g => `<details class="rounded-xl bg-slate-950/50 border border-white/5 overflow-hidden"><summary class="flex items-center gap-3 px-3 py-2 text-xs cursor-pointer list-none">
+                    <span class="text-slate-500 w-12">${fmtDate(g.t)}</span><span class="flex-1 text-slate-200">${modeIcon(g.mode)} ${escHTML(modeName(g.mode))} · nivell ${escHTML(g.lvl || '')} · <b>${g.ok}/${g.total}</b> (${pct(g.ok, g.total)}%)${g.rosco != null ? ' · Rosco ' + g.rosco + '/26' : ''}${g.gold != null ? ' · ' + g.gold + ' or' : ''}</span><span class="text-amber-300 font-bold">+${g.pts}</span><span class="text-slate-500">▾</span></summary>
+                    <div class="px-3 pb-3 space-y-1">${(g.answers || []).length ? g.answers.map(ansRow).join('') : '<p class="text-[11px] text-slate-500 py-1">Aquesta partida es va guardar abans que es registressin les respostes una per una.</p>'}
+                    ${g.roscoA && g.roscoA.length ? `<p class="text-[11px] font-bold text-slate-400 pt-2">Rosco (passa el ratolí per veure la pista i la resposta)</p><div class="flex flex-wrap gap-1">${g.roscoA.map(roscoRow).join('')}</div>
+                      ${g.roscoA.filter(r => r.st === 'wrong').length ? `<div class="space-y-1 pt-1">${g.roscoA.filter(r => r.st === 'wrong').map(r => `<p class="text-[11px] text-rose-300"><b>${r.l}</b> · ${escHTML(r.clue)} → va dir <b>${escHTML(r.a || '–')}</b>, era <b class="text-emerald-300">${escHTML(r.ok)}</b></p>`).join('')}</div>` : ''}` : ''}</div></details>`;
+            const last = games[0];
+            lastSummary = ['Data', 'Mode', 'Nivell', 'Encerts', 'Total', '% encerts', 'Rosco', 'Punts'].join(';') + '\n' + chrono.map(g => [new Date(g.t).toLocaleDateString('ca-ES'), modeName(g.mode), g.lvl || '', g.ok, g.total, pct(g.ok, g.total), g.rosco == null ? '' : g.rosco, g.pts].join(';')).join('\n')
+                + '\n\nRESPOSTES\n' + chrono.map(g => `--- ${new Date(g.t).toLocaleDateString('ca-ES')} · ${modeName(g.mode)}\n` + (g.answers || []).map(a => `${a.c ? 'OK ' : 'KO '} ${a.q} | resposta: ${a.a || '-'} | correcta: ${a.ok}`).join('\n')).join('\n');
+            el.innerHTML = `<div class="flex items-center gap-3 flex-wrap mb-4">${back}<div class="flex-1"><p class="font-display font-black text-xl text-white leading-tight">${escHTML(m.name)}</p><p class="text-xs text-slate-400">${escHTML(m.email || '')}${m.updated ? ' · última partida ' + new Date(m.updated).toLocaleDateString('ca-ES') : ''}</p></div>
+                <button type="button" onclick="copySummary()" class="px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-xs font-bold text-white">📋 Copiar informe</button></div>
+                <p id="mr-copied" class="hidden text-xs text-emerald-300 font-bold mb-2"></p>
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-4">${stat('Punts', m.pts || 0, 'amber')}${stat('Partides', m.games || 0, 'cyan')}${stat('Encerts', pct(m.ok, m.total) + '%', 'emerald')}${stat('Millor Rosco', (m.bestRosco || 0) + '/26', 'purple')}${stat('Última', last ? pct(last.ok, last.total) + '%' : '–', 'rose')}</div>
+                <h4 class="font-display font-bold text-sm text-white mb-1">Evolució (% d'encerts per partida)</h4>
+                <div class="p-3 rounded-2xl bg-slate-950/50 border border-white/5 text-slate-200 mb-4">${chart}</div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                  <div><h4 class="font-display font-bold text-sm text-white mb-2">Per matèria</h4><div class="space-y-1.5">${topics.map(([k, v]) => { const p = pct(v.ok, v.n); return `<div class="px-3 py-1.5 rounded-lg bg-slate-950/60 text-xs flex items-center gap-2"><span class="flex-1 text-slate-200 truncate">${escHTML(k)}</span><div class="w-24 h-2 rounded-full bg-slate-800 overflow-hidden"><div class="h-full ${p >= 80 ? 'bg-emerald-400' : p >= 60 ? 'bg-amber-400' : 'bg-rose-400'}" style="width:${p}%"></div></div><span class="w-9 text-right font-bold">${p}%</span><span class="w-14 text-right text-slate-500">${v.ok}/${v.n}</span></div>`; }).join('') || '<p class="text-xs text-slate-500">Cap encara.</p>'}</div></div>
+                  <div><h4 class="font-display font-bold text-sm text-white mb-2">Les que més li costen</h4><div class="space-y-1.5">${worst.map(w => `<div class="px-3 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-slate-200 flex justify-between gap-2"><span>${escHTML(w.q)}</span><span class="text-rose-300 font-bold shrink-0">×${w.n}</span></div>`).join('') || '<p class="text-xs text-slate-500">Cap encara.</p>'}</div></div>
+                </div>
+                <h4 class="font-display font-bold text-sm text-white mb-2">Partides i respostes (${games.length})</h4>
+                <div class="space-y-1.5">${games.map(gameCard).join('') || '<p class="text-xs text-slate-500">Cap encara.</p>'}</div>`;
         }
 
         /* =========================================================================
@@ -1834,6 +1896,7 @@
             clearInterval(game.p1Timer);
             const qObj = game.p1Questions[game.p1Index];
             const isCorrect = selectedIdx === qObj.answer;
+            qObj.chosen = selectedIdx; if (game.mode === 'equips') qObj.team = curTeam().name;
 
             qObj.options.forEach((_, idx) => {
                 const btn = document.getElementById(`p1-opt-${idx}`);

@@ -40,7 +40,9 @@ window.GR = (function () {
   async function afterLogin(u) {
     const email = (u.email || '').toLowerCase();
     let teacher = false, admin = false, name = nameOf(email), cls = null, clsName = '';
+    const ADMINS = ['pmurias6@gmail.com', 'pedro.murias@balmesonline.com'];
     try { const t = await db.collection('teachers').doc(email).get(); teacher = t.exists; admin = teacher && !!((t.data() || {}).admin); } catch (e) { /* */ }
+    if (ADMINS.includes(email)) { teacher = true; admin = true; }
     if (!teacher) {
       let r = null; try { r = await db.collection('roster').doc(email).get(); } catch (e) { /* */ }
       if (r && r.exists) { const d = r.data(); if (d.name) name = d.name; if (d.classId) cls = d.classId; }
@@ -67,7 +69,8 @@ window.GR = (function () {
     await sdk();
     const pts = points(st), wk = weekKey(), mk = monthKey(), now = Date.now();
     const ref = db.collection('gr_users').doc(ACC.uid);
-    await ref.collection('games').add({ t: now, mode: st.mode, lvl: st.lvl, src: st.src || [], ok: st.ok || 0, total: st.total || 0, rosco: st.rosco == null ? null : st.rosco, gold: st.gold == null ? null : st.gold, streak: st.streak || 0, pts });
+    await ref.collection('games').add({ t: now, mode: st.mode, lvl: st.lvl, src: st.src || [], ok: st.ok || 0, total: st.total || 0, rosco: st.rosco == null ? null : st.rosco, gold: st.gold == null ? null : st.gold, streak: st.streak || 0, pts,
+      answers: (st.answers || []).slice(0, 60), roscoA: st.roscoA || null });
     await db.runTransaction(async tx => {
       const s = await tx.get(ref); const d = s.exists ? s.data() : {};
       const topics = d.topics || {}, wrong = d.wrong || {};
@@ -94,7 +97,10 @@ window.GR = (function () {
   }
   async function myGames(limit = 30) { await sdk(); if (!ACC) return []; const q = await db.collection('gr_users').doc(ACC.uid).collection('games').orderBy('t', 'desc').limit(limit).get(); const a = []; q.forEach(d => a.push(d.data())); return a; }
   async function me() { await sdk(); if (!ACC) return null; const d = await db.collection('gr_users').doc(ACC.uid).get(); return d.exists ? d.data() : null; }
+  /* ---- fitxa d'un alumne (mestres i admin; les regles de Firestore ho limiten a teachers/) ---- */
+  async function student(uid) { await sdk(); if (!ACC || !ACC.teacher) return null; const d = await db.collection('gr_users').doc(uid).get(); return d.exists ? d.data() : null; }
+  async function studentGames(uid, limit = 40) { await sdk(); if (!ACC || !ACC.teacher) return []; const q = await db.collection('gr_users').doc(uid).collection('games').orderBy('t', 'desc').limit(limit).get(); const a = []; q.forEach(d => a.push({ id: d.id, ...d.data() })); return a; }
   async function teacherClasses() { await sdk(); if (!ACC || !ACC.teacher) return []; const out = []; const q = ACC.admin ? await db.collection('classes').get() : await db.collection('classes').where('teacher', '==', ACC.email).get(); q.forEach(d => out.push({ id: d.id, ...d.data() })); return out; }
 
-  return { get acc() { return ACC; }, login, logout, resume, record, points, classBoard, myGames, me, teacherClasses, weekKey, onChange: f => listeners.push(f), available: () => location.protocol === 'https:' && !/claude\.ai|claudeusercontent/.test(location.hostname) };
+  return { get acc() { return ACC; }, login, logout, resume, record, points, classBoard, myGames, me, student, studentGames, teacherClasses, weekKey, onChange: f => listeners.push(f), available: () => location.protocol === 'https:' && !/claude\.ai|claudeusercontent/.test(location.hostname) };
 })();
