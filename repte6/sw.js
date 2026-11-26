@@ -1,6 +1,6 @@
 // El Gran Repte 6è: primer intenta la xarxa (per tenir sempre l'última versió) i, sense connexió, fa servir la còpia guardada.
-const V='granrepte-v17';
-const CORE=['./','./index.html','./manifest.webmanifest','./q.js','./content.js','./flags.js','./photos.js','./gen.js','./gen2.js','./rosco.js','./en6.js','./en6_en.js','./gr.js','./q_llengues6.js','./q_mates6.js','./icons/icon-192.png','./icons/icon-512.png'];
+const V='granrepte-v18';
+const CORE=['./','./index.html','./manifest.webmanifest','./q.js','./content.js','./flags.js','./photos.js','./gen.js','./gen2.js','./rosco.js','./en6.js','./en6_en.js','./gr.js','./q_llengues6.js','./q_mates6.js','./bg.jpg','./bg-v.jpg','./icons/icon-192.png','./icons/icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==V).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET'||!r.url.startsWith(self.location.origin))return;
