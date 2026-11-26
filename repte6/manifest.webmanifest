@@ -1,0 +1,18 @@
+{
+  "name": "El Gran Repte de 6è",
+  "short_name": "Gran Repte",
+  "description": "Concurs de preguntes de 6è de Primària: Medi, Català, Castellano, Mates i English.",
+  "lang": "ca",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#101329",
+  "theme_color": "#101329",
+  "categories": ["education", "kids", "games"],
+  "icons": [
+    {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

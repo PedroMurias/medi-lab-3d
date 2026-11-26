@@ -445,7 +445,8 @@ const DOORS=[
  {f:'energia',e:'⚡',u:'Unitat 6',n:"L'energia",c:0xffe14a,d:'Formes i fonts d\'energia, de la central a casa, circuits i estalvi.'},
  {f:'historia',e:'⏳',u:'Unitat 7',n:'Viatge en el temps',c:0xd9a066,d:"L'edat contemporània de 1789 fins avui."},
  {f:'ciutadania',e:'🏛️',u:'Unitats 8 i 9',n:'Ciutadania i món',c:0x34e0e0,d:'Institucions, Unió Europea, riquesa, ODS i consum responsable.'},
- {f:'repte',e:'🏆',u:'Concurs',n:'El Gran Repte',c:0xf5b62e,d:'Concurs de preguntes de totes les unitats: 15 preguntes, comodins i fins a 1.000.000 de punts.'}];
+ {f:'repte',e:'🏆',u:'Concurs',n:'El Gran Repte',c:0xf5b62e,d:'Concurs de preguntes de totes les unitats: 15 preguntes, comodins i fins a 1.000.000 de punts.'},
+ {f:'repte6',e:'🎬',u:'Totes les matèries',n:'El Gran Repte de 6è',c:0x22d3ee,d:'Ràfega i Rosco, Cofres, Entrenament i Equips amb Medi, Català, Castellano, Mates i English. Punts i classificació de la classe amb el compte d\'Explora.'}];
 $('#mGrid').innerHTML=DOORS.map(D=>`<a href="labs/${D.f}.html">${window.HUBTH&&HUBTH[D.f]?`<span class="th" style="background-image:url(${HUBTH[D.f]})"></span>`:''}<span class="ic">${D.e}</span><span class="u">${D.u}</span><h3>${D.n}</h3><p>${D.d}</p></a>`).join('');
 const canvas=$('#c'), renderer=new THREE.WebGLRenderer({canvas,antialias:true}); setTimeout(()=>window.__LITE&&__LITE(renderer,scene),0); renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.18;
 const scene=new THREE.Scene(); scene.background=new THREE.Color(0x050b18); scene.fog=new THREE.Fog(0x050b18,18,40);

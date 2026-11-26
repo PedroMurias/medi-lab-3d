@@ -1,0 +1,2133 @@
+<!DOCTYPE html>
+<html lang="ca" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Gran Repte de 6è · Concurs Individual</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <meta name="theme-color" content="#101329">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Gran Repte">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tipografías geométricas modernas de plató TV -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet">
+    <!-- Tone.js para efectos de sonido sintetizados -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <style>
+        :root {
+            --bg-deep: #0B0F19;
+            --card-glass: rgba(17, 24, 39, 0.72);
+            --border-glass: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-deep);
+            color: #F8FAFC;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        h1, h2, h3, .font-display {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* Focos ambientales de plató de televisión */
+        .studio-bg {
+            background-color: #0B0F19;
+            background-image: 
+                radial-gradient(circle at 18% 15%, rgba(56, 189, 248, 0.14) 0%, transparent 42%),
+                radial-gradient(circle at 82% 20%, rgba(168, 85, 247, 0.14) 0%, transparent 45%),
+                radial-gradient(circle at 50% 90%, rgba(16, 185, 129, 0.10) 0%, transparent 50%);
+        }
+
+        /* Tarjeta Glassmorphism con borde iluminado */
+        .glass-panel {
+            background: rgba(17, 25, 40, 0.76);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.11);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        }
+
+        /* Botones táctiles 3D estilo Arcade / TV */
+        .btn-arcade {
+            transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.12s ease, filter 0.15s ease;
+            border-bottom-width: 4px;
+        }
+        .btn-arcade:hover:not(:disabled) {
+            filter: brightness(1.08);
+            transform: translateY(-1px);
+        }
+        .btn-arcade:active:not(:disabled) {
+            transform: translateY(3px);
+            border-bottom-width: 1px;
+        }
+        .btn-arcade:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        /* Animaciones de feedback */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-7px); }
+            40% { transform: translateX(7px); }
+            60% { transform: translateX(-5px); }
+            80% { transform: translateX(5px); }
+        }
+        .animate-shake {
+            animation: shake 0.38s ease-in-out;
+        }
+
+        @keyframes float-up {
+            0% { opacity: 1; transform: translateY(0) scale(0.9); }
+            50% { opacity: 1; transform: translateY(-22px) scale(1.15); }
+            100% { opacity: 0; transform: translateY(-42px) scale(1); }
+        }
+        .floating-bonus {
+            animation: float-up 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            pointer-events: none;
+        }
+
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); }
+            70% { box-shadow: 0 0 0 12px rgba(56, 189, 248, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+        }
+        .rosco-active-glow {
+            animation: pulse-ring 1.6s infinite;
+        }
+
+        /* Confeti final */
+        @keyframes confetti-fall {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
+        }
+        .confetti-piece {
+            position: fixed;
+            top: -15px;
+            z-index: 100;
+            pointer-events: none;
+            animation: confetti-fall linear forwards;
+        }
+
+        /* Scrollbar discreta */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
+        ::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.4); border-radius: 99px; }
+
+        /* === NOVA IDENTITAT: joc de taula + concurs televisiu === */
+        :root {
+            --bg-deep: #101329;
+            --card-glass: rgba(25, 31, 62, .86);
+            --border-glass: rgba(255,255,255,.16);
+            --accent-gold: #fbbf24;
+            --accent-coral: #fb7185;
+            --accent-mint: #5eead4;
+        }
+        body.studio-bg {
+            background-color: #101329;
+            background-image:
+                radial-gradient(ellipse at 8% 12%, rgba(251,191,36,.18), transparent 28%),
+                radial-gradient(ellipse at 92% 8%, rgba(236,72,153,.18), transparent 30%),
+                radial-gradient(ellipse at 75% 82%, rgba(45,212,191,.16), transparent 32%),
+                radial-gradient(ellipse at 15% 88%, rgba(99,102,241,.22), transparent 34%),
+                linear-gradient(135deg,#101329 0%,#171a38 48%,#101b31 100%);
+            background-attachment: fixed;
+        }
+        body.studio-bg:before {
+            content:""; position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.17;
+            background-image: radial-gradient(rgba(255,255,255,.5) .8px,transparent .8px);
+            background-size:24px 24px;
+            mask-image:linear-gradient(to bottom,black,transparent 90%);
+        }
+        header, main, footer { position:relative; z-index:1; }
+        .glass-panel {
+            background:linear-gradient(145deg,rgba(35,42,79,.91),rgba(17,24,49,.88));
+            border:1px solid rgba(255,255,255,.16);
+            box-shadow:0 24px 60px rgba(2,6,23,.42), inset 0 1px 0 rgba(255,255,255,.10);
+            backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+        }
+        .glass-panel:after {
+            content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+            background:linear-gradient(115deg,rgba(255,255,255,.055),transparent 35%,transparent 72%,rgba(251,191,36,.035));
+        }
+        header {
+            background:rgba(12,16,39,.82)!important;
+            border-bottom:1px solid rgba(251,191,36,.22)!important;
+            box-shadow:0 8px 30px rgba(0,0,0,.2);
+        }
+        .btn-arcade { border-radius:16px; letter-spacing:.035em; box-shadow:0 7px 0 rgba(3,7,18,.48),0 12px 24px rgba(0,0,0,.22); }
+        .btn-arcade:hover:not(:disabled) { transform:translateY(-3px) scale(1.012); filter:saturate(1.12) brightness(1.08); }
+        .btn-arcade:active:not(:disabled) { transform:translateY(3px) scale(.99); box-shadow:0 2px 0 rgba(3,7,18,.5); }
+        #screen-welcome .glass-panel { border-color:rgba(251,191,36,.28); }
+        #screen-welcome h2 { text-shadow:0 5px 25px rgba(34,211,238,.18); }
+        .welcome-board-art {
+            width:min(100%,390px); height:auto; display:block; margin:4px auto -4px;
+            filter:drop-shadow(0 18px 22px rgba(0,0,0,.35));
+            animation:boardBob 5s ease-in-out infinite;
+        }
+        @keyframes boardBob { 0%,100%{transform:translateY(0) rotate(-1deg)} 50%{transform:translateY(-8px) rotate(1deg)} }
+        .game-ribbon {
+            display:flex; align-items:center; justify-content:center; gap:clamp(10px,2vw,28px);
+            min-height:38px; padding:7px 14px; color:#dbeafe; font-size:10px; font-weight:900;
+            letter-spacing:.2em; text-transform:uppercase; overflow:hidden;
+            background:linear-gradient(90deg,rgba(251,191,36,.12),rgba(99,102,241,.18),rgba(45,212,191,.12));
+            border-bottom:1px solid rgba(255,255,255,.08);
+        }
+        .game-ribbon span { white-space:nowrap; }
+        .game-ribbon .spark { color:#fbbf24; font-size:15px; animation:sparkPulse 1.8s ease-in-out infinite; }
+        @keyframes sparkPulse { 50%{transform:scale(1.35) rotate(12deg);opacity:.65} }
+        /* Entrades suaus entre fases i preguntes */
+        .screen-enter { animation:screenReveal .55s cubic-bezier(.2,.8,.2,1) both; }
+        @keyframes screenReveal {
+            from { opacity:0; transform:translateY(18px) scale(.985); filter:blur(5px); }
+            to { opacity:1; transform:translateY(0) scale(1); filter:blur(0); }
+        }
+        .question-enter { animation:questionPop .38s cubic-bezier(.2,1.3,.4,1) both; }
+        @keyframes questionPop { from{opacity:0;transform:translateY(12px) rotateX(5deg)} to{opacity:1;transform:translateY(0) rotateX(0)} }
+        #p1-question-card, #rosco-clue-card { transform-origin:center; }
+        #p1-options-grid button {
+            background:linear-gradient(135deg,rgba(33,43,82,.96),rgba(18,27,54,.96));
+            border-color:rgba(148,163,184,.35);
+            box-shadow:0 5px 0 rgba(3,7,18,.38);
+        }
+        #p1-options-grid button:hover:not(:disabled) { border-color:#fbbf24; transform:translateY(-3px); box-shadow:0 8px 18px rgba(251,191,36,.12); }
+        #p1-options-grid button span:first-child { background:linear-gradient(145deg,#fbbf24,#f97316); color:#321b0b; box-shadow:inset 0 1px 0 rgba(255,255,255,.55); }
+        #p1-question-text { letter-spacing:-.025em; }
+        #rosco-ring-container { filter:drop-shadow(0 0 20px rgba(45,212,191,.13)); }
+        #rosco-node-0 { }
+        #rosco-active-letter-box { box-shadow:0 5px 18px rgba(45,212,191,.28), inset 0 1px 0 rgba(255,255,255,.5); }
+        #rosco-clue-text { font-size:1.08rem; }
+        #rosco-input, #input-player-name { background:rgba(8,13,31,.88); border-color:rgba(148,163,184,.42); }
+        #rosco-input:focus, #input-player-name:focus { box-shadow:0 0 0 4px rgba(45,212,191,.13); }
+        #screen-transition .glass-panel { border-color:rgba(251,191,36,.35); }
+        #screen-results .glass-panel { border-color:rgba(251,191,36,.35); }
+        #res-medal-icon { border-radius:50%; outline:7px solid rgba(251,191,36,.10); }
+        .confetti-piece { border-radius:3px; }
+        @media (max-width:640px) {
+            .game-ribbon { justify-content:flex-start; overflow:hidden; }
+            .game-ribbon span:nth-child(2), .game-ribbon span:nth-child(4) { display:none; }
+            .welcome-board-art { max-width:290px; }
+        }
+        .chest { transition: transform .18s cubic-bezier(.34,1.56,.64,1); }
+        .chest:hover:not(:disabled) { transform: translateY(-6px) scale(1.05); }
+        .chest.open { animation: chestPop .5s cubic-bezier(.2,1.3,.4,1) both; }
+        @keyframes chestPop { 0%{transform:scale(.9)} 60%{transform:scale(1.15)} 100%{transform:scale(1)} }
+        .badge-new { animation: badgeIn .6s cubic-bezier(.2,1.3,.4,1) both; }
+        @keyframes badgeIn { from{opacity:0;transform:scale(.4) rotate(-20deg)} to{opacity:1;transform:scale(1) rotate(0)} }
+        .team-card.active { box-shadow:0 0 0 3px #fbbf24, 0 10px 30px rgba(251,191,36,.25); transform: translateY(-3px); }
+        .team-card { transition: transform .25s, box-shadow .25s; }
+        @media (prefers-reduced-motion: reduce) {
+            *,*:before,*:after { animation-duration:.01ms!important; animation-iteration-count:1!important; scroll-behavior:auto!important; }
+        }
+
+    </style>
+</head>
+<body class="studio-bg min-h-screen flex flex-col justify-between">
+
+    <!-- =====================================================================
+         CABECERA ESTILO PLATÓ TV (HUD GLOBAL)
+         ===================================================================== -->
+    <header class="border-b border-white/10 bg-slate-950/60 backdrop-blur-md px-4 sm:px-6 py-3 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
+            <!-- Marca del programa -->
+            <div class="flex items-center gap-3">
+                <a href="../index.html" title="Torna al laboratori central" class="w-10 h-10 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/25 border border-cyan-400/40 flex items-center justify-center text-lg transition">🔬</a>
+                <button id="btn-back" onclick="goHome()" class="hidden w-10 h-10 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 items-center justify-center text-xl text-slate-200 transition" title="Tornar a l'inici">←</button>
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600 p-[2px] shadow-lg shadow-cyan-500/20">
+                    <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center font-display font-black text-lg text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-indigo-400">
+                        6è
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-display font-black text-base sm:text-xl tracking-tight text-white">
+                            EL GRAN REPTE <span class="text-cyan-400">6È</span>
+                        </h1>
+                        <span class="hidden md:inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+                            6è de Primària
+                        </span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 hidden sm:block">Concurs interactiu de coneixements · Primària</p>
+                </div>
+            </div>
+
+            <!-- Indicador de Fases (visible durante la partida) -->
+            <div id="header-phases" class="hidden md:flex items-center gap-2 bg-slate-900/90 border border-white/10 px-3 py-1.5 rounded-full">
+                <span id="pill-phase-1" class="px-3 py-1 rounded-full text-xs font-display font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 transition-all">
+                    1. Ràfega Ràpida
+                </span>
+                <span class="text-slate-600 text-xs">➔</span>
+                <span id="pill-phase-2" class="px-3 py-1 rounded-full text-xs font-display font-bold text-slate-500 transition-all">
+                    2. El Gran Rosco
+                </span>
+            </div>
+
+            <!-- Controles de Jugador y Sonido -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Perfil del alumno activo -->
+                <div id="header-player-badge" class="hidden items-center gap-2 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl">
+                    <span id="header-avatar" class="text-lg">🚀</span>
+                    <span id="header-name" class="font-display font-bold text-xs sm:text-sm text-slate-200 max-w-[110px] truncate">Alumne</span>
+                </div>
+
+                <!-- Botón reiniciar -->
+                <button id="btn-quit" onclick="openQuitModal()" class="hidden px-3 py-2 rounded-xl bg-white/5 hover:bg-rose-500/20 border border-white/10 hover:border-rose-500/40 text-xs font-semibold text-slate-300 hover:text-rose-200 transition">
+                    Reiniciar
+                </button>
+
+                <!-- Classificació (amb compte) -->
+                <button id="btn-board" onclick="openBoard()" class="hidden px-3 py-2 rounded-xl bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/40 text-xs font-bold text-amber-200 transition items-center gap-1.5" title="Classificació de la classe">🏆 <span class="hidden sm:inline">Classificació</span></button>
+                <!-- Instal·lar com a app -->
+                <button id="btn-install" class="hidden px-3 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-xs font-bold text-emerald-200 transition items-center gap-1.5" title="Instal·lar com a aplicació">📲 <span class="hidden sm:inline">Instal·lar</span></button>
+                <!-- Botón Veu -->
+                <button id="btn-voice" onclick="toggleVoice()" class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-lg transition" title="Llegir les preguntes en veu alta">
+                    <span id="voice-icon">🗣️</span>
+                </button>
+                <!-- Botón Sonido -->
+                <button id="btn-sound" onclick="toggleSound()" class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-lg transition" title="Activar o silenciar efectes de so">
+                    <span id="sound-icon">🔊</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="game-ribbon" aria-label="Ambientació del concurs">
+        <span class="spark">✦</span><span>Gira la sort</span><span>✦</span>
+        <span>Desafia el teu enginy</span><span>✦</span><span>Guanya insígnies</span><span class="spark">✦</span>
+    </div>
+
+    <!-- =====================================================================
+         CONTENEDOR PRINCIPAL DE PANTALLAS
+         ===================================================================== -->
+    <main class="flex-1 flex flex-col justify-center max-w-7xl w-full mx-auto px-4 sm:px-6 py-4 sm:py-6">
+
+        <!-- =================================================================
+             PANTALLA 0: PERFIL INDIVIDUAL Y BIENVENIDA
+             ================================================================= -->
+        <section id="screen-welcome" class="max-w-5xl w-full mx-auto space-y-5">
+
+            <!-- Capçalera: logo + nom -->
+            <div class="flex items-center justify-center gap-4 pt-2">
+                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600 p-[3px] shadow-xl shadow-cyan-500/25 shrink-0">
+                    <div class="w-full h-full bg-slate-950 rounded-[13px] flex items-center justify-center font-display font-black text-2xl sm:text-3xl text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-indigo-400">6è</div>
+                </div>
+                <div>
+                    <h2 class="font-display font-black text-3xl sm:text-5xl leading-none text-white">EL GRAN REPTE <span class="text-cyan-400">6È</span></h2>
+                    <p class="text-slate-400 text-xs sm:text-sm mt-1.5">Posa a prova el teu <span class="text-emerald-400 font-bold">enginy</span> amb preguntes de tots els llibres de 6è.</p>
+                </div>
+            </div>
+
+            <!-- 1. Concursant -->
+            <div class="glass-panel rounded-3xl p-4 sm:p-6 relative overflow-hidden">
+                <h3 class="font-display font-extrabold text-sm uppercase tracking-wider text-amber-300 mb-3" id="who-title">1 · Concursant</h3>
+                <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
+                    <div class="flex-1">
+                        <label for="input-player-name" class="sr-only">Nom</label>
+                        <input id="input-player-name" type="text" maxlength="18" placeholder="El teu nom..."
+                            class="w-full px-4 py-3.5 rounded-xl bg-slate-950 border-2 border-slate-700 focus:border-cyan-400 text-white font-display font-bold text-lg placeholder:text-slate-600 focus:outline-none transition">
+                        <p id="name-error" class="hidden text-xs text-rose-400 font-semibold mt-1.5">⚠️ Escriu el teu nom per començar.</p>
+                    </div>
+                    <div id="avatar-selector" class="grid grid-cols-6 gap-1.5"></div>
+                </div>
+                <div id="acc-box" class="mt-3"></div>
+            </div>
+
+            <!-- 2. Mode de joc (gran) -->
+            <div class="glass-panel rounded-3xl p-4 sm:p-6 relative overflow-hidden">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-display font-extrabold text-sm uppercase tracking-wider text-amber-300">2 · Mode de joc</h3>
+                    <span id="mode-desc" class="hidden sm:block text-xs text-slate-400 max-w-md text-right"></span>
+                </div>
+                <div id="mode-selector" class="grid grid-cols-2 lg:grid-cols-4 gap-3"></div>
+                <p id="mode-desc-m" class="sm:hidden text-xs text-slate-400 mt-2"></p>
+                <div id="train-setup" class="hidden mt-3 flex items-center gap-2 flex-wrap">
+                    <span class="text-xs font-bold text-slate-400">Preguntes:</span>
+                    <div id="train-count" class="flex gap-1.5"></div>
+                </div>
+                <div id="teams-setup" class="hidden mt-3 space-y-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-slate-400">Equips:</span>
+                        <div id="team-count" class="flex gap-1.5"></div>
+                    </div>
+                    <div id="team-names" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
+                </div>
+            </div>
+
+            <!-- 2. Assignatura -->
+            <div class="glass-panel rounded-3xl p-4 sm:p-6 relative overflow-hidden">
+                <div class="flex items-center justify-between gap-3 mb-3 flex-wrap">
+                    <h3 class="font-display font-extrabold text-sm uppercase tracking-wider text-amber-300">3 · Assignatura</h3>
+                    <label class="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-300 bg-slate-950/60 border border-slate-800 px-3 py-1.5 rounded-xl">
+                        <input id="multi-toggle" type="checkbox" class="w-4 h-4 accent-cyan-400"> Seleccionar-ne diverses
+                    </label>
+                </div>
+                <div id="subject-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5"></div>
+                <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mt-4 mb-2">Blocs especials</p>
+                <div id="block-grid" class="flex flex-wrap gap-2"></div>
+                <p id="topic-error" class="hidden text-xs text-rose-400 font-semibold mt-2">⚠️ Tria almenys una assignatura o bloc.</p>
+            </div>
+
+            <!-- 3. Unitats i temes -->
+            <div class="glass-panel rounded-3xl p-4 sm:p-6 relative overflow-hidden">
+                <h3 class="font-display font-extrabold text-sm uppercase tracking-wider text-amber-300 mb-3">4 · Unitats i temes</h3>
+                <div id="topic-selector" class="space-y-3"></div>
+            </div>
+
+            <!-- 5. Nivell -->
+            <div class="glass-panel rounded-3xl p-4 sm:p-6 relative overflow-hidden">
+                <h3 class="font-display font-extrabold text-sm uppercase tracking-wider text-amber-300 mb-3">5 · Nivell</h3>
+                <div id="level-selector" class="grid grid-cols-3 gap-3"></div>
+            </div>
+
+            <button onclick="startChallenge()" class="w-full py-5 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-600 border-indigo-900 text-white font-display font-black text-xl tracking-wide shadow-lg shadow-cyan-500/25 btn-arcade flex items-center justify-center gap-2.5">
+                <span>COMENÇAR</span><span class="text-2xl">🎬</span>
+            </button>
+        </section>
+
+        <!-- =================================================================
+             PANTALLA 1: FASE 1 - RÀFEGA DE PREGUNTES RÀPIDES
+             ================================================================= -->
+        <section id="screen-phase1" class="hidden max-w-4xl w-full mx-auto space-y-4">
+            
+            <!-- Marcador Superior Fase 1 (HUD) -->
+            <div class="glass-panel rounded-2xl p-3.5 sm:p-4 flex flex-wrap items-center justify-between gap-4">
+                <!-- Progreso de preguntas -->
+                <div class="flex-1 min-w-[180px]">
+                    <div class="flex items-center justify-between text-xs font-display font-bold mb-1.5">
+                        <span class="text-slate-400 uppercase tracking-wider">Progrés Ràfega</span>
+                        <span id="p1-progress-text" class="text-cyan-300">Pregunta 1 / 10</span>
+                    </div>
+                    <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden p-0.5">
+                        <div id="p1-progress-bar" class="h-full bg-gradient-to-r from-cyan-400 to-indigo-500 rounded-full transition-all duration-300" style="width: 10%;"></div>
+                    </div>
+                </div>
+
+                <!-- Racha multiplicadora -->
+                <div id="p1-streak-box" class="flex items-center gap-2 bg-slate-900/90 border border-white/10 px-3.5 py-2 rounded-xl">
+                    <span class="text-lg">🔥</span>
+                    <div>
+                        <p class="text-[10px] font-bold uppercase text-slate-400 leading-none">Ratxa</p>
+                        <p id="p1-streak-text" class="font-display font-black text-sm text-amber-400 leading-tight">0 seguides</p>
+                    </div>
+                </div>
+
+                <!-- Or (mode Cofres) -->
+                <div id="p1-gold-box" class="hidden relative items-center gap-2.5 bg-amber-500/15 border border-amber-400/40 px-4 py-2 rounded-xl shadow-inner">
+                    <span class="text-xl">🪙</span>
+                    <div>
+                        <p class="text-[10px] font-bold uppercase text-amber-300 leading-none">Or</p>
+                        <p id="p1-gold" class="font-display font-black text-xl text-white tabular-nums leading-tight">0</p>
+                    </div>
+                    <div id="floating-gold-anchor" class="absolute -top-2 right-2"></div>
+                </div>
+                <!-- Borsa de Temps acumulada para el Rosco -->
+                <div id="p1-bank-box" class="relative flex items-center gap-2.5 bg-emerald-500/15 border border-emerald-400/40 px-4 py-2 rounded-xl shadow-inner">
+                    <span class="text-xl">⏱️</span>
+                    <div>
+                        <p class="text-[10px] font-bold uppercase text-emerald-300 leading-none">Borsa Rosco</p>
+                        <p id="p1-bank-seconds" class="font-display font-black text-xl text-white tabular-nums leading-tight">60s</p>
+                    </div>
+                    <!-- Contenedor para animación flotante "+5s!" -->
+                    <div id="floating-bonus-anchor" class="absolute -top-2 right-2"></div>
+                </div>
+            </div>
+
+            <!-- Equips (mode Equips) -->
+            <div id="p1-teams-row" class="hidden grid-cols-2 sm:grid-cols-4 gap-3"></div>
+
+            <!-- Tarjeta Central de Pregunta Rápida -->
+            <div id="p1-question-card" class="glass-panel rounded-3xl p-5 sm:p-8 relative overflow-hidden">
+                <!-- Cabecera de tarjeta: Categoría + Temporizador Circular -->
+                <div class="flex items-center justify-between gap-4 mb-5">
+                    <span id="p1-cat-badge" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-display font-extrabold text-xs sm:text-sm">
+                        <span>🌿</span> Medi Natural
+                    </span>
+
+                    <!-- Temporizador Circular SVG (15s) -->
+                    <div class="relative w-14 h-14 flex items-center justify-center shrink-0">
+                        <svg class="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
+                            <circle cx="28" cy="28" r="23" stroke="rgba(255,255,255,0.1)" stroke-width="5" fill="none"/>
+                            <circle id="p1-timer-ring" cx="28" cy="28" r="23" stroke="#22d3ee" stroke-width="5" fill="none"
+                                stroke-dasharray="144.5" stroke-dashoffset="0" stroke-linecap="round" class="transition-all duration-100 ease-linear"/>
+                        </svg>
+                        <span id="p1-timer-num" class="absolute font-display font-black text-base text-white tabular-nums">15</span>
+                    </div>
+                </div>
+
+                <!-- Enunciado de la pregunta -->
+                <img id="p1-question-img" alt="" class="hidden mx-auto mb-1 max-h-64 w-auto rounded-lg shadow-xl ring-1 ring-white/20">
+                <p id="p1-question-credit" class="hidden text-center text-[10px] text-slate-500 mb-4"></p>
+                <h3 id="p1-question-text" class="font-display font-extrabold text-xl sm:text-2xl md:text-[26px] text-white leading-snug mb-6">
+                    Carregant pregunta...
+                </h3>
+
+                <!-- Cuadrícula 2x2 de Opciones Táctiles -->
+                <div id="p1-options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <!-- Botones A, B, C, D generados por JS -->
+                </div>
+
+                <!-- Banner de Feedback inmediato -->
+                <div id="p1-feedback-bar" class="hidden mt-5 p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-4 transition-all">
+                    <div class="text-center sm:text-left">
+                        <p id="p1-feedback-title" class="font-display font-black text-base"></p>
+                        <p id="p1-feedback-desc" class="text-xs sm:text-sm text-slate-300 mt-0.5"></p>
+                    </div>
+                    <button id="btn-p1-next" onclick="nextPhase1Question()" class="w-full sm:w-auto shrink-0 px-6 py-3 rounded-xl bg-white text-slate-950 hover:bg-cyan-100 font-display font-black text-sm tracking-wide btn-arcade border-slate-400">
+                        Següent →
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================
+             PANTALLA INTERMEDIA: TRANSICIÓN AL GRAN ROSCO
+             ================================================================= -->
+        <section id="screen-transition" class="hidden max-w-2xl w-full mx-auto">
+            <div class="glass-panel rounded-3xl p-7 sm:p-10 text-center space-y-6 relative overflow-hidden">
+                <div class="w-20 h-20 rounded-3xl bg-gradient-to-tr from-amber-400 to-orange-500 text-slate-950 text-4xl flex items-center justify-center mx-auto shadow-xl shadow-amber-500/25">
+                    ⏱️
+                </div>
+
+                <div>
+                    <span class="text-xs font-display font-extrabold uppercase tracking-widest text-cyan-400">Fase 1 Completada!</span>
+                    <h2 class="font-display font-black text-3xl sm:text-4xl text-white mt-1">
+                        Has desbloquejat <span id="trans-total-seconds" class="text-emerald-400">95 segons</span>!
+                    </h2>
+                    <p class="text-slate-400 text-sm mt-2">
+                        Aquest és el temps total que tindràs al cronòmetre per completar les 26 lletres del Gran Rosco Final.
+                    </p>
+                </div>
+
+                <!-- Mini tarjetas resumen de Fase 1 -->
+                <div class="grid grid-cols-3 gap-3 text-center">
+                    <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-white/10">
+                        <p class="text-[11px] font-bold text-slate-400 uppercase">Encerts</p>
+                        <p id="trans-correct" class="font-display font-black text-2xl text-emerald-400 mt-0.5">7/10</p>
+                    </div>
+                    <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-white/10">
+                        <p class="text-[11px] font-bold text-slate-400 uppercase">Millor Ratxa</p>
+                        <p id="trans-streak" class="font-display font-black text-2xl text-amber-400 mt-0.5">4 🔥</p>
+                    </div>
+                    <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-white/10">
+                        <p class="text-[11px] font-bold text-slate-400 uppercase">Temps Extra</p>
+                        <p id="trans-bonus" class="font-display font-black text-2xl text-cyan-400 mt-0.5">+35s</p>
+                    </div>
+                </div>
+
+                <div class="bg-indigo-950/60 border border-indigo-400/25 rounded-2xl p-4 text-left text-xs sm:text-sm text-indigo-200 space-y-1">
+                    <p class="font-display font-bold text-white">💡 Recordatori per al Rosco:</p>
+                    <p>• No pateixis pels accents (pots escriure <em>pirineus</em> o <em>aranya</em> sense problemes).</p>
+                    <p>• Si dubtes en una lletra, prem <strong class="text-amber-300">PASAPALABRA</strong> (o la barra espaiadora) per deixar-la per a la segona volta!</p>
+                </div>
+
+                <button onclick="startPhase2Rosco()" class="w-full py-4 px-8 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-500 border-emerald-800 text-slate-950 font-display font-black text-xl tracking-wide shadow-lg shadow-emerald-500/25 btn-arcade">
+                    ANAR AL ROSCO FINAL ➔
+                </button>
+            </div>
+        </section>
+
+        <!-- =================================================================
+             PANTALLA 2: FASE 2 - EL GRAN ROSCO FINAL (A - Z)
+             ================================================================= -->
+        <section id="screen-phase2" class="hidden w-full">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                
+                <!-- Columna Izquierda (7 cols): El Gran Rosco Circular de 26 letras -->
+                <div class="lg:col-span-7 flex flex-col items-center justify-center">
+                    <div class="relative w-[330px] h-[330px] sm:w-[460px] sm:h-[460px] md:w-[500px] md:h-[500px] flex items-center justify-center">
+                        <!-- Halo decorativo del Rosco -->
+                        <div class="absolute inset-6 rounded-full border border-cyan-500/15 bg-slate-900/40 shadow-inner pointer-events-none"></div>
+                        
+                        <!-- Anillo de 26 letras (se posiciona con trigonometría en JS) -->
+                        <div id="rosco-ring-container" class="absolute inset-0">
+                            <!-- Nodos A-Z -->
+                        </div>
+
+                        <!-- Centro del Rosco: Cronómetro y Marcadores en vivo -->
+                        <div class="relative z-10 w-44 h-44 sm:w-56 sm:h-56 rounded-full glass-panel flex flex-col items-center justify-center text-center p-4 border-2 border-white/15">
+                            <span class="text-[10px] sm:text-xs font-display font-extrabold uppercase tracking-widest text-slate-400">Temps Restant</span>
+                            <div id="rosco-timer-display" class="font-display font-black text-4xl sm:text-6xl text-cyan-400 tabular-nums my-0.5 tracking-tight">
+                                90
+                            </div>
+                            <span class="text-[10px] font-bold text-slate-500 uppercase">segons</span>
+
+                            <!-- Contadores Encerts / Errors / Pendents -->
+                            <div class="flex items-center gap-2.5 mt-2.5 pt-2.5 border-t border-white/10">
+                                <div class="text-center" title="Encerts">
+                                    <span id="rosco-count-correct" class="block font-display font-black text-sm sm:text-base text-emerald-400 leading-none">0</span>
+                                    <span class="text-[9px] uppercase font-bold text-slate-400">Encerts</span>
+                                </div>
+                                <span class="text-slate-700">|</span>
+                                <div class="text-center" title="Errors">
+                                    <span id="rosco-count-wrong" class="block font-display font-black text-sm sm:text-base text-rose-400 leading-none">0</span>
+                                    <span class="text-[9px] uppercase font-bold text-slate-400">Errors</span>
+                                </div>
+                                <span class="text-slate-700">|</span>
+                                <div class="text-center" title="Pendents">
+                                    <span id="rosco-count-pending" class="block font-display font-black text-sm sm:text-base text-amber-300 leading-none">26</span>
+                                    <span class="text-[9px] uppercase font-bold text-slate-400">Restants</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna Derecha (5 cols): Tarjeta de Definición y Respuesta -->
+                <div class="lg:col-span-5">
+                    <div id="rosco-clue-card" class="glass-panel rounded-3xl p-6 sm:p-7 space-y-5 relative overflow-hidden">
+                        
+                        <!-- Cabecera de letra activa -->
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-2.5">
+                                <span id="rosco-active-letter-box" class="w-11 h-11 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 text-slate-950 font-display font-black text-2xl flex items-center justify-center shadow-lg shadow-cyan-500/30">
+                                    A
+                                </span>
+                                <div>
+                                    <span id="rosco-condition-label" class="block font-display font-black text-sm sm:text-base text-cyan-300 uppercase tracking-wide">
+                                        COMENÇA PER LA A
+                                    </span>
+                                    <span id="rosco-subject-label" class="text-xs font-semibold text-slate-400">
+                                        🌿 Medi Natural
+                                    </span>
+                                </div>
+                            </div>
+                            <span id="rosco-lap-badge" class="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[11px] font-bold text-slate-400">
+                                Volta 1
+                            </span>
+                        </div>
+
+                        <!-- Definición / Pista -->
+                        <div class="bg-slate-950/70 border border-white/10 rounded-2xl p-4 sm:p-5 min-h-[125px] flex items-center">
+                            <p id="rosco-clue-text" class="text-base sm:text-lg font-medium text-slate-100 leading-relaxed">
+                                Carregant definició del Rosco...
+                            </p>
+                        </div>
+
+                        <!-- Feedback fugaz de la palabra anterior -->
+                        <div id="rosco-last-toast" class="hidden px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-between">
+                            <span id="rosco-last-toast-text"></span>
+                        </div>
+
+                        <!-- Input de respuesta + Botones de acción -->
+                        <form id="rosco-form" onsubmit="submitRoscoAnswer(event)" class="space-y-3">
+                            <div>
+                                <input id="rosco-input" type="text" autocomplete="off" autocorrect="off" spellcheck="false"
+                                    placeholder="Escriu la teva resposta..."
+                                    class="w-full px-4 py-3.5 rounded-2xl bg-slate-950 border-2 border-slate-700 focus:border-cyan-400 text-white font-display font-bold text-lg placeholder:text-slate-600 focus:outline-none transition">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3 pt-1">
+                                <button type="submit" class="py-3.5 px-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 border-emerald-800 text-slate-950 font-display font-black text-sm sm:text-base tracking-wide btn-arcade flex items-center justify-center gap-1.5">
+                                    <span>COMPROVAR</span>
+                                    <span class="text-xs opacity-75 hidden sm:inline">(↵)</span>
+                                </button>
+                                <button type="button" onclick="passRoscoLetter()" class="py-3.5 px-4 rounded-2xl bg-amber-400 hover:bg-amber-300 border-amber-700 text-slate-950 font-display font-black text-sm sm:text-base tracking-wide btn-arcade flex items-center justify-center gap-1.5">
+                                    <span>PASAPALABRA</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- =================================================================
+             PANTALLA 3: DIPLOMA Y RESULTADOS FINALES
+             ================================================================= -->
+        <section id="screen-results" class="hidden max-w-4xl w-full mx-auto">
+            <div class="glass-panel rounded-3xl p-6 sm:p-10 text-center space-y-6 relative overflow-hidden">
+                <!-- Medalla / Rango obtenido -->
+                <div class="inline-flex flex-col items-center">
+                    <div id="res-medal-icon" class="w-20 h-20 rounded-3xl bg-gradient-to-tr from-amber-300 via-yellow-400 to-orange-500 text-4xl flex items-center justify-center shadow-xl shadow-amber-500/30 mb-3">
+                        🏆
+                    </div>
+                    <span id="res-rank-badge" class="px-4 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 font-display font-black text-xs uppercase tracking-widest">
+                        CRAC DE 6È DE PRIMÀRIA
+                    </span>
+                </div>
+
+                <div>
+                    <h2 id="res-headline" class="font-display font-black text-3xl sm:text-5xl text-white">
+                        Enhorabona, Concursant!
+                    </h2>
+                    <p id="res-subheadline" class="text-slate-400 text-sm sm:text-base mt-1.5">
+                        Aquí tens el resum oficial de la teva participació a El Gran Repte de 6è.
+                    </p>
+                </div>
+
+                <!-- 4 Tarjetas de Estadísticas Finales -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                    <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-400/30">
+                        <p class="text-[11px] font-bold uppercase text-emerald-300">Encerts Rosco</p>
+                        <p id="res-rosco-correct" class="font-display font-black text-3xl text-white mt-1">21 / 26</p>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-rose-500/10 border border-rose-400/30">
+                        <p class="text-[11px] font-bold uppercase text-rose-300">Errors Rosco</p>
+                        <p id="res-rosco-wrong" class="font-display font-black text-3xl text-white mt-1">3</p>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-400/30">
+                        <p class="text-[11px] font-bold uppercase text-cyan-300">Fase 1 Ràfega</p>
+                        <p id="res-p1-score" class="font-display font-black text-3xl text-white mt-1">8 / 10</p>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-amber-500/10 border border-amber-400/30">
+                        <p class="text-[11px] font-bold uppercase text-amber-300">Temps Sobrant</p>
+                        <p id="res-time-left" class="font-display font-black text-3xl text-white mt-1">14s</p>
+                    </div>
+                </div>
+
+                <!-- Repaso educativo de palabras falladas o pendientes -->
+                <div id="res-review-container" class="text-left bg-slate-950/70 border border-white/10 rounded-2xl p-4 sm:p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-display font-extrabold text-sm sm:text-base text-white flex items-center gap-2">
+                            <span>📖</span> Repàs del Rosco (Paraules per recordar)
+                        </h3>
+                        <span id="res-review-count" class="text-xs font-bold text-slate-400"></span>
+                    </div>
+                    <div id="res-review-list" class="max-h-52 overflow-y-auto space-y-2 pr-1">
+                        <!-- Lista generada por JS -->
+                    </div>
+                </div>
+
+                <div id="res-p1-review" class="hidden text-left bg-slate-950/70 border border-white/10 rounded-2xl p-4 sm:p-5"></div>
+                <div id="res-badges" class="hidden text-left bg-slate-950/70 border border-white/10 rounded-2xl p-4 sm:p-5"></div>
+
+                <div class="flex flex-wrap justify-center gap-3 pt-2">
+                    <button id="res-retry" onclick="startRetryRound()" class="hidden px-6 py-3.5 rounded-2xl bg-amber-400 border-amber-700 text-slate-950 font-display font-black text-sm btn-arcade">🔁 Torna a intentar les fallades</button>
+                    <button onclick="copySummary()" class="px-6 py-3.5 rounded-2xl bg-white/10 border-white/20 text-white font-display font-black text-sm btn-arcade">📋 Copiar resum per al mestre</button>
+                    <button onclick="resetFullApp()" class="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-600 border-indigo-900 text-white font-display font-black text-sm tracking-wide shadow-lg shadow-cyan-500/20 btn-arcade">
+                        🔄 TORNAR A JUGAR
+                    </button>
+                </div>
+                <p id="res-pts" class="hidden text-sm text-amber-200 font-bold"></p>
+                <p id="res-copied" class="hidden text-xs text-emerald-300 font-bold"></p>
+            </div>
+        </section>
+
+    <!-- Classificació i progrés -->
+    <section id="screen-board" class="hidden max-w-5xl w-full mx-auto">
+        <div class="glass-panel rounded-3xl p-5 sm:p-8 relative overflow-hidden">
+            <div class="flex items-center justify-between gap-3 flex-wrap mb-4">
+                <h2 class="font-display font-black text-2xl sm:text-3xl text-white">🏆 Classificació i progrés</h2>
+                <div id="board-tabs" class="flex gap-2 flex-wrap"></div>
+            </div>
+            <div id="board-body"></div>
+        </div>
+    </section>
+
+    <!-- Resultats dels modes Cofres / Equips / Repàs -->
+    <section id="screen-mode-results" class="hidden max-w-4xl w-full mx-auto">
+        <div class="glass-panel rounded-3xl p-6 sm:p-10 text-center space-y-6 relative overflow-hidden">
+            <div class="inline-flex flex-col items-center">
+                <div id="mr-icon" class="w-20 h-20 rounded-3xl bg-gradient-to-tr from-amber-300 via-yellow-400 to-orange-500 text-4xl flex items-center justify-center shadow-xl shadow-amber-500/30 mb-3">🏆</div>
+                <span id="mr-rank" class="px-4 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 font-display font-black text-xs uppercase tracking-widest"></span>
+            </div>
+            <div>
+                <h2 id="mr-headline" class="font-display font-black text-3xl sm:text-5xl text-white"></h2>
+                <p id="mr-sub" class="text-slate-400 text-sm sm:text-base mt-1.5"></p>
+            </div>
+            <div id="mr-stats" class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center"></div>
+            <div id="mr-podium" class="hidden grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
+            <div id="mr-badges" class="hidden text-left bg-slate-950/70 border border-white/10 rounded-2xl p-4 sm:p-5"></div>
+            <div id="mr-review" class="text-left bg-slate-950/70 border border-white/10 rounded-2xl p-4 sm:p-5"></div>
+            <div class="flex flex-wrap justify-center gap-3 pt-2">
+                <button id="mr-retry" onclick="startRetryRound()" class="hidden px-6 py-3.5 rounded-2xl bg-amber-400 border-amber-700 text-slate-950 font-display font-black text-sm btn-arcade">🔁 Torna a intentar les fallades</button>
+                <button onclick="copySummary()" class="px-6 py-3.5 rounded-2xl bg-white/10 border-white/20 text-white font-display font-black text-sm btn-arcade">📋 Copiar resum per al mestre</button>
+                <button onclick="resetFullApp()" class="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-600 border-indigo-900 text-white font-display font-black text-sm btn-arcade">🔄 Tornar a jugar</button>
+            </div>
+            <p id="mr-pts" class="hidden text-sm text-amber-200 font-bold"></p>
+            <p id="mr-copied" class="hidden text-xs text-emerald-300 font-bold"></p>
+        </div>
+    </section>
+
+    </main>
+
+    <!-- Entrada amb el compte d'Explora -->
+    <div id="modal-login" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4">
+        <form onsubmit="doLogin(event)" class="glass-panel rounded-3xl max-w-sm w-full p-6 space-y-4 relative overflow-hidden">
+            <h3 class="font-display font-black text-xl text-white">Entra amb el compte d'Explora</h3>
+            <p class="text-xs text-slate-400">El mateix correu de l'escola i la contrasenya de l'agenda que fas servir a Explora Primària.</p>
+            <input id="login-email" type="text" autocomplete="username" placeholder="nom.cognom@balmesonline.com" class="w-full px-4 py-3 rounded-xl bg-slate-950 border-2 border-slate-700 focus:border-cyan-400 text-white font-bold text-sm focus:outline-none">
+            <input id="login-pw" type="password" autocomplete="current-password" placeholder="Contrasenya" class="w-full px-4 py-3 rounded-xl bg-slate-950 border-2 border-slate-700 focus:border-cyan-400 text-white font-bold text-sm focus:outline-none">
+            <p id="login-err" class="text-xs text-rose-300 font-semibold min-h-[1em]"></p>
+            <div class="grid grid-cols-2 gap-3">
+                <button type="button" onclick="closeLogin()" class="py-2.5 rounded-xl bg-white/10 hover:bg-white/15 font-bold text-sm text-slate-200">Cancel·lar</button>
+                <button type="submit" id="login-btn" class="py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 font-display font-black text-sm text-slate-950">Entrar</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Cofres del tresor -->
+    <div id="modal-chests" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="glass-panel rounded-3xl max-w-lg w-full p-6 text-center space-y-4 relative overflow-hidden">
+            <span class="text-xs font-display font-extrabold uppercase tracking-widest text-amber-300">Correcte!</span>
+            <h3 id="chest-title" class="font-display font-black text-2xl text-white">Tria un cofre</h3>
+            <div id="chest-row" class="grid grid-cols-3 gap-3 pt-2"></div>
+            <p id="chest-result" class="hidden font-display font-black text-xl text-amber-300 min-h-[1.5em]"></p>
+            <button id="chest-continue" onclick="closeChests()" class="hidden px-8 py-3 rounded-2xl bg-white text-slate-950 font-display font-black text-sm btn-arcade border-slate-400">Continuar →</button>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación para reiniciar -->
+    <div id="modal-quit" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="glass-panel rounded-3xl max-w-sm w-full p-6 text-center space-y-4">
+            <h3 class="font-display font-black text-xl text-white">Vols reiniciar la partida?</h3>
+            <p class="text-sm text-slate-400">Tornaràs a la pantalla inicial i es reiniciarà el marcador.</p>
+            <div class="grid grid-cols-2 gap-3 pt-2">
+                <button onclick="closeQuitModal()" class="py-2.5 rounded-xl bg-white/10 hover:bg-white/15 font-bold text-sm text-slate-200 transition">Continuar</button>
+                <button onclick="resetFullApp()" class="py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 font-bold text-sm text-white transition">Reiniciar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="q.js"></script>
+    <script src="content.js"></script>
+    <script src="flags.js"></script>
+    <script src="photos.js"></script>
+    <script src="gen.js"></script>
+    <script src="gen2.js"></script>
+    <script src="rosco.js"></script>
+    <script src="en6.js"></script>
+    <script src="gr.js"></script>
+    <script>
+        /* =========================================================================
+           1. BANCO DE DATOS EDUCATIVO - 6È DE PRIMÀRIA (CATALUNYA)
+           ========================================================================= */
+        const AVATARS = [
+            { icon: '🚀', label: 'Astronauta' },
+            { icon: '🔬', label: 'Científic/a' },
+            { icon: '🧭', label: 'Explorador/a' },
+            { icon: '🧮', label: 'Geni Mates' },
+            { icon: '🎨', label: 'Artista' },
+            { icon: '🕵️', label: 'Detectiu' }
+        ];
+
+        /* Bancs construïts amb els llibres de 6è (q.js, content.js, rosco.js) i generadors (gen.js) */
+        const escHTML = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        const { GEN, shuffle, pickA } = window.GENQ;
+        const MEDI_Q = window.RQ.filter(q => !q[5] || (window.RQIMG && window.RQIMG[q[5]]));
+        const UNIT = Object.fromEntries(window.RUNITS.map(u => [u[0], u]));
+        const CONTS = [['fl-eu','Europa'],['fl-am','Amèrica'],['fl-af','Àfrica'],['fl-as','Àsia'],['fl-oc','Oceania']];
+        const SOURCES = [
+            { id:'medi', name:'Coneixement del Medi', short:'Medi', icon:'🌿', color:'emerald', rosco:['medi'],
+              topics: window.RUNITS.map(u => ['u'+u[0], u[0]+'. '+u[2]]), fixed: t => MEDI_Q.filter(q => t.has('u'+q[0])) },
+            { id:'ca', name:'Llengua catalana', short:'Català', icon:'📚', color:'blue', rosco:['ca'],
+              topics: [['ca-orto','Ortografia'],['ca-gram','Gramàtica'],['ca-voc','Vocabulari'],['ca-lit','Literatura'],['ca-conj','Conjugació'],['ca-acc','Accentuació'],['ca-syn','Sinònims i antònims']],
+              fixed: t => window.CA6.concat(window.EXTRA_CA).filter(q => t.has(q[0])), gens: t => ['ca-conj','ca-acc','ca-syn'].filter(g => t.has(g)) },
+            { id:'es', name:'Lengua castellana', short:'Castellano', icon:'📖', color:'orange', rosco:['es'],
+              topics: [['es-orto','Ortografía'],['es-gram','Gramática'],['es-voc','Vocabulario'],['es-lit','Literatura'],['es-conj','Conjugación'],['es-acc','Tildes'],['es-syn','Sinónimos y antónimos']],
+              fixed: t => window.Q_ES.filter(q => t.has(q[0])), gens: t => ['es-conj','es-acc','es-syn'].filter(g => t.has(g)) },
+            { id:'ma', name:'Matemàtiques', short:'Mates', icon:'🧮', color:'rose', rosco:['ma'],
+              topics: [['ma-calc','Càlcul'],['ma-frac','Fraccions'],['ma-dec','Decimals'],['ma-perc','Percentatges'],['ma-mes','Mesura'],['ma-geo','Geometria']],
+              fixed: t => window.Q_MA.filter(q => t.has(q[0])), gens: t => ['ma-calc','ma-frac','ma-dec','ma-perc','ma-mes','ma-geo'].filter(g => t.has(g)) },
+            { id:'en', name:'English · Amazing Journey 6', short:'English', icon:'🇬🇧', color:'purple', rosco:['en','irr'],
+              topics: window.EN6_UNITS.concat([['en-irr','Irregular verbs'],['en-comp','Comparatives & superlatives'],['en-tense','Verb tenses'],['en-prep','Prepositions & question words'],['en-world','Countries, flags & capitals']]),
+              fixed: t => window.EN6.filter(q => t.has(q[0])).concat(t.has('aj1') ? window.Q_EN : []), gens: t => ['en-irr','en-comp','en-tense','en-prep','en-world'].filter(g => t.has(g)) },
+            { id:'flag', blk:1, name:'Banderes del món (en català)', short:'Banderes', icon:'🏳️', color:'amber', rosco:['cap'], topics: CONTS, gens: () => ['flag'] },
+            { id:'cap', blk:1, name:'Capitals (en català)', short:'Capitals', icon:'🏛️', color:'amber', rosco:['cap'], topics: CONTS, gens: () => ['cap'] },
+            { id:'irr', blk:1, name:'Irregular verbs', short:'Irregular verbs', icon:'🔤', color:'purple', rosco:['irr'], topics: [], gens: () => ['en-irr'] },
+            { id:'world', blk:1, name:'World in English (flags, capitals, nationalities)', short:'World in English', icon:'🌍', color:'purple', rosco:['cap','en'], topics: CONTS, gens: () => ['en-world'] },
+            { id:'gram', blk:1, name:'English grammar (tenses, comparatives, prepositions)', short:'English grammar', icon:'✏️', color:'purple', rosco:['en','irr'], topics: [['en-tense','Verb tenses'],['en-comp','Comparatives & superlatives'],['en-prep','Prepositions & question words']], gens: t => [...t] },
+            { id:'conj', blk:1, name:'Conjugació català + castellà', short:'Conjugació', icon:'📝', color:'blue', rosco:['ca','es'], topics: [['ca-conj','Català'],['es-conj','Castellano']], gens: t => [...t] },
+            { id:'mental', blk:1, name:'Càlcul mental', short:'Càlcul mental', icon:'⚡', color:'rose', rosco:['ma'], topics: [], gens: () => ['ma-calc'] }
+        ];
+        const ROSCO_LABEL = { medi:'🌿 Medi', ca:'📚 Català', es:'📖 Castellano', ma:'🧮 Matemàtiques', en:'🇬🇧 English', irr:'🔤 Verbs irregulars', cap:'🏛️ Capitals' };
+
+        let multiOn = false;
+        let multiSel = new Map([['medi', new Set(window.RUNITS.map(u => 'u'+u[0]))]]);
+
+        function activeSources() {
+            return [...multiSel.keys()].map(id => ({ src: SOURCES.find(s => s.id === id), t: multiSel.get(id) }));
+        }
+        function hasSelection() { return activeSources().length > 0; }
+
+        function chipRow(src, set) {
+            if (!src.topics.length) return '';
+            return `<div class="flex flex-wrap gap-1.5 mt-2">${src.topics.map(t => {
+                const on = set.has(t[0]);
+                return `<button type="button" data-src="${src.id}" data-topic="${t[0]}" class="px-2.5 py-1.5 rounded-lg border text-xs font-bold transition ${on ? 'bg-cyan-500/25 border-cyan-400 text-cyan-100' : 'bg-slate-950/60 border-slate-700 text-slate-500 hover:border-slate-500'}">${escHTML(t[1])}</button>`;
+            }).join('')}</div>`;
+        }
+        function renderTopicSelector() {
+            document.getElementById('multi-toggle').checked = multiOn;
+            const card = src => {
+                const on = multiSel.has(src.id);
+                return `<button type="button" data-src-pick="${src.id}" class="p-3 rounded-2xl border-2 flex flex-col items-center gap-1 text-center transition ${on ? 'bg-cyan-500/20 border-cyan-400 text-white shadow-md shadow-cyan-500/15' : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-600'}">
+                    <span class="text-3xl">${src.icon}</span><span class="text-xs font-display font-bold leading-tight">${escHTML(src.short || src.name)}</span></button>`;
+            };
+            const chip = src => {
+                const on = multiSel.has(src.id);
+                return `<button type="button" data-src-pick="${src.id}" class="px-3 py-2 rounded-xl border-2 flex items-center gap-2 text-xs font-bold transition ${on ? 'bg-amber-400/15 border-amber-400 text-white' : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-600'}">
+                    <span class="text-base">${src.icon}</span>${escHTML(src.short || src.name)}</button>`;
+            };
+            document.getElementById('subject-grid').innerHTML = SOURCES.filter(s => !s.blk).map(card).join('');
+            document.getElementById('block-grid').innerHTML = SOURCES.filter(s => s.blk).map(chip).join('');
+            const box = document.getElementById('topic-selector');
+            const sel = activeSources().filter(({ src }) => src.topics.length);
+            if (!sel.length) { box.innerHTML = `<p class="text-xs text-slate-500">Aquesta selecció no té temes per triar: entren totes les preguntes.</p>`; return; }
+            box.innerHTML = sel.map(({ src, t }) => {
+                const all = t.size === src.topics.length;
+                return `<div class="p-3 rounded-2xl bg-slate-950/60 border border-slate-800">
+                    <div class="flex items-center justify-between gap-2">
+                        <p class="text-xs font-bold text-slate-200"><span class="text-base mr-1">${src.icon}</span>${escHTML(src.name)} <span class="text-slate-500 font-semibold">· ${t.size} de ${src.topics.length}</span></p>
+                        <button type="button" data-src-all="${src.id}" class="text-[11px] font-bold text-cyan-300 hover:text-white">${all ? 'Cap' : 'Tots'}</button>
+                    </div>${chipRow(src, t)}</div>`;
+            }).join('');
+        }
+        document.getElementById('multi-toggle').addEventListener('change', e => {
+            multiOn = e.target.checked;
+            if (!multiOn && multiSel.size > 1) { const first = [...multiSel.entries()][0]; multiSel = new Map([first]); }
+            playSFX('click'); renderTopicSelector();
+        });
+        document.addEventListener('click', e => {
+            const pick = e.target.closest('[data-src-pick]');
+            if (pick) {
+                const id = pick.dataset.srcPick, src = SOURCES.find(s => s.id === id);
+                if (multiOn) { if (multiSel.has(id)) { if (multiSel.size > 1) multiSel.delete(id); } else multiSel.set(id, new Set(src.topics.map(t => t[0]))); }
+                else multiSel = new Map([[id, new Set(src.topics.map(t => t[0]))]]);
+                playSFX('click'); renderTopicSelector(); return;
+            }
+            const allBtn = e.target.closest('[data-src-all]');
+            if (allBtn) {
+                const src = SOURCES.find(s => s.id === allBtn.dataset.srcAll), set = multiSel.get(src.id);
+                if (set.size === src.topics.length) { set.clear(); set.add(src.topics[0][0]); } else src.topics.forEach(t => set.add(t[0]));
+                playSFX('click'); renderTopicSelector(); return;
+            }
+            const chip = e.target.closest('button[data-topic]');
+            if (chip) {
+                const set = multiSel.get(chip.dataset.src); if (!set) return;
+                if (set.has(chip.dataset.topic)) { if (set.size > 1) set.delete(chip.dataset.topic); } else set.add(chip.dataset.topic);
+                playSFX('click'); renderTopicSelector();
+            }
+        });
+
+        /* Fase 1: 10 preguntes de les fonts triades */
+        function toCard(src, q) {
+            let cat = src.name, icon = src.icon;
+            let opts, info, img = null, stem, credit = null;
+            if (Array.isArray(q)) {
+                if (src.id === 'medi' && UNIT[q[0]]) { cat = UNIT[q[0]][2]; icon = UNIT[q[0]][1]; }
+                stem = q[2]; opts = q[3]; info = q[4] || '';
+                if (q[5] && window.RQIMG && window.RQIMG[q[5]]) { img = window.RQIMG[q[5]]; credit = window.RQCRED && window.RQCRED[q[5]]; }
+            } else { stem = q.q; opts = q.o; info = q.e || ''; img = q.img || null; }
+            const order = shuffle(opts.map((t, i) => ({ t, ok: i === 0 })));
+            const lang = ['en','irr','world','gram'].includes(src.id) ? 'en' : src.id === 'es' ? 'es' : (src.id === 'conj' && /conjuga|tiempo|forma corresponde/.test(stem) ? 'es' : 'ca');
+            return { cat, icon, color: src.color, q: stem, options: order.map(o => o.t), answer: order.findIndex(o => o.ok), info, img, lang, credit };
+        }
+        function buildPhase1Questions(n) {
+            const okLvl = curLevel().lvl;
+            const srcs = activeSources().map(({ src, t }) => { let fixed = src.fixed ? src.fixed(t) : []; const f2 = fixed.filter(q => okLvl(q[1])); if (f2.length >= 6) fixed = f2; return { src, t, fixed: shuffle(fixed), gens: src.gens ? src.gens(t) : [] }; })
+                                        .filter(s => s.fixed.length || s.gens.length);
+            const out = [], seen = new Set();
+            let guard = 0;
+            while (out.length < n && guard++ < 400) {
+                const s = srcs[Math.floor(Math.random() * srcs.length)];
+                const useGen = s.gens.length && (!s.fixed.length || Math.random() < 0.5);
+                let q;
+                if (useGen) { q = GEN[pickA(s.gens)](false, s.t); if (!q) continue; }
+                else { q = s.fixed.pop(); if (!q) continue; }
+                const key = Array.isArray(q) ? q[2] : q.q + q.o[0];
+                if (seen.has(key)) continue;
+                seen.add(key); out.push(toCard(s.src, q));
+            }
+            return shuffle(out);
+        }
+
+        /* Fase 2: un rosco nou a cada partida, amb paraules de les assignatures triades */
+        function buildRoscoData() {
+            const keys = new Set(activeSources().flatMap(({ src }) => src.rosco));
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+            return letters.map(L => {
+                let c = window.ROSCO_BANK.filter(r => r[0] === L && keys.has(r[2]));
+                if (!c.length) c = window.ROSCO_BANK.filter(r => r[0] === L && r[2] === 'medi');
+                if (!c.length) c = window.ROSCO_BANK.filter(r => r[0] === L);
+                const r = pickA(c);
+                return { letter: L, type: r[1] === 'c' ? 'contain' : 'start', subject: ROSCO_LABEL[r[2]] || r[2], clue: r[3], answers: r[4], displayAnswer: r[5] };
+            });
+        }
+
+        /* =========================================================================
+           1b. MODES DE JOC, NIVELL, EQUIPS, VEU I INSÍGNIES
+           ========================================================================= */
+        const MODES = [
+            { id:'concurs', icon:'🎬', name:'Concurs', short:'Ràfega + Rosco', desc:'Ràfega de 10 preguntes i després el Gran Rosco de la A a la Z. Cada encert suma segons per al Rosco.' },
+            { id:'cofres', icon:'💰', name:'Cofres', short:'Or i sort', desc:'12 preguntes. Cada encert obre un cofre del tresor: or, doble... o res! Guanya or i supera el teu rècord.' },
+            { id:'entrena', icon:'🎯', name:'Entrenament', short:'Sense temps', desc:'Per practicar sense pressa: tu tries quantes preguntes, de què i de quin nivell. Sense temps ni punts, amb explicació a cada resposta i repàs de les fallades.' },
+            { id:'equips', icon:'👥', name:'Equips', short:'Pissarra digital', desc:'Per a la pissarra digital: de 2 a 4 equips responen per torns. 100 punts per encert i bonus per ratxa.' }
+        ];
+        const LEVELS = [
+            { id:'facil', name:'Fàcil', p1Time:20, roscoBase:75, lvl:q => q <= 2 },
+            { id:'normal', name:'Normal', p1Time:15, roscoBase:60, lvl:() => true },
+            { id:'dificil', name:'Difícil', p1Time:10, roscoBase:45, lvl:q => q >= 2 }
+        ];
+        const TEAM_COLORS = [['Blau','bg-sky-500','#38bdf8'],['Verd','bg-emerald-500','#34d399'],['Taronja','bg-orange-500','#fb923c'],['Lila','bg-purple-500','#c084fc']];
+        let selModeId = 'concurs', selLevelId = 'normal', teamCount = 2, trainCount = 20;
+        let teamNames = ['Equip Blau','Equip Verd','Equip Taronja','Equip Lila'];
+        const curLevel = () => LEVELS.find(l => l.id === selLevelId);
+
+        function renderModeSelector() {
+            document.getElementById('mode-selector').innerHTML = MODES.map(m => `
+                <button type="button" data-game-mode="${m.id}" class="p-4 rounded-2xl border-2 flex flex-col items-center gap-1.5 text-center transition btn-arcade ${selModeId === m.id ? 'bg-amber-400/15 border-amber-400 text-white shadow-lg shadow-amber-500/20' : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-600'}">
+                    <span class="text-4xl sm:text-5xl">${m.icon}</span><span class="font-display font-black text-base sm:text-lg">${m.name}</span><span class="text-[11px] leading-snug ${selModeId === m.id ? 'text-slate-300' : 'text-slate-500'}">${m.short}</span></button>`).join('');
+            document.getElementById('mode-desc').textContent = MODES.find(m => m.id === selModeId).desc;
+            document.getElementById('mode-desc-m').textContent = MODES.find(m => m.id === selModeId).desc;
+            const ts = document.getElementById('teams-setup');
+            ts.classList.toggle('hidden', selModeId !== 'equips');
+            document.getElementById('train-setup').classList.toggle('hidden', selModeId !== 'entrena');
+            document.getElementById('train-count').innerHTML = [10,20,30,50].map(n => `<button type="button" data-train-count="${n}" class="px-3 h-9 rounded-lg border-2 font-display font-black text-sm ${trainCount === n ? 'bg-cyan-500/25 border-cyan-400 text-white' : 'bg-slate-950/60 border-slate-700 text-slate-400'}">${n}</button>`).join('');
+            document.getElementById('team-count').innerHTML = [2,3,4].map(n => `<button type="button" data-team-count="${n}" class="w-9 h-9 rounded-lg border-2 font-display font-black text-sm ${teamCount === n ? 'bg-cyan-500/25 border-cyan-400 text-white' : 'bg-slate-950/60 border-slate-700 text-slate-400'}">${n}</button>`).join('');
+            document.getElementById('team-names').innerHTML = teamNames.slice(0, teamCount).map((n, i) => `
+                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full ${TEAM_COLORS[i][1]} shrink-0"></span>
+                <input data-team-name="${i}" value="${escHTML(n)}" maxlength="16" class="w-full min-w-0 px-2.5 py-2 rounded-lg bg-slate-950 border border-slate-700 focus:border-cyan-400 text-white text-sm font-bold focus:outline-none"></div>`).join('');
+            document.getElementById('level-selector').innerHTML = LEVELS.map(l => `
+                <button type="button" data-level="${l.id}" class="p-4 rounded-2xl border-2 flex flex-col items-center gap-1 transition btn-arcade ${selLevelId === l.id ? 'bg-cyan-500/20 border-cyan-400 text-white shadow-lg shadow-cyan-500/15' : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-600'}">
+                    <span class="text-3xl sm:text-4xl">${l.id === 'facil' ? '🌱' : l.id === 'normal' ? '⚡' : '🔥'}</span><span class="font-display font-black text-base sm:text-lg">${l.name}</span><span class="text-[11px] ${selLevelId === l.id ? 'text-slate-300' : 'text-slate-500'}">${l.p1Time} s per pregunta · Rosco ${l.roscoBase} s</span></button>`).join('');
+            document.getElementById('who-title').textContent = selModeId === 'equips' ? '1 · Classe o mestre/a' : '1 · Concursant';
+            document.getElementById('input-player-name').placeholder = selModeId === 'equips' ? 'Nom de la classe...' : 'El teu nom...';
+        }
+        document.addEventListener('click', e => {
+            const m = e.target.closest('[data-game-mode]'); if (m) { selModeId = m.dataset.gameMode; playSFX('click'); renderModeSelector(); return; }
+            const l = e.target.closest('[data-level]'); if (l) { selLevelId = l.dataset.level; playSFX('click'); renderModeSelector(); return; }
+            const t = e.target.closest('[data-team-count]'); if (t) { teamCount = +t.dataset.teamCount; playSFX('click'); renderModeSelector(); return; }
+            const tc = e.target.closest('[data-train-count]'); if (tc) { trainCount = +tc.dataset.trainCount; playSFX('click'); renderModeSelector(); }
+        });
+        document.addEventListener('input', e => { const i = e.target.dataset && e.target.dataset.teamName; if (i != null) teamNames[+i] = e.target.value; });
+
+        /* ---- Veu (lectura en veu alta, gratuïta, del navegador) ---- */
+        let voiceOn = false;
+        function toggleVoice() {
+            voiceOn = !voiceOn;
+            document.getElementById('voice-icon').textContent = voiceOn ? '🗣️' : '🤫';
+            document.getElementById('btn-voice').classList.toggle('bg-cyan-500/25', voiceOn);
+            if (voiceOn) speak('Lectura en veu alta activada.', 'ca'); else if (window.speechSynthesis) speechSynthesis.cancel();
+        }
+        function speak(text, lang) {
+            if (!voiceOn || !window.speechSynthesis || !text) return;
+            try {
+                speechSynthesis.cancel();
+                const u = new SpeechSynthesisUtterance(text.replace(/___/g, ' ... '));
+                u.lang = lang === 'en' ? 'en-GB' : lang === 'es' ? 'es-ES' : 'ca-ES';
+                u.rate = 0.95;
+                const v = speechSynthesis.getVoices().find(v => v.lang.replace('_','-').toLowerCase().startsWith(u.lang.slice(0,2)));
+                if (v) u.voice = v;
+                speechSynthesis.speak(u);
+            } catch (err) { /* sense veu */ }
+        }
+
+        /* ---- Insígnies (es guarden en aquest dispositiu) ---- */
+        const BADGES = [
+            { id:'primera', icon:'🎟️', name:'Primera partida', desc:'Has jugat la teva primera partida.' },
+            { id:'rafega10', icon:'⚡', name:'Ràfega perfecta', desc:'10 de 10 a la Ràfega.' },
+            { id:'ratxa5', icon:'🔥', name:'En ratxa', desc:'5 encerts seguits.' },
+            { id:'rosco20', icon:'🔤', name:'Mestre del Rosco', desc:'20 lletres o més encertades.' },
+            { id:'rosco26', icon:'👑', name:'Rosco complet', desc:'Les 26 lletres sense errades.' },
+            { id:'or500', icon:'🪙', name:'Caçatresors', desc:'500 monedes d\'or en una partida de Cofres.' },
+            { id:'poliglot', icon:'🌍', name:'Totes les matèries', desc:'Una partida amb 3 assignatures o més.' },
+            { id:'repas', icon:'🔁', name:'Qui la segueix...', desc:'Has repassat les preguntes fallades.' },
+            { id:'veterana', icon:'🏅', name:'Veterà/ana', desc:'5 partides jugades.' }
+        ];
+        const badgeKey = () => 'egr6_' + (game.playerName || '').trim().toLowerCase();
+        function loadProfile() { try { return JSON.parse(localStorage.getItem(badgeKey())) || { games:0, badges:[], bestGold:0, bestRosco:0 }; } catch (e) { return { games:0, badges:[], bestGold:0, bestRosco:0 }; } }
+        function saveProfile(p) { try { localStorage.setItem(badgeKey(), JSON.stringify(p)); } catch (e) { /* sense emmagatzematge */ } }
+        function awardBadges(stats) {
+            const p = loadProfile();
+            p.games += 1;
+            if (stats.gold != null) p.bestGold = Math.max(p.bestGold || 0, stats.gold);
+            if (stats.rosco != null) p.bestRosco = Math.max(p.bestRosco || 0, stats.rosco);
+            const earned = [];
+            const give = id => { if (!p.badges.includes(id)) { p.badges.push(id); earned.push(id); } };
+            give('primera');
+            if (stats.p1Correct === 10) give('rafega10');
+            if (stats.bestStreak >= 5) give('ratxa5');
+            if (stats.rosco >= 20) give('rosco20');
+            if (stats.rosco === 26) give('rosco26');
+            if (stats.gold >= 500) give('or500');
+            if (activeSources().length >= 3) give('poliglot');
+            if (stats.retry) give('repas');
+            if (p.games >= 5) give('veterana');
+            saveProfile(p);
+            return { profile:p, earned };
+        }
+        function renderBadges(containerId, result) {
+            const box = document.getElementById(containerId);
+            if (!result) { box.classList.add('hidden'); return; }
+            const { profile, earned } = result;
+            box.classList.remove('hidden');
+            box.innerHTML = `<div class="flex items-center justify-between mb-3">
+                <h3 class="font-display font-extrabold text-sm sm:text-base text-white flex items-center gap-2"><span>🏅</span> Insígnies de ${escHTML(game.playerName)}</h3>
+                <span class="text-xs font-bold text-slate-400">${profile.badges.length} / ${BADGES.length}${earned.length ? ` · <span class="text-amber-300">${earned.length} ${earned.length > 1 ? 'noves' : 'nova'}!</span>` : ''}</span></div>
+                <div class="grid grid-cols-3 sm:grid-cols-5 gap-2">${BADGES.map(b => {
+                    const has = profile.badges.includes(b.id), isNew = earned.includes(b.id);
+                    return `<div title="${escHTML(b.desc)}" class="p-2.5 rounded-xl border text-center ${has ? 'bg-amber-400/10 border-amber-400/40' : 'bg-slate-900/60 border-white/5 opacity-40'} ${isNew ? 'badge-new ring-2 ring-amber-300' : ''}">
+                        <div class="text-2xl ${has ? '' : 'grayscale'}">${b.icon}</div><div class="text-[10px] font-bold ${has ? 'text-amber-200' : 'text-slate-500'} leading-tight mt-1">${b.name}</div></div>`;
+                }).join('')}</div>`;
+        }
+
+        /* ---- Resum per al mestre (porta-retalls) ---- */
+        let lastSummary = '';
+        function buildSummary(lines) {
+            const d = new Date();
+            const srcs = activeSources().map(({ src, t }) => src.name + (src.topics.length && t.size < src.topics.length ? ` (${[...t].map(k => (src.topics.find(x => x[0] === k) || [k, k])[1]).join(', ')})` : '')).join('; ');
+            lastSummary = [`EL GRAN REPTE 6È · ${d.toLocaleDateString('ca-ES')} ${d.toLocaleTimeString('ca-ES', { hour:'2-digit', minute:'2-digit' })}`,
+                (game.mode === 'equips' ? `Classe: ${game.playerName}` : `Alumne/a: ${game.playerName}`), `Mode: ${MODES.find(m => m.id === game.mode)?.name || game.mode} · Nivell: ${curLevel().name}`, `Contingut: ${srcs}`, ...lines].join('\n');
+        }
+        function copySummary() {
+            const note = document.getElementById(!document.getElementById('screen-results').classList.contains('hidden') ? 'res-copied' : 'mr-copied');
+            const done = ok => { note.textContent = ok ? '✅ Resum copiat. Enganxa\'l al Teams o al correu del mestre.' : lastSummary; note.classList.remove('hidden'); if (!ok) note.className = 'text-left text-xs text-slate-300 whitespace-pre-wrap bg-slate-950/80 p-3 rounded-xl'; };
+            if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(lastSummary).then(() => done(true)).catch(() => done(false));
+            else done(false);
+        }
+
+        /* ---- Repàs de la Ràfega (preguntes fallades) ---- */
+        function renderWrongReview(containerId, retryBtnId) {
+            const box = document.getElementById(containerId), btn = document.getElementById(retryBtnId);
+            const wrong = game.wrongCards;
+            if (!wrong.length) {
+                box.classList.remove('hidden');
+                box.innerHTML = `<h3 class="font-display font-extrabold text-sm sm:text-base text-white flex items-center gap-2"><span>📖</span> Preguntes</h3><p class="text-sm text-emerald-400 font-bold py-2">🎉 Cap pregunta fallada!</p>`;
+                btn.classList.add('hidden'); return;
+            }
+            box.classList.remove('hidden');
+            box.innerHTML = `<div class="flex items-center justify-between mb-3"><h3 class="font-display font-extrabold text-sm sm:text-base text-white flex items-center gap-2"><span>📖</span> Preguntes per repassar</h3><span class="text-xs font-bold text-slate-400">${wrong.length}</span></div>
+                <div class="max-h-52 overflow-y-auto space-y-2 pr-1">${wrong.map(c => `<div class="p-3 rounded-xl border bg-rose-500/10 border-rose-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div><p class="text-[10px] font-bold text-slate-400 uppercase">${c.icon} ${escHTML(c.cat)}</p><p class="text-xs text-slate-200 leading-snug">${escHTML(c.q)}</p><p class="text-[11px] text-slate-400 mt-0.5">${escHTML(c.info)}</p></div>
+                    <span class="px-2.5 py-1 rounded-lg bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 font-display font-extrabold text-xs shrink-0 self-start sm:self-center">${escHTML(c.options[c.answer])}</span></div>`).join('')}</div>`;
+            btn.classList.toggle('hidden', game.mode === 'retry');
+        }
+        function startRetryRound() {
+            const cards = game.wrongCards.map(c => { const order = shuffle(c.options.map((t, i) => ({ t, ok: i === c.answer }))); return { ...c, options: order.map(o => o.t), answer: order.findIndex(o => o.ok) }; });
+            if (!cards.length) return;
+            playSFX('correct');
+            startQuiz('retry', shuffle(cards));
+        }
+
+        /* ---- Cofres ---- */
+        const CHEST_OUTCOMES = [
+            { w:22, gold:100, text:'+100 monedes 🪙' }, { w:18, gold:150, text:'+150 monedes 🪙🪙' }, { w:14, gold:200, text:'+200 monedes! 🪙🪙🪙' },
+            { w:12, mult:2, text:'DOBLE! El teu or es duplica ✨' }, { w:10, mult:1.5, text:'+50% d\'or! 🌟' },
+            { w:14, gold:0, text:'Buit... res de res 🕸️' }, { w:10, mult:0.75, text:'Un lladre s\'emporta una quarta part 🦝' }
+        ];
+        function openChests() {
+            const row = document.getElementById('chest-row');
+            document.getElementById('chest-title').textContent = 'Tria un cofre';
+            document.getElementById('chest-result').classList.add('hidden');
+            document.getElementById('chest-continue').classList.add('hidden');
+            row.innerHTML = [0,1,2].map(i => `<button type="button" data-chest="${i}" class="chest p-4 rounded-2xl bg-gradient-to-b from-amber-700/60 to-amber-950/80 border-2 border-amber-500/50 text-5xl shadow-lg">🧰</button>`).join('');
+            document.getElementById('modal-chests').classList.remove('hidden');
+        }
+        document.addEventListener('click', e => {
+            const b = e.target.closest('[data-chest]'); if (!b || b.disabled) return;
+            const total = CHEST_OUTCOMES.reduce((a, o) => a + o.w, 0); let r = Math.random() * total, out = CHEST_OUTCOMES[0];
+            for (const o of CHEST_OUTCOMES) { r -= o.w; if (r <= 0) { out = o; break; } }
+            if (out.mult != null && game.gold === 0) out = CHEST_OUTCOMES[0];
+            const before = game.gold;
+            if (out.gold != null) game.gold += out.gold; else game.gold = Math.round(game.gold * out.mult);
+            const delta = game.gold - before;
+            document.querySelectorAll('[data-chest]').forEach(x => { x.disabled = true; x.classList.add('opacity-40'); });
+            b.classList.remove('opacity-40'); b.classList.add('open'); b.textContent = delta > 0 ? '💎' : delta < 0 ? '🦝' : '🕸️';
+            const res = document.getElementById('chest-result'); res.textContent = out.text; res.className = `font-display font-black text-xl min-h-[1.5em] ${delta > 0 ? 'text-amber-300' : delta < 0 ? 'text-rose-300' : 'text-slate-300'}`; res.classList.remove('hidden');
+            document.getElementById('chest-continue').classList.remove('hidden');
+            playSFX(delta > 0 ? 'streak' : delta < 0 ? 'wrong' : 'pass');
+            document.getElementById('p1-gold').textContent = game.gold;
+        });
+        function closeChests() { document.getElementById('modal-chests').classList.add('hidden'); nextPhase1Question(); }
+
+        /* ---- Equips ---- */
+        function renderTeams() {
+            const row = document.getElementById('p1-teams-row');
+            row.innerHTML = game.teams.map((t, i) => `<div class="team-card glass-panel rounded-2xl p-3 text-center ${i === game.teamIdx ? 'active' : ''}">
+                <div class="flex items-center justify-center gap-2"><span class="w-3 h-3 rounded-full ${t.cls}"></span><span class="font-display font-bold text-sm text-white truncate">${escHTML(t.name)}</span></div>
+                <div class="font-display font-black text-2xl text-amber-300 tabular-nums">${t.score}</div>
+                <div class="text-[10px] text-slate-400 uppercase font-bold">${t.streak >= 2 ? '🔥 ratxa ' + t.streak : (i === game.teamIdx ? '▶ el vostre torn' : '&nbsp;')}</div></div>`).join('');
+        }
+        const curTeam = () => game.teams[game.teamIdx];
+
+        function showModeResults() {
+            playSFX('fanfare');
+            switchScreen('screen-mode-results');
+            const S = document.getElementById('mr-stats'), P = document.getElementById('mr-podium');
+            P.classList.add('hidden'); document.getElementById('mr-copied').classList.add('hidden');
+            const stat = (label, val, col) => `<div class="p-4 rounded-2xl bg-${col}-500/10 border border-${col}-400/30"><p class="text-[11px] font-bold uppercase text-${col}-300">${label}</p><p class="font-display font-black text-3xl text-white mt-1">${val}</p></div>`;
+            const total = game.p1Questions.length;
+            let badgeRes = null, lines = [];
+            if (game.mode === 'cofres') {
+                const p = loadProfile(); const record = game.gold > (p.bestGold || 0);
+                document.getElementById('mr-icon').textContent = record ? '💎' : '💰';
+                document.getElementById('mr-rank').textContent = record ? 'NOU RÈCORD PERSONAL!' : game.gold >= 800 ? 'MESTRE/A DEL TRESOR' : game.gold >= 400 ? 'CAÇATRESORS' : 'APRENENT DE PIRATA';
+                document.getElementById('mr-headline').textContent = `${game.gold} monedes d'or, ${game.playerName}!`;
+                document.getElementById('mr-sub').textContent = `L'or depèn de la sort dels cofres; els encerts, del que saps. El teu rècord anterior: ${p.bestGold || 0}.`;
+                S.innerHTML = stat('Or', game.gold + ' 🪙', 'amber') + stat('Encerts', `${game.p1Correct} / ${total}`, 'emerald') + stat('Millor ratxa', game.p1BestStreak + ' 🔥', 'cyan') + stat('Nivell', curLevel().name, 'rose');
+                badgeRes = awardBadges({ p1Correct: game.p1Correct, bestStreak: game.p1BestStreak, gold: game.gold });
+                lines = [`Cofres: ${game.p1Correct}/${total} encerts · ${game.gold} monedes · millor ratxa ${game.p1BestStreak}`];
+            } else if (game.mode === 'equips') {
+                const order = [...game.teams].sort((a, b) => b.score - a.score);
+                document.getElementById('mr-icon').textContent = '🏆';
+                document.getElementById('mr-rank').textContent = order[0].score === order[1].score ? 'EMPAT!' : 'EQUIP GUANYADOR';
+                document.getElementById('mr-headline').textContent = order[0].score === order[1].score ? 'Empat a dalt de tot!' : `${order[0].name} guanya!`;
+                document.getElementById('mr-sub').textContent = `${total} preguntes · ${game.teams.length} equips · nivell ${curLevel().name}`;
+                S.innerHTML = '';
+                P.classList.remove('hidden');
+                P.className = 'grid grid-cols-1 sm:grid-cols-3 gap-3';
+                P.innerHTML = order.map((t, i) => `<div class="p-4 rounded-2xl border ${i === 0 ? 'bg-amber-400/15 border-amber-400/50 sm:order-2 sm:-translate-y-2' : i === 1 ? 'bg-slate-900/80 border-white/15 sm:order-1' : 'bg-slate-900/80 border-white/10 sm:order-3'}">
+                    <div class="text-3xl">${['🥇','🥈','🥉','4️⃣'][i]}</div><div class="flex items-center justify-center gap-2 mt-1"><span class="w-3 h-3 rounded-full ${t.cls}"></span><span class="font-display font-bold text-white">${escHTML(t.name)}</span></div>
+                    <div class="font-display font-black text-3xl text-amber-300">${t.score}</div><div class="text-[11px] text-slate-400">${t.correct} encerts de ${t.asked}</div></div>`).join('');
+                lines = order.map((t, i) => `${i + 1}. ${t.name}: ${t.score} punts (${t.correct}/${t.asked} encerts)`);
+            } else if (game.mode === 'entrena') {
+                const pct = Math.round(100 * game.p1Correct / total);
+                const bySubj = {};
+                game.p1Questions.forEach(c => { const k = c.icon + ' ' + c.cat; bySubj[k] = bySubj[k] || { ok: 0, n: 0 }; bySubj[k].n++; if (!game.wrongCards.includes(c)) bySubj[k].ok++; });
+                document.getElementById('mr-icon').textContent = pct >= 90 ? '🌟' : pct >= 70 ? '💪' : '🎯';
+                document.getElementById('mr-rank').textContent = pct >= 90 ? 'EXCEL·LENT' : pct >= 70 ? 'BON ENTRENAMENT' : 'SEGUEIX PRACTICANT';
+                document.getElementById('mr-headline').textContent = `${pct}% d'encerts, ${game.playerName}`;
+                document.getElementById('mr-sub').textContent = `${total} preguntes · nivell ${curLevel().name} · sense temps`;
+                S.innerHTML = stat('Encerts', `${game.p1Correct} / ${total}`, 'emerald') + stat('Fallades', total - game.p1Correct, 'rose') + stat('Millor ratxa', game.p1BestStreak + ' 🔥', 'cyan') + stat('Nivell', curLevel().name, 'amber');
+                P.classList.remove('hidden');
+                P.className = 'grid grid-cols-2 sm:grid-cols-3 gap-2';
+                P.innerHTML = Object.entries(bySubj).sort((a, b) => b[1].n - a[1].n).map(([k, v]) => `<div class="p-3 rounded-xl bg-slate-900/80 border border-white/10 text-left"><p class="text-[11px] font-bold text-slate-300 truncate">${escHTML(k)}</p><div class="h-2 rounded-full bg-slate-800 mt-1.5 overflow-hidden"><div class="h-full bg-emerald-400" style="width:${Math.round(100 * v.ok / v.n)}%"></div></div><p class="text-[11px] text-slate-400 mt-1">${v.ok} / ${v.n}</p></div>`).join('');
+                badgeRes = awardBadges({ p1Correct: null, bestStreak: game.p1BestStreak });
+                lines = [`Entrenament: ${game.p1Correct}/${total} encerts (${pct}%)`, ...Object.entries(bySubj).map(([k, v]) => ` · ${k}: ${v.ok}/${v.n}`)];
+            } else { // retry
+                document.getElementById('mr-icon').textContent = game.p1Correct === total ? '🌟' : '🔁';
+                document.getElementById('mr-rank').textContent = 'REPÀS DE LES FALLADES';
+                document.getElementById('mr-headline').textContent = game.p1Correct === total ? `Ara sí, ${game.playerName}!` : `Bon repàs, ${game.playerName}`;
+                document.getElementById('mr-sub').textContent = game.p1Correct === total ? 'Has encertat totes les que havies fallat.' : 'Les que encara falles tornen a sortir a la llista.';
+                S.innerHTML = stat('Encerts', `${game.p1Correct} / ${total}`, 'emerald') + stat('Encara per repassar', game.wrongCards.length, 'rose') + stat('Millor ratxa', game.p1BestStreak + ' 🔥', 'cyan') + stat('Nivell', curLevel().name, 'amber');
+                badgeRes = awardBadges({ p1Correct: null, bestStreak: game.p1BestStreak, retry: true });
+                lines = [`Repàs de fallades: ${game.p1Correct}/${total} encerts`];
+            }
+            renderBadges('mr-badges', badgeRes);
+            if (game.mode !== 'retry') recordGame('mr-pts'); else document.getElementById('mr-pts').classList.add('hidden');
+            renderWrongReview('mr-review', 'mr-retry');
+            if (game.wrongCards.length) lines.push('Per repassar:', ...game.wrongCards.map(c => ` - ${c.q} → ${c.options[c.answer]}`));
+            buildSummary(lines);
+            launchConfetti();
+        }
+
+        /* =========================================================================
+           1c. COMPTES D'EXPLORA, PUNTS I CLASSIFICACIÓ
+           ========================================================================= */
+        let lastPts = null;
+        function renderAccount() {
+            const acc = window.GR && GR.acc, box = document.getElementById('acc-box'), input = document.getElementById('input-player-name');
+            const bBoard = document.getElementById('btn-board');
+            if (acc) {
+                box.innerHTML = `<div class="flex items-center gap-2 flex-wrap"><span class="px-3 py-2 rounded-xl bg-emerald-500/15 border border-emerald-400/40 text-emerald-200 text-xs font-bold">✅ ${escHTML(acc.name)}${acc.clsName ? ' · ' + escHTML(acc.clsName) : ''}${acc.teacher ? ' · mestre/a' : ''}</span>
+                    <button type="button" onclick="openBoard()" class="px-3 py-2 rounded-xl bg-amber-400/15 border border-amber-400/40 text-amber-200 text-xs font-bold hover:bg-amber-400/25">🏆 Classificació</button>
+                    <button type="button" onclick="GR.logout()" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-slate-300 text-xs font-bold hover:bg-white/10">Sortir</button></div>`;
+                if (!acc.teacher) { input.value = acc.name; input.readOnly = true; input.classList.add('opacity-70'); }
+                bBoard.classList.remove('hidden'); bBoard.classList.add('flex');
+            } else {
+                const ok = window.GR && GR.available();
+                box.innerHTML = ok
+                    ? `<button type="button" onclick="openLogin()" class="px-3 py-2 rounded-xl bg-cyan-500/15 border border-cyan-400/40 text-cyan-200 text-xs font-bold hover:bg-cyan-500/25">🔑 Entra amb el compte d'Explora</button><span class="text-[11px] text-slate-500 ml-2">per guardar els punts i sortir a la classificació</span>`
+                    : `<span class="text-[11px] text-slate-500">🔑 L'entrada amb el compte d'Explora (punts i classificació) s'activa quan el joc és a la web de l'escola.</span>`;
+                input.readOnly = false; input.classList.remove('opacity-70');
+                bBoard.classList.add('hidden'); bBoard.classList.remove('flex');
+            }
+        }
+        function openLogin() { document.getElementById('modal-login').classList.remove('hidden'); document.getElementById('login-err').textContent = ''; setTimeout(() => document.getElementById('login-email').focus(), 50); }
+        function closeLogin() { document.getElementById('modal-login').classList.add('hidden'); }
+        async function doLogin(e) {
+            if (e) e.preventDefault();
+            const err = document.getElementById('login-err'), btn = document.getElementById('login-btn'); err.textContent = ''; btn.disabled = true;
+            try { await GR.login(document.getElementById('login-email').value, document.getElementById('login-pw').value); closeLogin(); playSFX('correct'); }
+            catch (ex) { err.textContent = ex.message || 'No s\'ha pogut entrar.'; playSFX('wrong'); }
+            btn.disabled = false;
+        }
+        if (window.GR) { GR.onChange(renderAccount); if (GR.available()) GR.resume().then(renderAccount).catch(() => {}); }
+
+        /* Estadístiques d'una partida per al registre */
+        function gameStats() {
+            const total = game.p1Questions.length;
+            const perTopic = {}; game.p1Questions.forEach(c => { const k = c.icon + ' ' + c.cat; perTopic[k] = perTopic[k] || [k, 0, 0]; perTopic[k][2]++; if (!game.wrongCards.includes(c)) perTopic[k][1]++; });
+            const rosco = game.mode === 'concurs' ? game.roscoItems.filter(i => i.status === 'correct').length : null;
+            return { mode: game.mode, lvl: selLevelId, src: activeSources().map(s => s.src.id), ok: game.p1Correct, total, rosco, gold: game.mode === 'cofres' ? game.gold : null,
+                streak: game.p1BestStreak, perTopic: Object.values(perTopic), wrongQ: game.wrongCards.map(c => c.q) };
+        }
+        async function recordGame(noteId) {
+            lastPts = null; const el = document.getElementById(noteId); if (!el) return;
+            if (!window.GR || !GR.acc || GR.acc.teacher || game.mode === 'equips') { el.classList.add('hidden'); return; }
+            el.classList.remove('hidden'); el.textContent = 'Guardant la partida…';
+            try { lastPts = await GR.record(gameStats()); el.innerHTML = `🏆 <b>+${lastPts} punts</b> per a la classificació de la classe · <button type="button" onclick="openBoard()" class="underline">veure-la</button>`; }
+            catch (e) { el.textContent = 'No s\'ha pogut guardar la partida (sense connexió?). Els punts no s\'han perdut si tornes a jugar amb internet.'; }
+        }
+
+        /* ---- Tauler ---- */
+        let boardTab = 'comp', boardRange = 'ptsW', boardCls = null;
+        async function openBoard() {
+            if (!window.GR || !GR.acc) return;
+            playSFX('click'); switchScreen('screen-board');
+            document.getElementById('btn-back').classList.remove('hidden'); document.getElementById('btn-back').classList.add('flex');
+            boardCls = GR.acc.cls || boardCls; renderBoardTabs(); loadBoard();
+        }
+        function renderBoardTabs() {
+            const acc = GR.acc, tabs = [['comp', '🏆 Competició'], ['me', '📈 El meu progrés']]; if (acc.teacher) tabs.push(['cls', '🧑‍🏫 La classe']);
+            document.getElementById('board-tabs').innerHTML = tabs.map(([id, n]) => `<button type="button" data-btab="${id}" class="px-4 py-2 rounded-xl border-2 font-display font-bold text-sm ${boardTab === id ? 'bg-cyan-500/20 border-cyan-400 text-white' : 'bg-slate-950/60 border-slate-800 text-slate-400'}">${n}</button>`).join('');
+        }
+        document.addEventListener('click', e => {
+            const t = e.target.closest('[data-btab]'); if (t) { boardTab = t.dataset.btab; renderBoardTabs(); loadBoard(); return; }
+            const r = e.target.closest('[data-brange]'); if (r) { boardRange = r.dataset.brange; loadBoard(); return; }
+            const c = e.target.closest('[data-bcls]'); if (c) { boardCls = c.dataset.bcls; loadBoard(); }
+        });
+        const pct = (ok, n) => n ? Math.round(100 * ok / n) : 0;
+        const fmtDate = t => new Date(t).toLocaleDateString('ca-ES', { day: '2-digit', month: '2-digit' });
+        async function loadBoard() {
+            const el = document.getElementById('board-body'); el.innerHTML = `<p class="text-slate-400 text-sm py-6 text-center">Carregant…</p>`;
+            try {
+                if (boardTab === 'comp') return renderComp(el);
+                if (boardTab === 'me') return renderMe(el);
+                return renderClass(el);
+            } catch (e) { el.innerHTML = `<p class="text-rose-300 text-sm py-6 text-center">No s'ha pogut carregar (${escHTML(e.code || e.message)}).</p>`; }
+        }
+        async function renderComp(el) {
+            const acc = GR.acc, cls = boardCls;
+            if (!cls) { el.innerHTML = `<p class="text-slate-400 text-sm py-6 text-center">Encara no tens cap classe assignada a Explora.</p>`; return; }
+            const rows = (await GR.classBoard(cls)).sort((a, b) => (b[boardRange] || 0) - (a[boardRange] || 0));
+            const ranges = [['ptsW', 'Aquesta setmana'], ['ptsM', 'Aquest mes'], ['pts', 'Tot el curs']];
+            const myIdx = rows.findIndex(r => r.uid === acc.uid);
+            const medal = i => ['🥇', '🥈', '🥉'][i] || `<span class="text-slate-500 font-display font-black">${i + 1}</span>`;
+            el.innerHTML = `<div class="flex gap-2 flex-wrap mb-4">${ranges.map(([k, n]) => `<button type="button" data-brange="${k}" class="px-3 py-1.5 rounded-lg border text-xs font-bold ${boardRange === k ? 'bg-amber-400/20 border-amber-400 text-amber-100' : 'bg-slate-950/60 border-slate-700 text-slate-400'}">${n}</button>`).join('')}</div>
+                ${rows.length ? '' : '<p class="text-slate-400 text-sm py-4 text-center">Encara no hi ha cap partida guardada a la classe. Sigues el primer!</p>'}
+                ${rows.length >= 3 ? `<div class="grid grid-cols-3 gap-2 mb-4">${[1, 0, 2].map(i => rows[i] ? `<div class="p-3 rounded-2xl text-center border ${i === 0 ? 'bg-amber-400/15 border-amber-400/50 -translate-y-2' : 'bg-slate-900/80 border-white/10'}"><div class="text-3xl">${['🥇', '🥈', '🥉'][i]}</div><div class="font-display font-bold text-white text-sm truncate">${escHTML(rows[i].name)}</div><div class="font-display font-black text-xl text-amber-300">${rows[i][boardRange] || 0}</div></div>` : '').join('')}</div>` : ''}
+                <div class="space-y-1.5">${rows.map((r, i) => `<div class="flex items-center gap-3 px-3 py-2 rounded-xl border ${r.uid === acc.uid ? 'bg-cyan-500/15 border-cyan-400/50' : 'bg-slate-950/50 border-white/5'}">
+                    <span class="w-7 text-center text-lg">${medal(i)}</span><span class="flex-1 font-bold text-sm text-white truncate">${escHTML(r.name)}${r.uid === acc.uid ? ' <span class="text-cyan-300 text-xs">(tu)</span>' : ''}</span>
+                    <span class="text-xs text-slate-400 hidden sm:inline">${boardRange === 'ptsW' ? (r.gamesW || 0) : r.games || 0} partides · ${pct(r.ok, r.total)}% encerts</span>
+                    <span class="font-display font-black text-amber-300 tabular-nums">${r[boardRange] || 0}</span></div>`).join('')}</div>
+                ${myIdx >= 0 ? `<p class="text-xs text-slate-400 mt-3 text-center">Vas ${myIdx + 1}${myIdx === 0 ? 'r' : myIdx === 1 ? 'n' : myIdx === 2 ? 'r' : 'è'} de ${rows.length}. Els punts són per encerts (10 per pregunta, 4 per lletra del Rosco, 15 per jugar i 20 per una partida perfecta).</p>` : ''}`;
+        }
+        async function renderMe(el) {
+            const [m, games] = await Promise.all([GR.me(), GR.myGames(20)]);
+            if (!m) { el.innerHTML = `<p class="text-slate-400 text-sm py-6 text-center">Encara no has jugat cap partida amb el compte. Juga'n una i torna!</p>`; return; }
+            const stat = (l, v, c) => `<div class="p-3 rounded-2xl bg-${c}-500/10 border border-${c}-400/30 text-center"><p class="text-[10px] font-bold uppercase text-${c}-300">${l}</p><p class="font-display font-black text-2xl text-white">${v}</p></div>`;
+            const topics = Object.entries(m.topics || {}).sort((a, b) => b[1].n - a[1].n);
+            const worst = Object.values(m.wrong || {}).sort((a, b) => b.n - a.n).slice(0, 6);
+            el.innerHTML = `<div class="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-4">${stat('Punts', m.pts || 0, 'amber')}${stat('Partides', m.games || 0, 'cyan')}${stat('Encerts', pct(m.ok, m.total) + '%', 'emerald')}${stat('Millor Rosco', (m.bestRosco || 0) + '/26', 'purple')}${stat('Millor or', m.bestGold || 0, 'rose')}</div>
+                <h4 class="font-display font-bold text-sm text-white mb-2">Per matèria</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">${topics.map(([k, v]) => { const p = pct(v.ok, v.n); return `<div class="p-2.5 rounded-xl bg-slate-950/60 border border-white/5"><div class="flex justify-between text-xs"><span class="text-slate-200 font-bold truncate">${escHTML(k)}</span><span class="${p >= 80 ? 'text-emerald-300' : p >= 60 ? 'text-amber-300' : 'text-rose-300'} font-bold">${p}%</span></div><div class="h-2 rounded-full bg-slate-800 mt-1.5 overflow-hidden"><div class="h-full ${p >= 80 ? 'bg-emerald-400' : p >= 60 ? 'bg-amber-400' : 'bg-rose-400'}" style="width:${p}%"></div></div><p class="text-[10px] text-slate-500 mt-1">${v.ok} de ${v.n}</p></div>`; }).join('') || '<p class="text-xs text-slate-500">Encara res.</p>'}</div>
+                ${worst.length ? `<h4 class="font-display font-bold text-sm text-white mb-2">Les que més et costen</h4><div class="space-y-1.5 mb-4">${worst.map(w => `<div class="px-3 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-slate-200 flex justify-between gap-2"><span>${escHTML(w.q)}</span><span class="text-rose-300 font-bold shrink-0">×${w.n}</span></div>`).join('')}</div>` : ''}
+                <h4 class="font-display font-bold text-sm text-white mb-2">Últimes partides</h4>
+                <div class="space-y-1">${games.map(g => `<div class="flex items-center gap-3 px-3 py-1.5 rounded-lg bg-slate-950/50 text-xs"><span class="text-slate-500 w-12">${fmtDate(g.t)}</span><span class="flex-1 text-slate-200">${MODES.find(x => x.id === g.mode)?.icon || '🔁'} ${escHTML(g.mode)} · ${g.ok}/${g.total}${g.rosco != null ? ' · Rosco ' + g.rosco : ''}${g.gold != null ? ' · ' + g.gold + ' or' : ''}</span><span class="text-amber-300 font-bold">+${g.pts}</span></div>`).join('') || '<p class="text-xs text-slate-500">Cap encara.</p>'}</div>`;
+        }
+        async function renderClass(el) {
+            const classes = await GR.teacherClasses();
+            if (!classes.length) { el.innerHTML = `<p class="text-slate-400 text-sm py-6 text-center">No tens cap classe a Explora.</p>`; return; }
+            if (!boardCls || !classes.find(c => c.id === boardCls)) boardCls = classes[0].id;
+            const rows = (await GR.classBoard(boardCls)).sort((a, b) => (b.pts || 0) - (a.pts || 0));
+            const agg = {}; rows.forEach(r => Object.values(r.wrong || {}).forEach(w => { agg[w.q] = (agg[w.q] || 0) + w.n; }));
+            const worst = Object.entries(agg).sort((a, b) => b[1] - a[1]).slice(0, 10);
+            const topics = {}; rows.forEach(r => Object.entries(r.topics || {}).forEach(([k, v]) => { topics[k] = topics[k] || { ok: 0, n: 0 }; topics[k].ok += v.ok; topics[k].n += v.n; }));
+            const week = GR.weekKey();
+            lastSummary = ['Classe', 'Alumne/a', 'Partides', 'Punts', 'Punts setmana', 'Encerts', 'Total', '% encerts', 'Millor Rosco', 'Última activitat'].join(';') + '\n' + rows.map(r => [boardCls, r.name, r.games || 0, r.pts || 0, r.wk === week ? r.ptsW || 0 : 0, r.ok || 0, r.total || 0, pct(r.ok, r.total), r.bestRosco || 0, r.updated ? new Date(r.updated).toLocaleDateString('ca-ES') : ''].join(';')).join('\n');
+            el.innerHTML = `<div class="flex gap-2 flex-wrap mb-4 items-center">${classes.map(c => `<button type="button" data-bcls="${c.id}" class="px-3 py-1.5 rounded-lg border text-xs font-bold ${boardCls === c.id ? 'bg-amber-400/20 border-amber-400 text-amber-100' : 'bg-slate-950/60 border-slate-700 text-slate-400'}">${escHTML(c.name || c.course || c.id)}</button>`).join('')}
+                <button type="button" onclick="copySummary()" class="ml-auto px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-xs font-bold text-white">📋 Copiar CSV</button></div>
+                <p id="mr-copied" class="hidden text-xs text-emerald-300 font-bold mb-2"></p>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                  <div class="lg:col-span-2 overflow-x-auto"><table class="w-full text-xs"><thead><tr class="text-slate-400 text-left"><th class="py-1.5 pr-2">#</th><th>Alumne/a</th><th class="text-right">Partides</th><th class="text-right">Punts</th><th class="text-right">Setmana</th><th class="text-right">Encerts</th><th class="text-right">Rosco</th><th class="text-right">Últim</th></tr></thead>
+                  <tbody>${rows.map((r, i) => { const p = pct(r.ok, r.total); const idle = r.updated && Date.now() - r.updated > 7 * 864e5; return `<tr class="border-t border-white/5 ${idle ? 'opacity-60' : ''}"><td class="py-1.5 pr-2 text-slate-500">${i + 1}</td><td class="font-bold text-white">${escHTML(r.name)}</td><td class="text-right">${r.games || 0}</td><td class="text-right text-amber-300 font-bold">${r.pts || 0}</td><td class="text-right">${r.wk === week ? r.ptsW || 0 : 0}</td><td class="text-right ${p >= 80 ? 'text-emerald-300' : p >= 60 ? 'text-amber-300' : 'text-rose-300'} font-bold">${p}%</td><td class="text-right">${r.bestRosco || 0}</td><td class="text-right text-slate-400">${r.updated ? fmtDate(r.updated) : '–'}</td></tr>`; }).join('') || '<tr><td colspan="8" class="py-4 text-center text-slate-500">Cap partida guardada encara.</td></tr>'}</tbody></table></div>
+                  <div><h4 class="font-display font-bold text-sm text-white mb-2">Les 10 més fallades</h4><div class="space-y-1.5 mb-4">${worst.map(([q, n]) => `<div class="px-3 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-slate-200 flex justify-between gap-2"><span>${escHTML(q)}</span><span class="text-rose-300 font-bold shrink-0">×${n}</span></div>`).join('') || '<p class="text-xs text-slate-500">Cap encara.</p>'}</div>
+                  <h4 class="font-display font-bold text-sm text-white mb-2">Per matèria (tota la classe)</h4><div class="space-y-1.5">${Object.entries(topics).sort((a, b) => b[1].n - a[1].n).map(([k, v]) => { const p = pct(v.ok, v.n); return `<div class="px-3 py-1.5 rounded-lg bg-slate-950/60 text-xs flex items-center gap-2"><span class="flex-1 text-slate-200 truncate">${escHTML(k)}</span><div class="w-24 h-2 rounded-full bg-slate-800 overflow-hidden"><div class="h-full ${p >= 80 ? 'bg-emerald-400' : p >= 60 ? 'bg-amber-400' : 'bg-rose-400'}" style="width:${p}%"></div></div><span class="w-9 text-right font-bold">${p}%</span></div>`; }).join('') || '<p class="text-xs text-slate-500">Cap encara.</p>'}</div></div>
+                </div>`;
+        }
+
+        /* =========================================================================
+           2. ESTADO GLOBAL DEL CONCURSO
+           ========================================================================= */
+        let game = {
+            mode: 'concurs', gold: 0, teams: [], teamIdx: 0, wrongCards: [],
+            playerName: '',
+            avatar: '🚀',
+            soundOn: true,
+            // Fase 1
+            p1Questions: [],
+            p1Index: 0,
+            p1Correct: 0,
+            p1Streak: 0,
+            p1BestStreak: 0,
+            timeBank: 60, // Segundos base para el Rosco
+            p1Timer: null,
+            p1TimeLeft: 15,
+            // Fase 2 (Rosco)
+            roscoItems: [], // { ...ROSCO_DATA[i], status: 'pending'|'correct'|'wrong'|'passed', userAnswer: '' }
+            roscoCurrentIdx: 0,
+            roscoLap: 1,
+            roscoTimeLeft: 60,
+            roscoTimer: null,
+            roscoActive: false
+        };
+
+        /* =========================================================================
+           3. MOTOR DE SONIDO (TONE.JS)
+           ========================================================================= */
+        let synth = null;
+        function ensureAudio() {
+            if (!synth && typeof Tone !== 'undefined') {
+                synth = new Tone.PolySynth(Tone.Synth).toDestination();
+                synth.volume.value = -8;
+            }
+            if (typeof Tone !== 'undefined' && Tone.context.state !== 'running') {
+                Tone.start();
+            }
+        }
+
+        function playSFX(type) {
+            if (!game.soundOn) return;
+            try {
+                ensureAudio();
+                const now = Tone.now();
+                if (type === 'click') {
+                    synth.triggerAttackRelease('G5', '32n', now);
+                } else if (type === 'correct') {
+                    synth.triggerAttackRelease(['C5', 'E5', 'G5'], '16n', now);
+                    synth.triggerAttackRelease('C6', '8n', now + 0.11);
+                } else if (type === 'streak') {
+                    synth.triggerAttackRelease(['E5', 'G5', 'B5', 'E6'], '16n', now);
+                } else if (type === 'wrong') {
+                    synth.triggerAttackRelease(['F3', 'B2'], '8n', now);
+                } else if (type === 'pass') {
+                    synth.triggerAttackRelease(['D4', 'A4'], '16n', now);
+                } else if (type === 'tick') {
+                    synth.triggerAttackRelease('A5', '64n', now);
+                } else if (type === 'fanfare') {
+                    const seq = ['C5', 'E5', 'G5', 'C6', 'G5', 'C6'];
+                    seq.forEach((note, i) => synth.triggerAttackRelease(note, '8n', now + i * 0.13));
+                }
+            } catch (e) { /* Silenciar errores de autoplay */ }
+        }
+
+        function toggleSound() {
+            game.soundOn = !game.soundOn;
+            document.getElementById('sound-icon').textContent = game.soundOn ? '🔊' : '🔇';
+        }
+
+        /* =========================================================================
+           4. PANTALLA DE BIENVENIDA Y SELECCIÓN DE AVATAR
+           ========================================================================= */
+        function renderAvatarSelector() {
+            const container = document.getElementById('avatar-selector');
+            container.innerHTML = '';
+            AVATARS.forEach(av => {
+                const isSelected = game.avatar === av.icon;
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.title = av.label;
+                btn.className = `w-12 h-14 sm:w-14 sm:h-14 rounded-xl border-2 flex items-center justify-center transition-all ${
+                    isSelected
+                        ? 'bg-cyan-500/20 border-cyan-400 scale-110 shadow-md shadow-cyan-500/20'
+                        : 'bg-slate-950/60 border-slate-800 hover:border-slate-600 opacity-70'
+                }`;
+                btn.innerHTML = `<span class="text-2xl">${av.icon}</span>`;
+                btn.onclick = () => {
+                    game.avatar = av.icon;
+                    playSFX('click');
+                    renderAvatarSelector();
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function startChallenge() {
+            const input = document.getElementById('input-player-name');
+            const nameVal = input.value.trim();
+            const err = document.getElementById('name-error');
+
+            if (!nameVal) {
+                err.classList.remove('hidden');
+                input.classList.add('border-rose-500', 'animate-shake');
+                setTimeout(() => input.classList.remove('animate-shake'), 400);
+                input.focus();
+                return;
+            }
+
+            err.classList.add('hidden');
+            if (!hasSelection()) {
+                document.getElementById('topic-error').classList.remove('hidden');
+                return;
+            }
+            document.getElementById('topic-error').classList.add('hidden');
+            game.playerName = nameVal;
+            ensureAudio();
+            playSFX('correct');
+
+            // Actualizar HUD de cabecera
+            document.getElementById('header-avatar').textContent = game.avatar;
+            document.getElementById('header-name').textContent = game.playerName;
+            document.getElementById('header-player-badge').classList.remove('hidden');
+            document.getElementById('header-player-badge').classList.add('flex');
+            document.getElementById('header-phases').classList.remove('hidden');
+            document.getElementById('header-phases').classList.add('flex');
+            document.getElementById('btn-quit').classList.remove('hidden');
+            document.getElementById('btn-back').classList.remove('hidden');
+            document.getElementById('btn-back').classList.add('flex');
+            document.getElementById('header-phases').classList.toggle('hidden', selModeId !== 'concurs');
+
+            if (selModeId === 'equips') {
+                game.teams = teamNames.slice(0, teamCount).map((n, i) => ({ name: (n || '').trim() || 'Equip ' + TEAM_COLORS[i][0], cls: TEAM_COLORS[i][1], score: 0, streak: 0, correct: 0, asked: 0 }));
+                game.teamIdx = 0;
+                startQuiz('equips', buildPhase1Questions(teamCount * 6));
+            } else if (selModeId === 'cofres') {
+                startQuiz('cofres', buildPhase1Questions(12));
+            } else if (selModeId === 'entrena') {
+                startQuiz('entrena', buildPhase1Questions(trainCount));
+            } else {
+                startQuiz('concurs', buildPhase1Questions(10));
+            }
+        }
+
+        /* =========================================================================
+           5. FASE 1: RÀFEGA DE PREGUNTES RÀPIDES
+           ========================================================================= */
+        function startQuiz(mode, questions) {
+            game.mode = mode;
+            game.p1Questions = questions;
+            game.gold = 0;
+            game.wrongCards = [];
+            document.getElementById('p1-bank-box').classList.toggle('hidden', mode !== 'concurs');
+            document.getElementById('p1-gold-box').classList.toggle('hidden', mode !== 'cofres');
+            document.getElementById('p1-gold-box').classList.toggle('flex', mode === 'cofres');
+            document.getElementById('p1-streak-box').classList.toggle('hidden', mode === 'equips');
+            document.getElementById('p1-teams-row').classList.toggle('hidden', mode !== 'equips');
+            document.getElementById('p1-teams-row').classList.toggle('grid', mode === 'equips');
+            if (mode === 'equips') renderTeams();
+            game.p1Index = 0;
+            game.p1Correct = 0;
+            game.p1Streak = 0;
+            game.p1BestStreak = 0;
+            game.timeBank = curLevel().roscoBase;
+
+            switchScreen('screen-phase1');
+            setHeaderPhaseActive(1);
+            updatePhase1HUD();
+            renderPhase1Question();
+        }
+
+        function updatePhase1HUD() {
+            const num = game.p1Index + 1;
+            const total = game.p1Questions.length;
+            document.getElementById('p1-progress-text').textContent = game.mode === 'equips' ? `Pregunta ${num} / ${total} · ${curTeam().name}` : `Pregunta ${num} / ${total}`;
+            document.getElementById('p1-gold').textContent = game.gold;
+            document.getElementById('p1-progress-bar').style.width = `${(num / total) * 100}%`;
+            document.getElementById('p1-streak-text').textContent = `${game.p1Streak} seguides`;
+            document.getElementById('p1-bank-seconds').textContent = `${game.timeBank}s`;
+        }
+
+        function spawnFloatingBonus(text) {
+            const anchor = document.getElementById('floating-bonus-anchor');
+            const badge = document.createElement('div');
+            badge.className = 'floating-bonus font-display font-black text-base text-emerald-300 drop-shadow-md whitespace-nowrap';
+            badge.textContent = text;
+            anchor.appendChild(badge);
+            setTimeout(() => badge.remove(), 1100);
+        }
+
+        function renderPhase1Question() {
+            const card = document.getElementById('p1-question-card');
+            card.classList.remove('question-enter');
+            void card.offsetWidth;
+            card.classList.add('question-enter');
+            const qObj = game.p1Questions[game.p1Index];
+            const colorMap = {
+                emerald: 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300',
+                amber: 'bg-amber-500/20 border-amber-400/40 text-amber-300',
+                rose: 'bg-rose-500/20 border-rose-400/40 text-rose-300',
+                blue: 'bg-blue-500/20 border-blue-400/40 text-blue-300',
+                purple: 'bg-purple-500/20 border-purple-400/40 text-purple-300',
+                orange: 'bg-orange-500/20 border-orange-400/40 text-orange-300'
+            };
+
+            const badge = document.getElementById('p1-cat-badge');
+            badge.className = `inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl border font-display font-extrabold text-xs sm:text-sm ${colorMap[qObj.color] || colorMap.emerald}`;
+            badge.innerHTML = `<span>${qObj.icon}</span> ${qObj.cat}`;
+
+            document.getElementById('p1-question-text').textContent = qObj.q;
+            const qImg = document.getElementById('p1-question-img');
+            const qCr = document.getElementById('p1-question-credit');
+            if (qObj.img) { qImg.src = qObj.img; qImg.alt = qObj.q; qImg.classList.remove('hidden'); qCr.textContent = qObj.credit ? 'Foto: ' + qObj.credit : ''; qCr.classList.toggle('hidden', !qObj.credit); } else { qImg.classList.add('hidden'); qImg.removeAttribute('src'); qCr.classList.add('hidden'); }
+
+            const grid = document.getElementById('p1-options-grid');
+            grid.innerHTML = '';
+            const letters = ['A', 'B', 'C', 'D'];
+
+            qObj.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.id = `p1-opt-${idx}`;
+                btn.className = 'p-4 rounded-2xl bg-slate-900/90 hover:bg-slate-800 border-2 border-slate-700/80 hover:border-cyan-400/70 text-left flex items-center gap-3.5 transition-all group btn-arcade border-b-slate-950';
+                btn.innerHTML = `
+                    <span class="w-9 h-9 rounded-xl bg-slate-800 group-hover:bg-cyan-500 group-hover:text-slate-950 font-display font-black text-sm text-cyan-300 flex items-center justify-center shrink-0 transition">
+                        ${letters[idx]}
+                    </span>
+                    <span class="font-semibold text-slate-100 text-sm sm:text-base leading-snug">${escHTML(opt)}</span>
+                `;
+                btn.onclick = () => handlePhase1Answer(idx);
+                grid.appendChild(btn);
+            });
+
+            document.getElementById('p1-feedback-bar').classList.add('hidden');
+            if (game.mode === 'equips') renderTeams();
+            speak(qObj.q, qObj.lang);
+            startPhase1Timer();
+        }
+
+        function startPhase1Timer() {
+            clearInterval(game.p1Timer);
+            const T = game.mode === 'equips' ? curLevel().p1Time + 5 : curLevel().p1Time;
+            game.p1TimeLeft = T;
+            const ring = document.getElementById('p1-timer-ring');
+            const num = document.getElementById('p1-timer-num');
+            ring.parentElement.parentElement.classList.toggle('hidden', game.mode === 'entrena');
+            if (game.mode === 'entrena') return;
+            const circumference = 144.5;
+
+            ring.style.strokeDashoffset = '0';
+            ring.style.stroke = '#22d3ee';
+            num.textContent = String(T);
+
+            game.p1Timer = setInterval(() => {
+                game.p1TimeLeft -= 0.1;
+                const ratio = Math.max(0, game.p1TimeLeft / T);
+                ring.style.strokeDashoffset = `${circumference * (1 - ratio)}`;
+                num.textContent = Math.ceil(game.p1TimeLeft);
+
+                if (game.p1TimeLeft <= T / 3) {
+                    ring.style.stroke = '#f43f5e';
+                } else if (game.p1TimeLeft <= T * 0.6) {
+                    ring.style.stroke = '#fbbf24';
+                }
+
+                if (game.p1TimeLeft <= 0) {
+                    clearInterval(game.p1Timer);
+                    handlePhase1Answer(-1);
+                }
+            }, 100);
+        }
+
+        function handlePhase1Answer(selectedIdx) {
+            clearInterval(game.p1Timer);
+            const qObj = game.p1Questions[game.p1Index];
+            const isCorrect = selectedIdx === qObj.answer;
+
+            qObj.options.forEach((_, idx) => {
+                const btn = document.getElementById(`p1-opt-${idx}`);
+                btn.disabled = true;
+                btn.classList.remove('hover:bg-slate-800', 'hover:border-cyan-400/70');
+
+                if (idx === qObj.answer) {
+                    btn.className = 'p-4 rounded-2xl bg-emerald-500/25 border-2 border-emerald-400 text-left flex items-center gap-3.5 shadow-lg shadow-emerald-500/15';
+                    btn.querySelector('span:first-child').className = 'w-9 h-9 rounded-xl bg-emerald-400 text-slate-950 font-display font-black text-sm flex items-center justify-center shrink-0';
+                } else if (idx === selectedIdx && !isCorrect) {
+                    btn.className = 'p-4 rounded-2xl bg-rose-500/25 border-2 border-rose-500 text-left flex items-center gap-3.5 animate-shake';
+                    btn.querySelector('span:first-child').className = 'w-9 h-9 rounded-xl bg-rose-500 text-white font-display font-black text-sm flex items-center justify-center shrink-0';
+                } else {
+                    btn.classList.add('opacity-40');
+                }
+            });
+
+            const fbBar = document.getElementById('p1-feedback-bar');
+            const fbTitle = document.getElementById('p1-feedback-title');
+            const fbDesc = document.getElementById('p1-feedback-desc');
+
+            if (!isCorrect) game.wrongCards.push(qObj);
+            else if (game.mode === 'retry') game.wrongCards = game.wrongCards.filter(c => c !== qObj);
+
+            if (isCorrect && game.mode !== 'concurs') {
+                game.p1Correct += 1;
+                game.p1Streak += 1;
+                if (game.p1Streak > game.p1BestStreak) game.p1BestStreak = game.p1Streak;
+                fbBar.className = 'mt-5 p-4 rounded-2xl border border-emerald-400/40 bg-emerald-500/10 flex flex-col sm:flex-row items-center justify-between gap-4';
+                fbTitle.className = 'font-display font-black text-base text-emerald-300';
+                if (game.mode === 'equips') {
+                    const t = curTeam(); t.correct += 1; t.asked += 1; t.streak += 1;
+                    const pts = 100 + (t.streak >= 3 ? 50 : 0); t.score += pts;
+                    playSFX(t.streak >= 3 ? 'streak' : 'correct');
+                    fbTitle.textContent = `✅ ${t.name}: +${pts} punts${t.streak >= 3 ? ' (ratxa 🔥)' : ''}`;
+                    renderTeams();
+                } else if (game.mode === 'cofres') {
+                    playSFX('correct');
+                    fbTitle.textContent = '✅ Correcte! Obre un cofre...';
+                } else {
+                    playSFX('correct');
+                    fbTitle.textContent = game.mode === 'entrena' ? `✅ Correcte! (${game.p1Correct} de ${game.p1Index + 1})` : '✅ Correcte! Ja la tens.';
+                }
+            } else if (isCorrect) {
+                game.p1Correct += 1;
+                game.p1Streak += 1;
+                if (game.p1Streak > game.p1BestStreak) game.p1BestStreak = game.p1Streak;
+
+                // +5s base + 5s extra si hace racha de 3
+                let bonus = 5;
+                if (game.p1Streak % 3 === 0) {
+                    bonus += 5;
+                    playSFX('streak');
+                    spawnFloatingBonus('+10s 🔥');
+                    fbTitle.textContent = '🔥 Ratxa de 3! +10 segons per al Rosco!';
+                } else {
+                    playSFX('correct');
+                    spawnFloatingBonus('+5s ⏱️');
+                    fbTitle.textContent = '✅ Correcte! +5 segons per al Rosco!';
+                }
+                game.timeBank += bonus;
+                fbBar.className = 'mt-5 p-4 rounded-2xl border border-emerald-400/40 bg-emerald-500/10 flex flex-col sm:flex-row items-center justify-between gap-4';
+                fbTitle.className = 'font-display font-black text-base text-emerald-300';
+            } else {
+                game.p1Streak = 0;
+                if (game.mode === 'equips') { const t = curTeam(); t.asked += 1; t.streak = 0; renderTeams(); }
+                playSFX('wrong');
+                fbBar.className = 'mt-5 p-4 rounded-2xl border border-rose-500/40 bg-rose-500/10 flex flex-col sm:flex-row items-center justify-between gap-4';
+                fbTitle.className = 'font-display font-black text-base text-rose-300';
+                fbTitle.textContent = selectedIdx === -1 ? '⏱️ Temps esgotat!' : '❌ Resposta incorrecta';
+            }
+
+            fbDesc.textContent = qObj.info;
+            fbBar.classList.remove('hidden');
+            updatePhase1HUD();
+
+            const nextBtn = document.getElementById('btn-p1-next');
+            const last = game.p1Index === game.p1Questions.length - 1;
+            nextBtn.textContent = last ? (game.mode === 'concurs' ? 'Veure temps aconseguit ➔' : 'Veure resultats ➔') : (game.mode === 'equips' ? 'Següent equip →' : 'Següent pregunta →');
+            if (isCorrect && game.mode === 'cofres') { nextBtn.textContent = '🧰 Obrir un cofre'; nextBtn.onclick = () => { nextBtn.onclick = nextPhase1Question; openChests(); }; }
+            else nextBtn.onclick = nextPhase1Question;
+            speak(qObj.info, qObj.lang === 'en' && /^[A-Za-z' ,.!?–-]+$/.test(qObj.info) ? 'en' : 'ca');
+        }
+
+        function nextPhase1Question() {
+            game.p1Index += 1;
+            if (game.mode === 'equips') game.teamIdx = game.p1Index % game.teams.length;
+            if (game.p1Index >= game.p1Questions.length) {
+                if (game.mode === 'concurs') showTransitionScreen(); else showModeResults();
+            } else {
+                updatePhase1HUD();
+                renderPhase1Question();
+            }
+        }
+
+        /* =========================================================================
+           6. PANTALLA INTERMEDIA (RESUMEN FASE 1 -> FASE 2)
+           ========================================================================= */
+        function showTransitionScreen() {
+            playSFX('fanfare');
+            document.getElementById('trans-total-seconds').textContent = `${game.timeBank} segons`;
+            document.getElementById('trans-correct').textContent = `${game.p1Correct}/10`;
+            document.getElementById('trans-streak').textContent = `${game.p1BestStreak} 🔥`;
+            document.getElementById('trans-bonus').textContent = `+${game.timeBank - curLevel().roscoBase}s`;
+            switchScreen('screen-transition');
+        }
+
+        /* =========================================================================
+           7. FASE 2: EL GRAN ROSCO FINAL (A - Z)
+           ========================================================================= */
+        function startPhase2Rosco() {
+            playSFX('correct');
+            game.roscoItems = buildRoscoData().map(item => ({
+                ...item,
+                status: 'pending', // 'pending' | 'passed' | 'correct' | 'wrong'
+                userAnswer: ''
+            }));
+            game.roscoCurrentIdx = 0;
+            game.roscoLap = 1;
+            game.roscoTimeLeft = game.timeBank;
+            game.roscoActive = true;
+
+            switchScreen('screen-phase2');
+            setHeaderPhaseActive(2);
+            buildRoscoCircle();
+            updateRoscoClueUI();
+            startRoscoTimer();
+        }
+
+        function buildRoscoCircle() {
+            const container = document.getElementById('rosco-ring-container');
+            container.innerHTML = '';
+            const total = game.roscoItems.length; // 26
+
+            game.roscoItems.forEach((item, idx) => {
+                // Ángulo desde las 12 en punto (-90 deg) en sentido horario
+                const angleRad = ((idx / total) * 2 * Math.PI) - (Math.PI / 2);
+                // Radio en porcentaje respecto al contenedor (44% del ancho/alto)
+                const radiusPct = 44;
+                const leftPct = 50 + radiusPct * Math.cos(angleRad);
+                const topPct = 50 + radiusPct * Math.sin(angleRad);
+
+                const node = document.createElement('div');
+                node.id = `rosco-node-${idx}`;
+                node.style.left = `${leftPct}%`;
+                node.style.top = `${topPct}%`;
+                node.textContent = item.letter;
+                node.className = 'absolute -translate-x-1/2 -translate-y-1/2 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-display font-black text-xs sm:text-sm border-2 transition-all duration-200';
+                container.appendChild(node);
+            });
+
+            refreshRoscoNodesStyle();
+        }
+
+        function refreshRoscoNodesStyle() {
+            let correctCount = 0;
+            let wrongCount = 0;
+            let pendingCount = 0;
+
+            game.roscoItems.forEach((item, idx) => {
+                const node = document.getElementById(`rosco-node-${idx}`);
+                if (!node) return;
+                const isCurrent = idx === game.roscoCurrentIdx && game.roscoActive;
+
+                let baseClass = 'absolute -translate-x-1/2 -translate-y-1/2 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-display font-black text-xs sm:text-sm border-2 transition-all duration-200 ';
+
+                if (item.status === 'correct') {
+                    correctCount++;
+                    baseClass += 'bg-emerald-500 border-emerald-300 text-slate-950 shadow-md shadow-emerald-500/30';
+                } else if (item.status === 'wrong') {
+                    wrongCount++;
+                    baseClass += 'bg-rose-500 border-rose-300 text-white shadow-md shadow-rose-500/30';
+                } else if (item.status === 'passed') {
+                    pendingCount++;
+                    baseClass += 'bg-amber-400 border-amber-200 text-slate-950';
+                } else {
+                    pendingCount++;
+                    baseClass += 'bg-slate-800/95 border-cyan-500/40 text-cyan-200';
+                }
+
+                if (isCurrent) {
+                    baseClass += ' scale-125 sm:scale-135 z-20 ring-4 ring-white rosco-active-glow bg-cyan-400 text-slate-950 border-white';
+                }
+
+                node.className = baseClass;
+            });
+
+            document.getElementById('rosco-count-correct').textContent = correctCount;
+            document.getElementById('rosco-count-wrong').textContent = wrongCount;
+            document.getElementById('rosco-count-pending').textContent = pendingCount;
+        }
+
+        function updateRoscoClueUI() {
+            const clueCard = document.getElementById('rosco-clue-card');
+            clueCard.classList.remove('question-enter');
+            void clueCard.offsetWidth;
+            clueCard.classList.add('question-enter');
+            const current = game.roscoItems[game.roscoCurrentIdx];
+            if (!current) return;
+
+            document.getElementById('rosco-active-letter-box').textContent = current.letter;
+            document.getElementById('rosco-condition-label').textContent =
+                current.type === 'start' ? `COMENÇA PER LA ${current.letter}` : `CONTÉ LA ${current.letter}`;
+            document.getElementById('rosco-subject-label').textContent = current.subject;
+            document.getElementById('rosco-clue-text').textContent = current.clue;
+            speak(current.clue, /English|Verbs/.test(current.subject) ? 'en' : /Castellano/.test(current.subject) ? 'es' : 'ca');
+            document.getElementById('rosco-lap-badge').textContent = `Volta ${game.roscoLap}`;
+
+            const input = document.getElementById('rosco-input');
+            input.value = '';
+            input.focus();
+
+            refreshRoscoNodesStyle();
+        }
+
+        function startRoscoTimer() {
+            clearInterval(game.roscoTimer);
+            const display = document.getElementById('rosco-timer-display');
+            display.textContent = game.roscoTimeLeft;
+            display.className = 'font-display font-black text-4xl sm:text-6xl text-cyan-400 tabular-nums my-0.5 tracking-tight';
+
+            game.roscoTimer = setInterval(() => {
+                if (!game.roscoActive) return;
+                game.roscoTimeLeft -= 1;
+                display.textContent = Math.max(0, game.roscoTimeLeft);
+
+                if (game.roscoTimeLeft <= 15) {
+                    display.className = 'font-display font-black text-4xl sm:text-6xl text-rose-500 tabular-nums my-0.5 tracking-tight animate-pulse';
+                    playSFX('tick');
+                } else if (game.roscoTimeLeft <= 30) {
+                    display.className = 'font-display font-black text-4xl sm:text-6xl text-amber-400 tabular-nums my-0.5 tracking-tight';
+                }
+
+                if (game.roscoTimeLeft <= 0) {
+                    clearInterval(game.roscoTimer);
+                    endRoscoGame();
+                }
+            }, 1000);
+        }
+
+        // Normalización de texto para comparar sin tildes ni mayúsculas (ideal para 6è)
+        function normalizeText(str) {
+            return str
+                .toLowerCase()
+                .trim()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[·'’\-]/g, '');
+        }
+
+        function showRoscoToast(isOk, message) {
+            const toast = document.getElementById('rosco-last-toast');
+            const text = document.getElementById('rosco-last-toast-text');
+            toast.className = isOk
+                ? 'px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-between bg-emerald-500/20 border border-emerald-400/40 text-emerald-200'
+                : 'px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-between bg-rose-500/20 border border-rose-500/40 text-rose-200';
+            text.textContent = message;
+            toast.classList.remove('hidden');
+        }
+
+        function submitRoscoAnswer(e) {
+            if (e) e.preventDefault();
+            if (!game.roscoActive) return;
+
+            const input = document.getElementById('rosco-input');
+            const rawVal = input.value.trim();
+
+            // Si pulsa Enter con campo vacío, actúa como Pasapalabra
+            if (!rawVal) {
+                passRoscoLetter();
+                return;
+            }
+
+            const item = game.roscoItems[game.roscoCurrentIdx];
+            item.userAnswer = rawVal;
+
+            const normalizedUser = normalizeText(rawVal);
+            const matched = item.answers.some(ans => normalizeText(ans) === normalizedUser);
+
+            if (matched) {
+                item.status = 'correct';
+                playSFX('correct');
+                showRoscoToast(true, `✅ ${item.letter}: ${item.displayAnswer}`);
+            } else {
+                item.status = 'wrong';
+                playSFX('wrong');
+                const card = document.getElementById('rosco-clue-card');
+                card.classList.add('animate-shake');
+                setTimeout(() => card.classList.remove('animate-shake'), 380);
+                showRoscoToast(false, `❌ ${item.letter}: Era "${item.displayAnswer}"`);
+            }
+
+            advanceToNextRoscoLetter();
+        }
+
+        function passRoscoLetter() {
+            if (!game.roscoActive) return;
+            const item = game.roscoItems[game.roscoCurrentIdx];
+            item.status = 'passed';
+            playSFX('pass');
+            showRoscoToast(true, `⏭️ Pasapalabra a la lletra ${item.letter}`);
+            advanceToNextRoscoLetter();
+        }
+
+        function advanceToNextRoscoLetter() {
+            const total = game.roscoItems.length;
+            // Buscar siguiente letra que siga 'pending' o 'passed'
+            for (let offset = 1; offset <= total; offset++) {
+                const candidateIdx = (game.roscoCurrentIdx + offset) % total;
+                const candidate = game.roscoItems[candidateIdx];
+                if (candidate.status === 'pending' || candidate.status === 'passed') {
+                    if (candidateIdx <= game.roscoCurrentIdx) game.roscoLap += 1;
+                    game.roscoCurrentIdx = candidateIdx;
+                    updateRoscoClueUI();
+                    return;
+                }
+            }
+
+            // Si no quedan letras pendientes ni pasadas, ¡Rosco terminado!
+            endRoscoGame();
+        }
+
+        function endRoscoGame() {
+            game.roscoActive = false;
+            clearInterval(game.roscoTimer);
+            refreshRoscoNodesStyle();
+            setTimeout(() => showFinalResults(), 700);
+        }
+
+        /* =========================================================================
+           8. PANTALLA DE RESULTADOS Y DIPLOMA FINAL
+           ========================================================================= */
+        function showFinalResults() {
+            playSFX('fanfare');
+            switchScreen('screen-results');
+
+            const correctCount = game.roscoItems.filter(i => i.status === 'correct').length;
+            const wrongCount = game.roscoItems.filter(i => i.status === 'wrong').length;
+
+            // Rango dinámico según rendimiento
+            let medal = '🌟';
+            let rank = 'ASPIRANT ESTEL·LAR DE 6È';
+            if (correctCount >= 22) {
+                medal = '👑';
+                rank = 'MESTRE/A ABSOLUT DEL ROSCO';
+            } else if (correctCount >= 16) {
+                medal = '🏆';
+                rank = 'CRAC DE 6È DE PRIMÀRIA';
+            } else if (correctCount >= 10) {
+                medal = '🚀';
+                rank = 'EXPLORADOR/A DEL CONEIXEMENT';
+            }
+
+            document.getElementById('res-medal-icon').textContent = medal;
+            document.getElementById('res-rank-badge').textContent = rank;
+            document.getElementById('res-headline').textContent = `Gran partida, ${game.playerName}!`;
+
+            document.getElementById('res-rosco-correct').textContent = `${correctCount} / 26`;
+            document.getElementById('res-rosco-wrong').textContent = wrongCount;
+            document.getElementById('res-p1-score').textContent = `${game.p1Correct} / 10`;
+            document.getElementById('res-time-left').textContent = `${Math.max(0, game.roscoTimeLeft)}s`;
+
+            // Lista de palabras falladas o sin responder para aprender
+            const missed = game.roscoItems.filter(i => i.status !== 'correct');
+            const reviewList = document.getElementById('res-review-list');
+            const reviewCount = document.getElementById('res-review-count');
+            reviewList.innerHTML = '';
+
+            if (missed.length === 0) {
+                reviewCount.textContent = '26/26 Perfecte!';
+                reviewList.innerHTML = `<p class="text-sm text-emerald-400 font-bold py-2">🎉 Increïble! Has encertat totes les lletres del Rosco sense cap errada!</p>`;
+            } else {
+                reviewCount.textContent = `${missed.length} paraules`;
+                missed.forEach(item => {
+                    const row = document.createElement('div');
+                    const isWrong = item.status === 'wrong';
+                    row.className = `p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${
+                        isWrong ? 'bg-rose-500/10 border-rose-500/30' : 'bg-slate-900/90 border-white/10'
+                    }`;
+                    row.innerHTML = `
+                        <div class="flex items-start gap-2.5">
+                            <span class="w-7 h-7 rounded-lg ${isWrong ? 'bg-rose-500 text-white' : 'bg-amber-400 text-slate-950'} font-display font-black text-xs flex items-center justify-center shrink-0 mt-0.5">
+                                ${item.letter}
+                            </span>
+                            <div>
+                                <p class="text-xs text-slate-300 leading-snug">${escHTML(item.clue)}</p>
+                                ${isWrong && item.userAnswer ? `<p class="text-[11px] text-rose-300 mt-0.5">La teva resposta: <em>"${escHTML(item.userAnswer)}"</em></p>` : ''}
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-lg bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 font-display font-extrabold text-xs shrink-0 self-start sm:self-center">
+                            ${item.displayAnswer}
+                        </span>
+                    `;
+                    reviewList.appendChild(row);
+                });
+            }
+
+            recordGame('res-pts');
+            renderWrongReview('res-p1-review', 'res-retry');
+            renderBadges('res-badges', awardBadges({ p1Correct: game.p1Correct, bestStreak: game.p1BestStreak, rosco: correctCount }));
+            document.getElementById('res-copied').classList.add('hidden');
+            buildSummary([`Ràfega: ${game.p1Correct}/10 · millor ratxa ${game.p1BestStreak}`, `Rosco: ${correctCount}/26 encerts, ${wrongCount} errors, ${Math.max(0, game.roscoTimeLeft)} s sobrants`,
+                ...(missed.length ? ['Lletres per recordar:', ...missed.map(i => ` - ${i.letter}: ${i.displayAnswer}${i.userAnswer ? ' (va posar "' + i.userAnswer + '")' : ''}`)] : []),
+                ...(game.wrongCards.length ? ['Preguntes fallades a la Ràfega:', ...game.wrongCards.map(c => ` - ${c.q} → ${c.options[c.answer]}`)] : [])]);
+            launchConfetti();
+        }
+
+        function launchConfetti() {
+            const colors = ['#22d3ee', '#10b981', '#fbbf24', '#a855f7', '#f43f5e'];
+            for (let i = 0; i < 70; i++) {
+                const c = document.createElement('div');
+                c.className = 'confetti-piece rounded-xs';
+                c.style.left = Math.random() * 100 + 'vw';
+                c.style.width = (Math.random() * 8 + 5) + 'px';
+                c.style.height = (Math.random() * 12 + 6) + 'px';
+                c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                c.style.animationDuration = (Math.random() * 2.5 + 2) + 's';
+                c.style.animationDelay = (Math.random() * 0.7) + 's';
+                document.body.appendChild(c);
+                setTimeout(() => c.remove(), 5000);
+            }
+        }
+
+        /* =========================================================================
+           9. UTILIDADES DE NAVEGACIÓN Y ATADOS DE TECLADO
+           ========================================================================= */
+        function switchScreen(screenId) {
+            ['screen-welcome', 'screen-phase1', 'screen-transition', 'screen-phase2', 'screen-results', 'screen-mode-results', 'screen-board'].forEach(id => {
+                const screen = document.getElementById(id);
+                screen.classList.add('hidden');
+                screen.classList.remove('screen-enter');
+            });
+            const activeScreen = document.getElementById(screenId);
+            activeScreen.classList.remove('hidden');
+            // Reinicia l'animació cada vegada que canviem de fase
+            void activeScreen.offsetWidth;
+            activeScreen.classList.add('screen-enter');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function setHeaderPhaseActive(phaseNum) {
+            const p1 = document.getElementById('pill-phase-1');
+            const p2 = document.getElementById('pill-phase-2');
+            if (phaseNum === 1) {
+                p1.className = 'px-3 py-1 rounded-full text-xs font-display font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 transition-all';
+                p2.className = 'px-3 py-1 rounded-full text-xs font-display font-bold text-slate-500 transition-all';
+            } else {
+                p1.className = 'px-3 py-1 rounded-full text-xs font-display font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 transition-all';
+                p2.className = 'px-3 py-1 rounded-full text-xs font-display font-bold bg-amber-400/20 text-amber-300 border border-amber-400/40 transition-all';
+            }
+        }
+
+        function goHome() { playSFX('click'); resetFullApp(); }
+
+        function openQuitModal() {
+            document.getElementById('modal-quit').classList.remove('hidden');
+        }
+
+        function closeQuitModal() {
+            document.getElementById('modal-quit').classList.add('hidden');
+        }
+
+        function resetFullApp() {
+            clearInterval(game.p1Timer);
+            clearInterval(game.roscoTimer);
+            game.roscoActive = false;
+            closeQuitModal();
+            document.getElementById('header-player-badge').classList.add('hidden');
+            document.getElementById('header-phases').classList.add('hidden');
+            document.getElementById('btn-quit').classList.add('hidden');
+            document.getElementById('btn-back').classList.add('hidden');
+            document.getElementById('btn-back').classList.remove('flex');
+            document.getElementById('modal-chests').classList.add('hidden');
+            if (window.speechSynthesis) speechSynthesis.cancel();
+            setHeaderPhaseActive(1);
+            renderModeSelector();
+            renderAccount();
+            switchScreen('screen-welcome');
+        }
+
+        // Atajos de teclado: 1-4 / A-D en Fase 1, y Barra Espaciadora para Pasapalabra en Fase 2
+        document.addEventListener('keydown', (e) => {
+            // Fase 1 atajos
+            if (!document.getElementById('screen-phase1').classList.contains('hidden')) {
+                const fbHidden = document.getElementById('p1-feedback-bar').classList.contains('hidden');
+                if (fbHidden) {
+                    const keyMap = { '1': 0, 'a': 0, '2': 1, 'b': 1, '3': 2, 'c': 2, '4': 3, 'd': 3 };
+                    const idx = keyMap[e.key.toLowerCase()];
+                    if (idx !== undefined) handlePhase1Answer(idx);
+                } else if ((e.key === 'Enter' || e.key === ' ') && document.getElementById('modal-chests').classList.contains('hidden')) {
+                    e.preventDefault();
+                    document.getElementById('btn-p1-next').click();
+                }
+            }
+
+            // Fase 2 atajo Pasapalabra con barra espaciadora si el input está vacío
+            if (!document.getElementById('screen-phase2').classList.contains('hidden') && game.roscoActive) {
+                const input = document.getElementById('rosco-input');
+                if (e.code === 'Space' && input.value.trim() === '') {
+                    e.preventDefault();
+                    passRoscoLetter();
+                }
+            }
+        });
+
+        /* PWA: instal·lació i funcionament sense connexió (actiu quan el joc està en una web pròpia) */
+        let deferredInstall = null;
+        window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredInstall = e; const b = document.getElementById('btn-install'); b.classList.remove('hidden'); b.classList.add('flex'); });
+        document.getElementById('btn-install').addEventListener('click', async () => { if (!deferredInstall) return; deferredInstall.prompt(); await deferredInstall.userChoice; deferredInstall = null; document.getElementById('btn-install').classList.add('hidden'); });
+        window.addEventListener('appinstalled', () => document.getElementById('btn-install').classList.add('hidden'));
+        if ('serviceWorker' in navigator && location.protocol === 'https:') { try { navigator.serviceWorker.register('./sw.js').catch(() => {}); } catch (e) { /* sense SW (p. ex. dins d'un marc) */ } }
+
+        window.onload = function() {
+            renderAvatarSelector();
+            renderTopicSelector();
+            renderModeSelector();
+            renderAccount();
+        };
+    </script>
+</body>
+</html>
