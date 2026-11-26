@@ -2013,6 +2013,7 @@ window.__e={cam:(a,b,c2,x,y,z)=>{fl=null;camera.position.set(a,b,c2);controls.ta
 
 
 
+
 <!--VIDEO--><script>window.VCLIPS={"intro": {"src": "../clips/energia.mp4", "poster": "../clips/energia.jpg", "unit": "Medi·Lab 3D · Unitat 6", "title": "⚡ L'energia", "sub": "D'on ve l'energia que fem servir cada dia?"}, "cards": {"formes": [{"src": "../clips/espelma.mp4", "poster": "../clips/espelma.jpg", "title": "Espelma", "cap": "Encenem una espelma amb un llumí", "q": {"t": "Quina transformació d'energia has vist a l'espelma?", "o": ["Química → tèrmica i lluminosa", "Elèctrica → lluminosa", "Mecànica → tèrmica"], "ok": 0, "why": "L'energia química de la cera es transforma en energia tèrmica (calor) i lluminosa (llum)."}}, {"src": "../clips/radiador.mp4", "poster": "../clips/radiador.jpg", "title": "Radiador", "cap": "Endollem un radiador elèctric", "q": {"t": "Quina transformació fa el radiador?", "o": ["Química → tèrmica", "Elèctrica → tèrmica", "Elèctrica → mecànica"], "ok": 1, "why": "L'electricitat passa per la resistència, que s'escalfa: energia elèctrica → tèrmica."}}, {"src": "../clips/ventilador.mp4", "poster": "../clips/ventilador.jpg", "title": "Ventilador", "cap": "Engeguem un ventilador", "q": {"t": "Quina transformació fa el ventilador?", "o": ["Tèrmica → elèctrica", "Elèctrica → lluminosa", "Elèctrica → mecànica"], "ok": 2, "why": "El motor transforma l'energia elèctrica en energia mecànica: les aspes giren i mouen l'aire."}}, {"src": "../clips/llanterna.mp4", "poster": "../clips/llanterna.jpg", "title": "Llanterna", "cap": "Posem piles a una llanterna", "q": {"t": "Quina cadena de transformacions hi ha a la llanterna?", "o": ["Química → elèctrica → lluminosa", "Elèctrica → química", "Lluminosa → elèctrica"], "ok": 0, "why": "Les piles guarden energia química, que es converteix en elèctrica i, a la bombeta, en lluminosa."}}, {"src": "../clips/aerogenerador.mp4", "poster": "../clips/aerogenerador.jpg", "title": "Aerogenerador", "cap": "Un molí de vent que fa electricitat", "q": {"t": "Quina transformació fa l'aerogenerador?", "o": ["Elèctrica → mecànica", "Mecànica (vent) → elèctrica", "Lluminosa → elèctrica"], "ok": 1, "why": "El vent fa girar les aspes (energia mecànica) i el generador la transforma en energia elèctrica."}}], "fonts": [{"src": "../clips/energia.mp4", "poster": "../clips/energia.jpg", "title": "Un parc d'energia renovable", "cap": "Molins i plaques solars de veritat", "dur": 8, "q": {"t": "Quines dues fonts d'energia renovable hi has vist?", "o": ["El vent i el Sol", "El carbó i el petroli", "L'urani i el gas natural"], "ok": 0, "why": "Els aerogeneradors aprofiten el vent i les plaques solars, la llum del Sol."}}]}};</script><script>/* Medi·Lab 3D · vídeos: intro d'entrada + targetes «Mira-ho de veritat» amb pregunta.
    Config a window.VCLIPS = { intro:{src,poster,unit,title,sub}, cards:{ <mode>:[{src,poster,title,cap,q:{t,o:[...],ok:index}}] } }
    Els vídeos són fitxers a part (../clips/) i només es descarreguen quan cal. */
@@ -2140,12 +2141,19 @@ function initCards(){
  const nav=$('#modes'); if(nav) nav.addEventListener('click',()=>setTimeout(decorate,60));
  decorate();
 }
+/* objectes amb vídeo real: el botó «càmera lenta» obre el vídeo de veritat */
+function hookObjects(){
+ if(!C.cards) return; const byName={}; Object.values(C.cards).flat().forEach(c=>{ byName[c.title]=c; });
+ const relabel=()=>document.querySelectorAll('button[onclick*="openSlow("]').forEach(b=>{ const m=(b.getAttribute('onclick')||'').match(/openSlow\('([^']+)'\)/); if(m&&byName[m[1]]&&!b.dataset.vreal){ b.dataset.vreal='1'; b.innerHTML='🎬 Mira-ho de veritat'; b.removeAttribute('onclick'); b.onclick=()=>openClip(byName[m[1]]); } });
+ new MutationObserver(relabel).observe(document.body,{childList:true,subtree:true}); relabel();
+ const wrap=()=>{ const o=window.openSlow; if(typeof o!=='function'||o.__v) return; const w=function(name){ return byName[name]?openClip(byName[name]):o.apply(this,arguments); }; w.__v=1; window.openSlow=w; }; wrap(); setTimeout(wrap,1500);
+}
 /* botó per tornar a veure la intro, a l'ajuda */
 function helpBtn(){ if(!C.intro) return; const g=document.querySelector('.hgo'); if(!g||document.querySelector('.vReplay')) return;
  const b=document.createElement('button'); b.className='vGh vReplay'; b.style.margin='0 8px 0 0'; b.textContent='🎬 Torna a veure el vídeo d\'entrada';
  b.onclick=()=>{ const h=document.querySelector('#help'); if(h) h.classList.remove('show'); intro(true); }; g.before(b); }
 intro(false);
-if(document.readyState==='loading') addEventListener('DOMContentLoaded',()=>{ initCards(); helpBtn(); }); else { initCards(); helpBtn(); }
+if(document.readyState==='loading') addEventListener('DOMContentLoaded',()=>{ initCards(); helpBtn(); hookObjects(); }); else { initCards(); helpBtn(); hookObjects(); }
 })();
 </script><!--/VIDEO-->
 </body>

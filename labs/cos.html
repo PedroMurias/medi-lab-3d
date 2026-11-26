@@ -2492,6 +2492,7 @@ window.__cosPlay=PLAY;
 })();
 </script><!--/cosPlay-->
 
+
 <!--VIDEO--><script>window.VCLIPS={"intro": {"src": "../clips/cos.mp4", "poster": "../clips/cos.jpg", "unit": "Medi·Lab 3D · Unitat 1", "title": "🫀 El cos humà", "sub": "Una màquina perfecta que treballa sense parar"}};</script><script>/* Medi·Lab 3D · vídeos: intro d'entrada + targetes «Mira-ho de veritat» amb pregunta.
    Config a window.VCLIPS = { intro:{src,poster,unit,title,sub}, cards:{ <mode>:[{src,poster,title,cap,q:{t,o:[...],ok:index}}] } }
    Els vídeos són fitxers a part (../clips/) i només es descarreguen quan cal. */
@@ -2619,12 +2620,19 @@ function initCards(){
  const nav=$('#modes'); if(nav) nav.addEventListener('click',()=>setTimeout(decorate,60));
  decorate();
 }
+/* objectes amb vídeo real: el botó «càmera lenta» obre el vídeo de veritat */
+function hookObjects(){
+ if(!C.cards) return; const byName={}; Object.values(C.cards).flat().forEach(c=>{ byName[c.title]=c; });
+ const relabel=()=>document.querySelectorAll('button[onclick*="openSlow("]').forEach(b=>{ const m=(b.getAttribute('onclick')||'').match(/openSlow\('([^']+)'\)/); if(m&&byName[m[1]]&&!b.dataset.vreal){ b.dataset.vreal='1'; b.innerHTML='🎬 Mira-ho de veritat'; b.removeAttribute('onclick'); b.onclick=()=>openClip(byName[m[1]]); } });
+ new MutationObserver(relabel).observe(document.body,{childList:true,subtree:true}); relabel();
+ const wrap=()=>{ const o=window.openSlow; if(typeof o!=='function'||o.__v) return; const w=function(name){ return byName[name]?openClip(byName[name]):o.apply(this,arguments); }; w.__v=1; window.openSlow=w; }; wrap(); setTimeout(wrap,1500);
+}
 /* botó per tornar a veure la intro, a l'ajuda */
 function helpBtn(){ if(!C.intro) return; const g=document.querySelector('.hgo'); if(!g||document.querySelector('.vReplay')) return;
  const b=document.createElement('button'); b.className='vGh vReplay'; b.style.margin='0 8px 0 0'; b.textContent='🎬 Torna a veure el vídeo d\'entrada';
  b.onclick=()=>{ const h=document.querySelector('#help'); if(h) h.classList.remove('show'); intro(true); }; g.before(b); }
 intro(false);
-if(document.readyState==='loading') addEventListener('DOMContentLoaded',()=>{ initCards(); helpBtn(); }); else { initCards(); helpBtn(); }
+if(document.readyState==='loading') addEventListener('DOMContentLoaded',()=>{ initCards(); helpBtn(); hookObjects(); }); else { initCards(); helpBtn(); hookObjects(); }
 })();
 </script><!--/VIDEO-->
 </body>
