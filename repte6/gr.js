@@ -61,7 +61,8 @@ window.GR = (function () {
   const hash = s => { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); };
 
   /* ---- punts: per encerts, mai per velocitat ni per or. +15 per jugar. ---- */
-  function points(st) { return 15 + 10 * (st.ok || 0) + 4 * (st.rosco || 0) + (st.total && st.ok === st.total ? 20 : 0); }
+  /* Nivell difícil: +25 % (les preguntes són d'ampliació). Fàcil i normal: igual. */
+  function points(st) { const base = 15 + 10 * (st.ok || 0) + 4 * (st.rosco || 0) + (st.total && st.ok === st.total ? 20 : 0); return Math.round(base * (st.lvl === 'dificil' ? 1.25 : 1)); }
 
   /* ---- registrar una partida: historial + totals de l'alumne ---- */
   async function record(st) {

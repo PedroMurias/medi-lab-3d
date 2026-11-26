@@ -1107,6 +1107,7 @@
         function toCard(src, q) {
             let cat = src.name, icon = src.icon;
             let opts, info, img = null, stem, credit = null;
+            const lvl = Array.isArray(q) ? q[1] : (q.l || 2);
             if (Array.isArray(q)) {
                 if (src.id === 'medi' && UNIT[q[0]]) { cat = UNIT[q[0]][2]; icon = UNIT[q[0]][1]; }
                 stem = q[2]; opts = q[3]; info = q[4] || '';
@@ -1114,11 +1115,16 @@
             } else { stem = q.q; opts = q.o; info = q.e || ''; img = q.img || null; }
             const order = shuffle(opts.map((t, i) => ({ t, ok: i === 0 })));
             const lang = ['en','irr','world','gram'].includes(src.id) ? 'en' : src.id === 'es' ? 'es' : (src.id === 'conj' && /conjuga|tiempo|forma corresponde/.test(stem) ? 'es' : 'ca');
-            return { cat, icon, color: src.color, q: stem, options: order.map(o => o.t), answer: order.findIndex(o => o.ok), info, img, lang, credit };
+            return { cat, icon, color: src.color, q: stem, options: order.map(o => o.t), answer: order.findIndex(o => o.ok), info, img, lang, credit, lvl };
+        }
+        /* Ordena les preguntes fixes segons el nivell: les del nivell preferit surten primer (pes), sense treure'n cap si no n'hi ha prou */
+        function orderByLevel(fixed, L) {
+            const f2 = fixed.filter(q => L.lvl(q[1])); if (f2.length >= 6) fixed = f2;
+            return shuffle(fixed).map(q => ({ q, k: Math.random() * ((L.w[q[1]] || 0) + 0.15) })).sort((a, b) => a.k - b.k).map(x => x.q); // pop() treu del final: pes alt = al final
         }
         function buildPhase1Questions(n) {
-            const okLvl = curLevel().lvl;
-            const srcs = activeSources().map(({ src, t }) => { let fixed = src.fixed ? src.fixed(t) : []; const f2 = fixed.filter(q => okLvl(q[1])); if (f2.length >= 6) fixed = f2; return { src, t, fixed: shuffle(fixed), gens: src.gens ? src.gens(t) : [] }; })
+            const L = curLevel();
+            const srcs = activeSources().map(({ src, t }) => { const fixed = src.fixed ? src.fixed(t) : []; return { src, t, fixed: orderByLevel(fixed, L), gens: src.gens ? src.gens(t) : [] }; })
                                         .filter(s => s.fixed.length || s.gens.length);
             const out = [], seen = new Set();
             let guard = 0;
@@ -1126,7 +1132,12 @@
                 const s = srcs[Math.floor(Math.random() * srcs.length)];
                 const useGen = s.gens.length && (!s.fixed.length || Math.random() < 0.5);
                 let q;
-                if (useGen) { q = GEN[pickA(s.gens)](false, s.t); if (!q) continue; }
+                if (useGen) {
+                    // fins a 6 intents per aconseguir una pregunta del nivell preferit; si no, una d'acceptable
+                    let best = null;
+                    for (let i = 0; i < 6 && !best; i++) { const g = GEN[pickA(s.gens)](L.hard, s.t); if (!g) continue; if (L.pref(g.l || 2)) best = g; else if (!q && L.lvl(g.l || 2)) q = g; }
+                    q = best || q; if (!q) continue;
+                }
                 else { q = s.fixed.pop(); if (!q) continue; }
                 const key = Array.isArray(q) ? q[2] : q.q + q.o[0];
                 if (seen.has(key)) continue;
@@ -1143,6 +1154,9 @@
                 let c = window.ROSCO_BANK.filter(r => r[0] === L && keys.has(r[2]));
                 if (!c.length) c = window.ROSCO_BANK.filter(r => r[0] === L && r[2] === 'medi');
                 if (!c.length) c = window.ROSCO_BANK.filter(r => r[0] === L);
+                // Nivell: en difícil surten més pistes de «conté la lletra» (més difícils); en fàcil, només de «comença per»
+                const pc = curLevel().roscoC, cc = c.filter(r => r[1] === 'c'), cs = c.filter(r => r[1] !== 'c');
+                if (cc.length && cs.length) c = Math.random() < pc ? cc : cs;
                 const r = pickA(c);
                 return { letter: L, type: r[1] === 'c' ? 'contain' : 'start', subject: ROSCO_LABEL[r[2]] || r[2], clue: r[3], answers: r[4], displayAnswer: r[5] };
             });
@@ -1158,9 +1172,10 @@
             { id:'equips', icon:'👥', name:'Equips', short:'Pissarra digital', desc:'Per a la pissarra digital: de 2 a 4 equips responen per torns. 100 punts per encert i bonus per ratxa.' }
         ];
         const LEVELS = [
-            { id:'facil', name:'Fàcil', p1Time:20, roscoBase:75, lvl:q => q <= 2 },
-            { id:'normal', name:'Normal', p1Time:15, roscoBase:60, lvl:() => true },
-            { id:'dificil', name:'Difícil', p1Time:10, roscoBase:45, lvl:q => q >= 2 }
+            /* w: pes de cada nivell de pregunta (1 bàsica · 2 mitjana · 3 ampliació) · pref: nivell que es prefereix dels generadors · hard: activa les variants difícils dels generadors */
+            { id:'facil', name:'Fàcil', p1Time:20, roscoBase:75, lvl:q => q <= 2, w:{1:4, 2:1, 3:0}, pref:l => l <= 1, hard:false, roscoC:0, desc:'Preguntes bàsiques del llibre' },
+            { id:'normal', name:'Normal', p1Time:15, roscoBase:60, lvl:() => true, w:{1:1, 2:2, 3:1}, pref:() => true, hard:false, roscoC:0.35, desc:'Barreja de tots els nivells' },
+            { id:'dificil', name:'Difícil', p1Time:10, roscoBase:45, lvl:q => q >= 2, w:{1:0, 2:1, 3:4}, pref:l => l >= 3, hard:true, roscoC:0.7, desc:"Preguntes d'ampliació, càlculs més llargs i més trampes" }
         ];
         const TEAM_COLORS = [['Blau','bg-sky-500','#38bdf8'],['Verd','bg-emerald-500','#34d399'],['Taronja','bg-orange-500','#fb923c'],['Lila','bg-purple-500','#c084fc']];
         let selModeId = 'concurs', selLevelId = 'normal', teamCount = 2, trainCount = 20;
@@ -1183,7 +1198,7 @@
                 <input data-team-name="${i}" value="${escHTML(n)}" maxlength="16" class="w-full min-w-0 px-2.5 py-2 rounded-lg bg-slate-950 border border-slate-700 focus:border-cyan-400 text-white text-sm font-bold focus:outline-none"></div>`).join('');
             document.getElementById('level-selector').innerHTML = LEVELS.map(l => `
                 <button type="button" data-level="${l.id}" class="p-4 rounded-2xl border-2 flex flex-col items-center gap-1 transition btn-arcade ${selLevelId === l.id ? 'bg-cyan-500/20 border-cyan-400 text-white shadow-lg shadow-cyan-500/15' : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-600'}">
-                    <span class="text-3xl sm:text-4xl">${l.id === 'facil' ? '🌱' : l.id === 'normal' ? '⚡' : '🔥'}</span><span class="font-display font-black text-base sm:text-lg">${l.name}</span><span class="text-[11px] ${selLevelId === l.id ? 'text-slate-300' : 'text-slate-500'}">${l.p1Time} s per pregunta · Rosco ${l.roscoBase} s</span></button>`).join('');
+                    <span class="text-3xl sm:text-4xl">${l.id === 'facil' ? '🌱' : l.id === 'normal' ? '⚡' : '🔥'}</span><span class="font-display font-black text-base sm:text-lg">${l.name}</span><span class="text-[11px] font-bold ${selLevelId === l.id ? 'text-slate-200' : 'text-slate-400'} text-center leading-tight">${l.desc}</span><span class="text-[11px] ${selLevelId === l.id ? 'text-slate-300' : 'text-slate-500'}">${l.p1Time} s per pregunta · Rosco ${l.roscoBase} s</span></button>`).join('');
             document.getElementById('who-title').textContent = selModeId === 'equips' ? '1 · Classe o mestre/a' : '1 · Concursant';
             document.getElementById('input-player-name').placeholder = selModeId === 'equips' ? 'Nom de la classe...' : 'El teu nom...';
         }
