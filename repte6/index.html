@@ -237,7 +237,6 @@
         <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
             <!-- Marca del programa -->
             <div class="flex items-center gap-3">
-                <a href="../index.html" title="Torna al laboratori central" class="w-10 h-10 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/25 border border-cyan-400/40 flex items-center justify-center text-lg transition">🔬</a>
                 <button id="btn-back" onclick="goHome()" class="hidden w-10 h-10 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 items-center justify-center text-xl text-slate-200 transition" title="Tornar a l'inici">←</button>
                 <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600 p-[2px] shadow-lg shadow-cyan-500/20">
                     <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center font-display font-black text-lg text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-indigo-400">
@@ -794,6 +793,8 @@
     <script src="gen2.js"></script>
     <script src="rosco.js"></script>
     <script src="en6.js"></script>
+    <script src="q_llengues6.js"></script>
+    <script src="q_mates6.js"></script>
     <script src="gr.js"></script>
     <script>
         /* =========================================================================
@@ -819,13 +820,13 @@
               topics: window.RUNITS.map(u => ['u'+u[0], u[0]+'. '+u[2]]), fixed: t => MEDI_Q.filter(q => t.has('u'+q[0])) },
             { id:'ca', name:'Llengua catalana', short:'Català', icon:'📚', color:'blue', rosco:['ca'],
               topics: [['ca-orto','Ortografia'],['ca-gram','Gramàtica'],['ca-voc','Vocabulari'],['ca-lit','Literatura'],['ca-conj','Conjugació'],['ca-acc','Accentuació'],['ca-syn','Sinònims i antònims']],
-              fixed: t => window.CA6.concat(window.EXTRA_CA).filter(q => t.has(q[0])), gens: t => ['ca-conj','ca-acc','ca-syn'].filter(g => t.has(g)) },
+              fixed: t => window.CA6.concat(window.EXTRA_CA, window.CA6B).filter(q => t.has(q[0])), gens: t => ['ca-conj','ca-acc','ca-syn'].filter(g => t.has(g)) },
             { id:'es', name:'Lengua castellana', short:'Castellano', icon:'📖', color:'orange', rosco:['es'],
               topics: [['es-orto','Ortografía'],['es-gram','Gramática'],['es-voc','Vocabulario'],['es-lit','Literatura'],['es-conj','Conjugación'],['es-acc','Tildes'],['es-syn','Sinónimos y antónimos']],
-              fixed: t => window.Q_ES.filter(q => t.has(q[0])), gens: t => ['es-conj','es-acc','es-syn'].filter(g => t.has(g)) },
+              fixed: t => window.Q_ES.concat(window.ES6B).filter(q => t.has(q[0])), gens: t => ['es-conj','es-acc','es-syn'].filter(g => t.has(g)) },
             { id:'ma', name:'Matemàtiques', short:'Mates', icon:'🧮', color:'rose', rosco:['ma'],
-              topics: [['ma-calc','Càlcul'],['ma-frac','Fraccions'],['ma-dec','Decimals'],['ma-perc','Percentatges'],['ma-mes','Mesura'],['ma-geo','Geometria']],
-              fixed: t => window.Q_MA.filter(q => t.has(q[0])), gens: t => ['ma-calc','ma-frac','ma-dec','ma-perc','ma-mes','ma-geo'].filter(g => t.has(g)) },
+              topics: [['ma-num','Nombres i potències'],['ma-div','Divisibilitat'],['ma-calc','Càlcul'],['ma-frac','Fraccions'],['ma-dec','Decimals'],['ma-perc','Percentatges'],['ma-prop','Proporcionalitat'],['ma-mes','Mesura'],['ma-geo','Geometria'],['ma-est','Estadística i probabilitat']],
+              fixed: t => window.Q_MA.concat(window.MA6B).filter(q => t.has(q[0])), gens: t => ['ma-calc','ma-frac','ma-dec','ma-perc','ma-mes','ma-geo'].filter(g => t.has(g)) },
             { id:'en', name:'English · Amazing Journey 6', short:'English', icon:'🇬🇧', color:'purple', rosco:['en','irr'],
               topics: window.EN6_UNITS.concat([['en-irr','Irregular verbs'],['en-comp','Comparatives & superlatives'],['en-tense','Verb tenses'],['en-prep','Prepositions & question words'],['en-world','Countries, flags & capitals']]),
               fixed: t => window.EN6.filter(q => t.has(q[0])).concat(t.has('aj1') ? window.Q_EN : []), gens: t => ['en-irr','en-comp','en-tense','en-prep','en-world'].filter(g => t.has(g)) },

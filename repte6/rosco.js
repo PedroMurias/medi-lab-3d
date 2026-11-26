@@ -136,3 +136,51 @@ window.ROSCO_BANK=[
 ['K','s','irr',"Passat de «know».",['knew'],'knew'],['M','s','irr',"Passat de «make».",['made'],'made'],['R','s','irr',"Passat de «run».",['ran'],'ran'],
 ['S','s','irr',"Passat de «see».",['saw'],'saw'],['T','s','irr',"Passat de «take».",['took'],'took'],['W','s','irr',"Passat de «write».",['wrote'],'wrote']
 ];
+/* ---------- ampliació: lletres que faltaven ---------- */
+window.ROSCO_BANK.push(
+/* català */
+['B','s','ca',"Relat de la vida d'una persona escrit per una altra.",['biografia'],'Biografia'],
+['F','s','ca',"Text breu amb animals que ensenya una lliçó o moral.",['faula'],'Faula'],
+['I','s','ca',"Text que dona ordres o passos per fer una cosa, com una recepta.",['instructiu','text instructiu'],'Instructiu'],
+['J','s','ca',"Peça de roba de llana o cotó que ens posem quan fa fred, sobre la camisa.",['jersei'],'Jersei'],
+['J','c','ca',"Conté la J: paraula que indica on es menja un aliment: «menjar».",['menjar'],'Menjar'],
+['K','c','ca',"Conté la K: esport de lluita japonès que es practica amb quimono blanc.",['karate'],'Karate'],
+['N','s','ca',"Persona que explica la història en un conte o una novel·la.",['narrador','narradora'],'Narrador'],
+['O','s','ca',"Paraula que imita un so, com «bum» o «miau».",['onomatopeia'],'Onomatopeia'],
+['Q','s','ca',"Nombre que ve després del tres.",['quatre'],'Quatre'],
+['Q','s','ca',"Paraula interrogativa per preguntar per una cosa: «... vols?»",['que','què'],'Què'],
+['U','s','ca',"Síl·laba on va l'accent de les paraules agudes: la ... síl·laba.",['ultima'],'Última'],
+['W','c','ca',"Conté la W: lloc d'internet amb pàgines, blogs i informació.",['web','pagina web'],'Web'],
+['Y','c','ca',"Conté la Y: període de dotze mesos.",['any'],'Any'],
+['Z','c','ca',"Conté la Z: nombre que ve després de l'onze.",['dotze'],'Dotze'],
+/* castellano */
+['B','s','es',"Relato de la vida de una persona.",['biografia'],'Biografía'],
+['C','s','es',"Signo (,) que marca una pausa breve dentro de la oración.",['coma'],'Coma'],
+['F','s','es',"Relato breve con animales que termina con una moraleja.",['fabula'],'Fábula'],
+['G','s','es',"Palabra que indica el lugar de origen de una persona, como «madrileño».",['gentilicio'],'Gentilicio'],
+['I','s','es',"Tiempo verbal del pasado que indica acción no acabada: «cantaba».",['imperfecto','preterito imperfecto'],'Imperfecto'],
+['J','c','es',"Contiene la J: palabra con el sufijo diminutivo de «caja».",['cajita'],'Cajita'],
+['K','c','es',"Contiene la K: unidad de peso que equivale a mil gramos.",['kilo','kilogramo'],'Kilo'],
+['M','s','es',"Palabra con la que se compara sin usar «como»: «sus dientes son perlas».",['metafora'],'Metáfora'],
+['N','s','es',"Persona que cuenta la historia en un relato.",['narrador','narradora'],'Narrador'],
+['O','s','es',"Palabra que imita un sonido, como «tic-tac».",['onomatopeya'],'Onomatopeya'],
+['R','s','es',"Repetición de sonidos al final de los versos.",['rima'],'Rima'],
+['U','c','es',"Contiene la U: palabra que nombra personas, animales, cosas o ideas.",['sustantivo'],'Sustantivo'],
+['W','c','es',"Contiene la W: deporte de pelota que se juega en una piscina.",['waterpolo'],'Waterpolo'],
+['X','c','es',"Contiene la X: texto que explica un tema de forma objetiva; texto...",['expositivo'],'Expositivo'],
+['Y','c','es',"Contiene la Y: nombre de la letra que suena como la «i» en «rey».",['ye','y griega'],'Ye'],
+['Z','c','es',"Contiene la Z: sonido que producimos al hablar o cantar.",['voz'],'Voz'],
+/* mates */
+['B','s','ma',"Costat sobre el qual es recolza una figura; es multiplica per l'altura per trobar l'àrea.",['base'],'Base'],
+['G','s','ma',"Unitat de mesura de massa: mil fan un quilo.",['gram'],'Gram'],
+['J','c','ma',"Conté la J: agrupació d'elements, com el dels nombres parells.",['conjunt'],'Conjunt'],
+['K','s','ma',"Unitat de longitud que val mil metres.",['kilometre','quilometre'],'Quilòmetre'],
+['L','s','ma',"Unitat de capacitat: mil mil·lilitres.",['litre'],'Litre'],
+['M','s','ma',"Valor que més es repeteix en un conjunt de dades.",['moda'],'Moda'],
+['S','s','ma',"Resultat de l'operació d'afegir quantitats.",['suma'],'Suma'],
+['U','s','ma',"Xifra que ocupa el primer lloc a la dreta d'un nombre natural.",['unitat','unitats'],'Unitat'],
+['W','c','ma',"Conté la W: unitat de potència elèctrica.",['watt','watts','kilowatt'],'Watt'],
+['Y','s','ma',"Lletra del segon valor d'unes coordenades (x, ...).",['y','i grega'],'Y'],
+['Z','c','ma',"Conté la Z: el doble de set.",['catorze'],'Catorze'],
+['Z','s','ma',"Nombre que no és positiu ni negatiu.",['zero'],'Zero']
+);
