@@ -2026,6 +2026,7 @@ window.__s={camera,controls,THREE,MAP:()=>MAP,qshot:(kind,id)=>{ document.queryS
 
 
 
+
 <!--VIDEO--><script>window.VCLIPS={"intro": {"src": "../clips/espanya.mp4", "poster": "../clips/espanya.jpg", "unit": "Medi·Lab 3D · Unitat 5", "title": "⛰️ Espanya i Europa", "sub": "Muntanyes, rius i paisatges"}};</script><script>/* Medi·Lab 3D · vídeos: intro d'entrada + targetes «Mira-ho de veritat» amb pregunta.
    Config a window.VCLIPS = { intro:{src,poster,unit,title,sub}, cards:{ <mode>:[{src,poster,title,cap,q:{t,o:[...],ok:index}}] } }
    Els vídeos són fitxers a part (../clips/) i només es descarreguen quan cal. */
@@ -2036,6 +2037,7 @@ const LAB=(location.pathname.split('/').pop()||'lab').replace('.html','');
 const KEY='vintro_'+LAB;
 const store=(k,v)=>{ try{ if(v===undefined) return localStorage.getItem('ml_'+k); localStorage.setItem('ml_'+k,v); }catch(e){ return null; } };
 const css=document.createElement('style'); css.textContent=`
+body.vPlaying canvas{visibility:hidden}
 #vIntro{position:fixed;inset:0;z-index:100000;background:#000;color:#e6f1ff;font-family:Inter,"Space Grotesk",system-ui,sans-serif;opacity:1;transition:opacity .6s}
 #vIntro.out{opacity:0;pointer-events:none}
 #vIntro video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -2058,7 +2060,16 @@ const css=document.createElement('style'); css.textContent=`
 .vTh img{width:100%;height:100%;object-fit:cover;display:block}
 .vTh span{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:50px;height:50px;border-radius:50%;background:rgba(0,0,0,.55);border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;padding-left:4px}
 .vCard .c{font-size:13px;margin-top:8px;color:#cfe6f5}
-#vModal{position:fixed;inset:0;overflow:auto;z-index:99999;background:rgba(2,6,16,.84);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;color:#e6f1ff;font-family:Inter,"Space Grotesk",system-ui,sans-serif;padding:16px}
+.vGal{margin:10px 0 12px;border-radius:14px;background:rgba(0,229,255,.07);border:1px solid rgba(0,229,255,.35);padding:10px}
+.vGal .k{font-size:12px;letter-spacing:2px;color:#7fe9ff;font-weight:700;margin-bottom:8px}
+.vGal .g{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.vTile{position:relative;border-radius:10px;overflow:hidden;cursor:pointer;background:#000;aspect-ratio:16/10;transition:transform .15s}
+.vTile:hover{transform:translateY(-2px)}
+.vTile img{width:100%;height:100%;object-fit:cover;display:block}
+.vTile b{position:absolute;left:0;right:0;bottom:0;padding:14px 6px 5px;font-size:12px;font-weight:600;background:linear-gradient(0deg,rgba(0,0,0,.85),rgba(0,0,0,0));color:#fff}
+.vTile i{position:absolute;top:6px;right:6px;font-style:normal;font-size:11px;background:rgba(0,0,0,.6);border-radius:6px;padding:2px 5px}
+.vTile.done i{background:#3a7a1a}
+#vModal{position:fixed;inset:0;overflow:auto;z-index:99999;background:rgba(2,6,16,.94);display:flex;align-items:center;justify-content:center;color:#e6f1ff;font-family:Inter,"Space Grotesk",system-ui,sans-serif;padding:16px}
 #vModal .w{width:min(900px,92vw)}
 #vModal video{width:100%;aspect-ratio:16/9;max-height:62vh;transition:max-height .4s;border-radius:16px;background:#000;display:block;box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 0 1px rgba(0,229,255,.35)}
 #vModal.vq video{max-height:40vh}
@@ -2080,8 +2091,8 @@ function intro(force){
  d.innerHTML=`<video playsinline muted autoplay preload="auto" ${I.poster?`poster="${I.poster}"`:''}><source src="${I.src}" type="video/mp4"></video><div class="sh"></div>
   <div class="tt"><div class="u">${I.unit||'Medi·Lab 3D'}</div><h1>${I.title||''}</h1><div class="s">${I.sub||''}</div></div>
   <div class="bt"><button class="vGh" data-a="so">🔊 Activa el so</button><button class="vBtn" data-a="go">Entra ⏭</button></div><div class="bar"><i></i></div>`;
- document.body.appendChild(d); const v=d.querySelector('video'), bar=d.querySelector('.bar i'), so=d.querySelector('[data-a=so]');
- let done=false; const end=()=>{ if(done) return; done=true; store(KEY,'1'); d.classList.add('out'); try{v.pause();}catch(e){} setTimeout(()=>d.remove(),650); };
+ document.body.appendChild(d); document.body.classList.add('vPlaying'); const v=d.querySelector('video'), bar=d.querySelector('.bar i'), so=d.querySelector('[data-a=so]');
+ let done=false; const end=()=>{ if(done) return; done=true; store(KEY,'1'); d.classList.add('out'); document.body.classList.remove('vPlaying'); try{v.pause();}catch(e){} setTimeout(()=>d.remove(),650); };
  requestAnimationFrame(()=>d.classList.add('on'));
  v.addEventListener('timeupdate',()=>{ if(v.duration) bar.style.width=(v.currentTime/v.duration*100)+'%'; });
  v.addEventListener('ended',()=>setTimeout(end,500));
@@ -2102,8 +2113,12 @@ function cardHTML(c,i){ return `<div class="vCard" data-i="${i}" role="button" t
  <div class="c">${c.cap||c.title}</div></div>`; }
 function decorate(){
  const pb=$('#panel .pbody'); if(!pb||!C.cards) return; const L=C.cards[curMode()]; if(!L||!L.length) return;
- if(pb.querySelector('.vCard')) return;
+ if(pb.querySelector('.vCard,.vGal')) return;
  const anchor=pb.querySelector('p.t')||pb.querySelector('.lead');
+ if(L.length>2){ const g=document.createElement('div'); g.className='vGal';
+  g.innerHTML=`<div class="k">🎬 MIRA-HO DE VERITAT · ${L.length} VÍDEOS</div><div class="g">${L.map((c,i)=>`<div class="vTile${store('vseen_'+c.title)?' done':''}" data-i="${i}" role="button" tabindex="0" aria-label="Mira el vídeo: ${c.title}">${c.poster?`<img src="${c.poster}" alt="" loading="lazy">`:''}<i>${store('vseen_'+c.title)?'✔':'▶ '+(c.dur||8)+' s'}</i><b>${c.title}</b></div>`).join('')}</div>`;
+  g.querySelectorAll('.vTile').forEach(t=>{ const c=L[+t.dataset.i]; t.onclick=()=>openClip(c); t.onkeydown=e=>{ if(e.key==='Enter') openClip(c); }; });
+  if(anchor) anchor.after(g); else pb.prepend(g); return; }
  L.forEach((c,i)=>{ const w=document.createElement('div'); w.innerHTML=cardHTML(c,i); const el=w.firstElementChild;
   el.onclick=()=>openClip(c); el.onkeydown=e=>{ if(e.key==='Enter') openClip(c); };
   if(anchor) anchor.after(el); else pb.prepend(el); });
@@ -2115,15 +2130,15 @@ function openClip(c){
   <div class="row"><div><h3>${c.q?'🤔 '+c.q.t:c.title}</h3><div class="hint">${c.q?'Mira el vídeo i després tria la resposta.':(c.cap||'')}</div></div>
   <div style="display:flex;gap:8px"><button class="vGh" data-a="re">↻ Torna-ho a veure</button><button class="vBtn" data-a="x">Tanca ✕</button></div></div>
   <div class="ops"></div><div class="fb"></div></div>`;
- document.body.appendChild(m); const v=m.querySelector('video'), ops=m.querySelector('.ops'), fb=m.querySelector('.fb');
- const close=()=>{ try{v.pause();}catch(e){} m.remove(); };
+ document.body.appendChild(m); document.body.classList.add('vPlaying'); const v=m.querySelector('video'), ops=m.querySelector('.ops'), fb=m.querySelector('.fb');
+ const close=()=>{ try{v.pause();}catch(e){} m.remove(); document.body.classList.remove('vPlaying'); };
  m.querySelector('[data-a=x]').onclick=close; m.onclick=e=>{ if(e.target===m) close(); };
  m.querySelector('[data-a=re]').onclick=()=>{ v.currentTime=0; v.play().catch(()=>{}); };
  addEventListener('keydown',function k(e){ if(e.key==='Escape'){ close(); removeEventListener('keydown',k); } });
  v.querySelector('source').addEventListener('error',()=>{ fb.textContent='No s\'ha pogut carregar el vídeo. Comprova la connexió.'; });
  const ask=()=>{ if(!c.q||ops.childElementCount) return; let tried=false; m.classList.add('vq');
   c.q.o.forEach((t,i)=>{ const b=document.createElement('button'); b.textContent=t; ops.appendChild(b);
-   b.onclick=()=>{ if(i===c.q.ok){ b.classList.add('ok'); fb.innerHTML='✅ <b>Molt bé!</b> '+(c.q.why||''); ops.querySelectorAll('button').forEach(x=>x.disabled=true);
+   b.onclick=()=>{ if(i===c.q.ok){ b.classList.add('ok'); store('vseen_'+c.title,'1'); fb.innerHTML='✅ <b>Molt bé!</b> '+(c.q.why||''); ops.querySelectorAll('button').forEach(x=>x.disabled=true);
       if(window.UX){ const k='🎬 '+c.title; if(UX.COL&&UX.COL.items&&!UX.COL.items.find(x=>x.k===k)) UX.COL.items.push({k,n:c.title,ic:'🎬'}); if(!UX.discover(k)&&UX.sfx&&UX.sfx.ok) UX.sfx.ok(); if(UX.logResult) UX.logResult('Vídeo: '+c.title,tried?5:10); }
      } else { b.classList.add('ko'); b.disabled=true; tried=true; fb.textContent='Gairebé! Torna a mirar el vídeo i prova una altra resposta.'; if(window.UX&&UX.sfx&&UX.sfx.ko) UX.sfx.ko(); } };
   }); };
