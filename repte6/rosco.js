@@ -174,7 +174,7 @@ window.ROSCO_BANK.push(
 ['B','s','ma',"Costat sobre el qual es recolza una figura; es multiplica per l'altura per trobar l'àrea.",['base'],'Base'],
 ['G','s','ma',"Unitat de mesura de massa: mil fan un quilo.",['gram'],'Gram'],
 ['J','c','ma',"Conté la J: agrupació d'elements, com el dels nombres parells.",['conjunt'],'Conjunt'],
-['K','s','ma',"Unitat de longitud que val mil metres.",['kilometre','quilometre'],'Quilòmetre'],
+['K','s','ma',"Símbol del quilogram, la unitat de massa que val mil grams.",['kg','kilogram','kilo','quilo'],'kg'],
 ['L','s','ma',"Unitat de capacitat: mil mil·lilitres.",['litre'],'Litre'],
 ['M','s','ma',"Valor que més es repeteix en un conjunt de dades.",['moda'],'Moda'],
 ['S','s','ma',"Resultat de l'operació d'afegir quantitats.",['suma'],'Suma'],
