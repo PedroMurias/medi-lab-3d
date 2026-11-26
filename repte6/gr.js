@@ -4,7 +4,7 @@ window.GR = (function () {
   const CFG = { apiKey: "AIzaSyCtj2tZQdRfrEscevXyzeMwQiaOY57iGAU", authDomain: "balmesonlinecom.firebaseapp.com", projectId: "balmesonlinecom",
     storageBucket: "balmesonlinecom.firebasestorage.app", messagingSenderId: "740748900490", appId: "1:740748900490:web:3b1c724d0143c683245573" };
   const DOMAIN = 'balmesonline.com', SDK = 'https://www.gstatic.com/firebasejs/10.12.2/', KEY = 'egr6_acc';
-  let fb = null, auth = null, db = null, ACC = null, listeners = [];
+  let fb = null, auth = null, db = null, ACC = null, listeners = [], lastErr = '';
   try { ACC = JSON.parse(localStorage.getItem(KEY)) || null; } catch (e) { ACC = null; }
 
   const loadScript = src => new Promise((ok, ko) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = () => ko(new Error('script ' + src)); document.head.appendChild(s); });
@@ -44,7 +44,8 @@ window.GR = (function () {
     let u = null;
     try { u = (await auth.signInWithPopup(p)).user; }
     catch (e) { const c = (e && e.code) || '';
-      if (/popup-blocked|operation-not-supported|web-storage-unsupported/.test(c)) { await auth.signInWithRedirect(p); return null; }
+      if (/popup-blocked/.test(c)) throw new Error('El navegador ha bloquejat la finestra de Google. Permet les finestres emergents per a aquesta web i torna-ho a provar.');
+      if (/operation-not-supported|web-storage-unsupported/.test(c)) { await auth.signInWithRedirect(p); return null; }
       if (/popup-closed|cancelled/.test(c)) return null;
       throw new Error('No s\'ha pogut entrar amb Google (' + c + ').'); }
     const acc = await afterLogin(u);
@@ -70,7 +71,7 @@ window.GR = (function () {
   /* Reprèn la sessió: compte desat, o tornada de l'entrada amb Google per redirecció (mòbil) */
   async function resume() {
     try { await sdk();
-      try { const rr = await auth.getRedirectResult(); if (rr && rr.user) { const acc = await afterLogin(rr.user); if (!acc.teacher && !acc.email.endsWith('@' + DOMAIN)) { await logout(); ACC = null; } return ACC; } } catch (e) { /* cap redirecció pendent */ }
+      try { const rr = await auth.getRedirectResult(); if (rr && rr.user) { const acc = await afterLogin(rr.user); if (!acc.teacher && !acc.email.endsWith('@' + DOMAIN)) { await logout(); ACC = null; } return ACC; } } catch (e) { lastErr = 'Google: ' + ((e && e.code) || e.message || e); }
       const u = await new Promise(res => { const off = auth.onAuthStateChanged(x => { off(); res(x); }); });
       if (u) return afterLogin(u);
     } catch (e) { /* sense connexió: es manté el compte desat */ }
@@ -125,5 +126,5 @@ window.GR = (function () {
   async function studentGames(uid, limit = 40) { await sdk(); if (!ACC || !ACC.teacher) return []; const q = await db.collection('gr_users').doc(uid).collection('games').orderBy('t', 'desc').limit(limit).get(); const a = []; q.forEach(d => a.push({ id: d.id, ...d.data() })); return a; }
   async function teacherClasses() { await sdk(); if (!ACC || !ACC.teacher) return []; const out = []; const q = ACC.admin ? await db.collection('classes').get() : await db.collection('classes').where('teacher', '==', ACC.email).get(); q.forEach(d => out.push({ id: d.id, ...d.data() })); return out; }
 
-  return { get acc() { return ACC; }, login, loginGoogle, logout, resume, record, points, classBoard, myGames, me, student, studentGames, teacherClasses, weekKey, onChange: f => listeners.push(f), available: () => location.protocol === 'https:' && !/claude\.ai|claudeusercontent/.test(location.hostname) };
+  return { get acc() { return ACC; }, get lastErr() { return lastErr; }, preload: () => sdk().catch(() => {}), login, loginGoogle, logout, resume, record, points, classBoard, myGames, me, student, studentGames, teacherClasses, weekKey, onChange: f => listeners.push(f), available: () => location.protocol === 'https:' && !/claude\.ai|claudeusercontent/.test(location.hostname) };
 })();

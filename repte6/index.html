@@ -1501,7 +1501,7 @@
             catch (ex) { err.textContent = ex.message || 'No s\'ha pogut entrar.'; playSFX('wrong'); }
             btn.disabled = false;
         }
-        if (window.GR) { GR.onChange(renderAccount); if (GR.available()) { const le = document.getElementById('lg-err'); if (le && sessionStorage.getItem('egr6_glogin')) le.textContent = 'Entrant amb Google…'; GR.resume().then(acc => { renderAccount(); sessionStorage.removeItem('egr6_glogin'); if (acc) showWelcome(); else if (le && le.textContent === 'Entrant amb Google…') le.textContent = 'No s\'ha pogut completar l\'entrada amb Google. Torna-ho a provar.'; }).catch(() => {}); } }
+        if (window.GR) { GR.onChange(renderAccount); if (GR.available()) { const le = document.getElementById('lg-err'); if (le && sessionStorage.getItem('egr6_glogin')) le.textContent = 'Entrant amb Google…'; GR.resume().then(acc => { renderAccount(); sessionStorage.removeItem('egr6_glogin'); if (acc) showWelcome(); else if (le && le.textContent === 'Entrant amb Google…') le.textContent = 'No s\'ha pogut completar l\'entrada amb Google. ' + (GR.lastErr || '') + ' Torna-ho a provar.'; }).catch(() => {}); GR.preload(); } }
 
         /* Estadístiques d'una partida per al registre */
         function gameStats() {
