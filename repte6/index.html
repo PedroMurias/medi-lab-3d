@@ -44,6 +44,98 @@
                 radial-gradient(circle at 50% 90%, rgba(16, 185, 129, 0.10) 0%, transparent 50%);
         }
 
+
+
+        /* =====================================================================
+           TEMA CLAR «Escola» (html[data-theme="light"]) · gamma: cel #BFD8FF · blanc · marí #0E1B5B · blau #2F6BFF · lila #8B5CF6 · groc #FFC93C
+           ===================================================================== */
+        html[data-theme="light"] { --navy:#0E1B5B; --ink:#1B2A6B; --mut:#4C5A8A; --blue:#2F6BFF; --cyan:#19B9E8; --lila:#8B5CF6; --sun:#FFC93C; --ok:#1DB47A; --ko:#E5484D; }
+        html[data-theme="light"] body { color: var(--ink); background: #CFE2FF; }
+        html[data-theme="light"] #bgfx { background: linear-gradient(160deg, #EAF2FF 0%, #BFD8FF 40%, #9FC4FF 70%, #CFE2FF 100%); }
+        html[data-theme="light"] #bgfx .blob { mix-blend-mode: normal; opacity: .8; filter: blur(40px); }
+        html[data-theme="light"] #bgfx .b1 { background: radial-gradient(circle, #ffffff 0%, rgba(255,255,255,0) 60%); }
+        html[data-theme="light"] #bgfx .b2 { background: radial-gradient(circle, #7FB0FF 0%, rgba(127,176,255,0) 60%); }
+        html[data-theme="light"] #bgfx .b3 { background: radial-gradient(circle, #B7A6FF 0%, rgba(183,166,255,0) 60%); opacity: .6; }
+        html[data-theme="light"] #bgfx .b4 { background: radial-gradient(circle, #ffffff 0%, rgba(255,255,255,0) 60%); }
+        html[data-theme="light"] #bgfx .beams, html[data-theme="light"] #bgfx .grid { display: none; }
+        html[data-theme="light"] #bgfx .doodle { position: absolute; width: 14vmin; height: 14vmin; color: #fff; opacity: .75; filter: drop-shadow(0 4px 10px rgba(47,107,255,.25)); animation: bob 7s ease-in-out infinite; }
+        html[data-theme="light"] #bgfx .doodle svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+        html[data-theme="light"] #bgfx .doodle.star { width: 5vmin; height: 5vmin; opacity: .9; }
+        html[data-theme="light"] #bgfx .doodle.star svg { fill: #fff; stroke: none; }
+        html[data-theme="light"] #bgfx .doodle.sun { color: var(--sun); opacity: 1; }
+        html[data-theme="light"] #bgfx .doodle.sun svg { stroke-width: 7; }
+        @keyframes bob { 0%,100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-14px) rotate(3deg); } }
+        html[data-theme="light"] #bgfx .desk { position: absolute; left: 0; right: 0; bottom: 0; height: 12vh; background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.55) 100%); }
+        html[data-theme="light"] #bgfx .pic { position: absolute; inset: 0; background-size: cover; background-position: center bottom; opacity: 0; }
+        html[data-theme="light"].has-pic #bgfx .pic { opacity: 1; }
+        html[data-theme="light"].has-pic #bgfx .blob, html[data-theme="light"].has-pic #bgfx .doodle, html[data-theme="light"].has-pic #bgfx .desk { display: none; }
+        html[data-theme="light"] #bgParticles { opacity: .55; }
+
+        /* Capçalera: es manté marina fosca, com a la maqueta */
+        html[data-theme="light"] header { background: linear-gradient(90deg, #0E1B5B, #15257A) !important; border-color: rgba(255,255,255,.12) !important; }
+        html[data-theme="light"] header .text-slate-400 { color: #AEBBE8 !important; }
+
+        /* Tot el que no és la capçalera: colors clars */
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) { --tw-ring-color: var(--blue); }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) .glass-panel { background: rgba(255,255,255,.72); border: 1px solid rgba(255,255,255,.95); box-shadow: 0 20px 50px rgba(47,107,255,.18), inset 0 1px 0 #fff; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) :is(.text-white, .text-slate-100, .text-slate-200, .text-slate-300) { color: var(--navy) !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) :is(.text-slate-400, .text-slate-500, .text-slate-600) { color: var(--mut) !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) :is(.text-cyan-300, .text-cyan-400, .text-cyan-200, .text-cyan-100, .text-indigo-300, .text-indigo-200, .text-blue-300) { color: var(--blue) !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) :is(.text-emerald-300, .text-emerald-400, .text-emerald-200) { color: #0F8F5F !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) :is(.text-amber-300, .text-amber-400, .text-amber-200, .text-amber-100) { color: #B7791F !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) :is(.text-rose-300, .text-rose-400, .text-rose-200) { color: var(--ko) !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) :is(.text-purple-300, .text-purple-200) { color: #6D3BE0 !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) :is(.bg-slate-950, .bg-slate-900, [class*="bg-slate-950/"], [class*="bg-slate-900/"], [class*="bg-slate-800"]) { background-color: rgba(255,255,255,.78) !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) :is([class*="bg-white/5"], [class*="bg-white/10"], [class*="bg-white/15"]) { background-color: rgba(14,27,91,.06) !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) :is(.border-slate-700, .border-slate-800, [class*="border-slate-700/"], [class*="border-white/"]) { border-color: #BFD0F5 !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) :is([class*="bg-cyan-500/"], [class*="bg-indigo-500/"], [class*="bg-blue-500/"]) { background-color: rgba(47,107,255,.14) !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) :is([class*="bg-amber-400/"], [class*="bg-amber-500/"]) { background-color: rgba(255,201,60,.28) !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) :is([class*="bg-emerald-500/"]) { background-color: rgba(29,180,122,.14) !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) :is([class*="bg-rose-500/"]) { background-color: rgba(229,72,77,.12) !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) :is([class*="bg-purple-500/"]) { background-color: rgba(139,92,246,.14) !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) input, html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) textarea { background: #fff !important; color: var(--navy) !important; border-color: #BFD0F5 !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) input::placeholder { color: #94A3C7 !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) input:focus { border-color: var(--blue) !important; box-shadow: 0 0 0 4px rgba(47,107,255,.15); }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) .border-cyan-400, html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) .border-amber-400 { border-color: var(--blue) !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) .border-amber-400 { border-color: var(--sun) !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) .bg-gradient-to-r.from-cyan-500 { background-image: linear-gradient(90deg, #19B9E8, #2F6BFF 50%, #8B5CF6) !important; box-shadow: 0 10px 30px rgba(47,107,255,.35) !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) .bg-gradient-to-r.from-cyan-500 * { color: #fff !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) .bg-amber-400:not([class*="/"]) { background-color: var(--sun) !important; color: var(--navy) !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) .bg-amber-400:not([class*="/"]) * { color: var(--navy) !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) .bg-emerald-500:not([class*="/"]) { background-color: var(--ok) !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) .bg-white:not([class*="/"]) { background-color: var(--navy) !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) .bg-white:not([class*="/"]) { color: #fff !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) .text-slate-950 { color: #fff !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) .bg-amber-400:not([class*="/"]) .text-slate-950 { color: var(--navy) !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) .opt-ok { background: rgba(29,180,122,.18) !important; border-color: var(--ok) !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) .opt-ko { background: rgba(229,72,77,.15) !important; border-color: var(--ko) !important; }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) .team-card.active { box-shadow: 0 0 0 3px var(--sun), 0 10px 30px rgba(255,201,60,.35); }
+        html[data-theme="light"] :is(main, #modal-chests, #modal-login, #modal-quit) .rosco-active-glow { animation-name: pulse-ring-light; }
+        @keyframes pulse-ring-light { 0% { box-shadow: 0 0 0 0 rgba(47,107,255,.6); } 70% { box-shadow: 0 0 0 12px rgba(47,107,255,0); } 100% { box-shadow: 0 0 0 0 rgba(47,107,255,0); } }
+        html[data-theme="light"] #p1-timer-ring { stroke: var(--blue); }
+        html[data-theme="light"] ::-webkit-scrollbar-track { background: rgba(255,255,255,.4); } html[data-theme="light"] ::-webkit-scrollbar-thumb { background: rgba(47,107,255,.45); }
+        /* Franja de sota la capçalera */
+        html[data-theme="light"] .game-ribbon { background: linear-gradient(90deg, #1E3A8A, #2F6BFF) !important; color: #fff !important; }
+
+        /* ===== Fons animats (data-bg="aurora" | "particules" | "plato") ===== */
+        #bgfx { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: #0B0F19; }
+        #bgfx .blob { position: absolute; width: 60vmax; height: 60vmax; border-radius: 50%; filter: blur(70px); opacity: .55; mix-blend-mode: screen; animation: drift 28s ease-in-out infinite alternate; }
+        #bgfx .b1 { background: radial-gradient(circle, #22d3ee 0%, transparent 60%); top: -20vmax; left: -15vmax; }
+        #bgfx .b2 { background: radial-gradient(circle, #a855f7 0%, transparent 60%); top: 10vmax; right: -20vmax; animation-duration: 34s; animation-delay: -10s; }
+        #bgfx .b3 { background: radial-gradient(circle, #10b981 0%, transparent 60%); bottom: -25vmax; left: 20vmax; animation-duration: 40s; animation-delay: -20s; }
+        #bgfx .b4 { background: radial-gradient(circle, #f59e0b 0%, transparent 60%); bottom: -10vmax; right: 10vmax; width: 40vmax; height: 40vmax; opacity: .35; animation-duration: 31s; animation-delay: -5s; }
+        @keyframes drift { 0% { transform: translate(0,0) scale(1); } 50% { transform: translate(8vmax,-6vmax) scale(1.15); } 100% { transform: translate(-6vmax,8vmax) scale(.95); } }
+        #bgfx canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+        #bgfx .beams { position: absolute; left: 50%; top: 35%; width: 240vmax; height: 240vmax; transform: translate(-50%,-50%); background: repeating-conic-gradient(from 0deg, rgba(255,255,255,.045) 0 5deg, transparent 5deg 14deg); animation: spin 90s linear infinite; mask: radial-gradient(circle at 50% 50%, #000 0, rgba(0,0,0,.5) 35%, transparent 70%); -webkit-mask: radial-gradient(circle at 50% 50%, #000 0, rgba(0,0,0,.5) 35%, transparent 70%); }
+        @keyframes spin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+        #bgfx .grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(56,189,248,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(56,189,248,.07) 1px, transparent 1px); background-size: 48px 48px; mask: linear-gradient(#000 20%, transparent 90%); -webkit-mask: linear-gradient(#000 20%, transparent 90%); animation: gridmove 18s linear infinite; }
+        @keyframes gridmove { to { background-position: 0 48px, 48px 0; } }
+        html[data-bg="aurora"] #bgfx .beams, html[data-bg="aurora"] #bgfx .grid { display: none; }
+        html[data-bg="particules"] #bgfx .blob { opacity: .22; } html[data-bg="particules"] #bgfx .beams { display: none; }
+        html[data-bg="plato"] #bgfx .grid { display: none; } html[data-bg="plato"] #bgfx .blob { opacity: .3; filter: blur(90px); }
+        body.studio-bg { background-image: none; background-color: transparent; }
+        @media (prefers-reduced-motion: reduce) { #bgfx .blob, #bgfx .beams, #bgfx .grid { animation: none; } }
+
         /* Tarjeta Glassmorphism con borde iluminado */
         .glass-panel {
             background: rgba(17, 25, 40, 0.76);
@@ -235,6 +327,19 @@
     </style>
 </head>
 <body class="studio-bg min-h-screen flex flex-col justify-between">
+    <div id="bgfx" aria-hidden="true"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div><div class="beams"></div><div class="grid"></div>
+        <div class="pic"></div>
+        <div class="doodle" style="left:4vw;top:16vh;width:16vmin;height:16vmin;animation-delay:-1s"><svg viewBox="0 0 64 64"><path d="M24 44h16M26 50h12M32 8a16 16 0 0 0-9 29c1 1 1 2 1 3v2h16v-2c0-1 0-2 1-3a16 16 0 0 0-9-29Z"/><path d="M28 30l4-6 4 6"/></svg></div>
+        <div class="doodle" style="right:4vw;top:22vh;width:18vmin;height:14vmin;animation-delay:-3s"><svg viewBox="0 0 64 48"><path d="M32 12c-6-6-16-6-26-4v30c10-2 20-2 26 4 6-6 16-6 26-4V8c-10-2-20-2-26 4Z"/><path d="M32 12v30M12 16c5-1 10-1 14 1M38 17c4-2 9-2 14-1"/></svg></div>
+        <div class="doodle" style="right:8vw;bottom:18vh;width:16vmin;height:16vmin;animation-delay:-5s"><svg viewBox="0 0 64 64"><path d="M20 8h24v14a12 12 0 0 1-24 0V8ZM20 14h-8a8 8 0 0 0 8 10M44 14h8a8 8 0 0 1-8 10M28 44h8M24 54h16M32 34v10"/></svg></div>
+        <div class="doodle" style="left:8vw;bottom:26vh;width:12vmin;height:12vmin;animation-delay:-2s"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="22"/><path d="M32 16v16l10 6"/></svg></div>
+        <div class="doodle star" style="left:22vw;top:30vh;animation-delay:-4s"><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7Z"/></svg></div>
+        <div class="doodle star" style="right:20vw;top:12vh;animation-delay:-6s;width:3.5vmin;height:3.5vmin"><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7Z"/></svg></div>
+        <div class="doodle star" style="right:30vw;bottom:14vh;animation-delay:-2.5s;width:4vmin;height:4vmin"><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7Z"/></svg></div>
+        <div class="doodle star" style="left:30vw;bottom:10vh;animation-delay:-1.5s;width:3vmin;height:3vmin"><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7Z"/></svg></div>
+        <div class="doodle sun" style="left:24vw;top:14vh;width:6vmin;height:6vmin;animation-delay:-3.5s"><svg viewBox="0 0 64 64"><path d="M14 18l10 10M50 18L40 28"/></svg></div>
+        <div class="desk"></div>
+        <canvas id="bgParticles"></canvas></div>
 
     <!-- =====================================================================
          CABECERA ESTILO PLATÓ TV (HUD GLOBAL)
@@ -2220,6 +2325,36 @@
         document.getElementById('btn-install').addEventListener('click', async () => { if (!deferredInstall) return; deferredInstall.prompt(); await deferredInstall.userChoice; deferredInstall = null; document.getElementById('btn-install').classList.add('hidden'); });
         window.addEventListener('appinstalled', () => document.getElementById('btn-install').classList.add('hidden'));
         if ('serviceWorker' in navigator && location.protocol === 'https:') { try { navigator.serviceWorker.register('./sw.js').catch(() => {}); } catch (e) { /* sense SW (p. ex. dins d'un marc) */ } }
+
+        /* Fons: variant i partícules */
+        (function () {
+            const q = new URLSearchParams(location.search).get('bg');
+            let v = q || (function () { try { return localStorage.getItem('egr6_bg'); } catch (e) { return null; } })() || 'aurora';
+            if (!['aurora', 'particules', 'plato'].includes(v)) v = 'aurora';
+            document.documentElement.dataset.bg = v;
+            const th = new URLSearchParams(location.search).get('theme') || (function () { try { return localStorage.getItem('egr6_theme'); } catch (e) { return null; } })() || 'light';
+            document.documentElement.dataset.theme = th === 'dark' ? 'dark' : 'light';
+            if (new URLSearchParams(location.search).get('theme')) { try { localStorage.setItem('egr6_theme', th); } catch (e) { /* */ } }
+            if (th !== 'dark') { const img = new Image(); img.onload = () => { document.querySelector('#bgfx .pic').style.backgroundImage = 'url(bg.jpg)'; document.documentElement.classList.add('has-pic'); }; img.src = 'bg.jpg'; }
+            if (q) { try { localStorage.setItem('egr6_bg', v); } catch (e) { /* */ } }
+            const cv = document.getElementById('bgParticles'), ctx = cv.getContext('2d');
+            const reduce = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)').matches : false;
+            let W, H, P = [];
+            const N = v === 'particules' ? 90 : v === 'plato' ? 50 : 40;
+            function resize() { W = cv.width = innerWidth * devicePixelRatio; H = cv.height = innerHeight * devicePixelRatio; }
+            function make() { P = Array.from({ length: N }, () => ({ x: Math.random() * W, y: Math.random() * H, r: (v === 'particules' ? 1.2 + Math.random() * 2.6 : .6 + Math.random() * 1.6) * devicePixelRatio, s: (.15 + Math.random() * .45) * devicePixelRatio, a: Math.random() * 6.28, tw: .5 + Math.random(), c: document.documentElement.dataset.theme === 'light' ? ['#ffffff', '#FFC93C', '#8B5CF6', '#2F6BFF'][Math.random() * 4 | 0] : (v === 'particules' ? ['#67e8f9', '#c4b5fd', '#6ee7b7', '#fde68a'][Math.random() * 4 | 0] : '#ffffff') })); }
+            function tick(t) {
+                ctx.clearRect(0, 0, W, H);
+                for (const p of P) {
+                    if (!reduce) { p.y -= p.s; p.x += Math.sin(t / 1800 + p.a) * .25 * devicePixelRatio; if (p.y < -10) { p.y = H + 10; p.x = Math.random() * W; } }
+                    const al = v === 'aurora' ? .35 + .35 * Math.sin(t / 900 * p.tw + p.a) : .55 + .35 * Math.sin(t / 700 * p.tw + p.a);
+                    ctx.globalAlpha = Math.max(.08, al); ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.28); ctx.fill();
+                    if (v === 'particules') { ctx.globalAlpha = al * .25; ctx.beginPath(); ctx.arc(p.x, p.y, p.r * 3, 0, 6.28); ctx.fill(); }
+                }
+                if (!reduce) requestAnimationFrame(tick);
+            }
+            resize(); make(); addEventListener('resize', () => { resize(); make(); }); requestAnimationFrame(tick);
+        })();
 
         window.onload = function() {
             renderAvatarSelector();
