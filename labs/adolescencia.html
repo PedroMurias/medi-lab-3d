@@ -964,7 +964,7 @@ const CICLE=[[1,5,'#e0475b','Menstruació','Es desprèn part de la paret de l\'�
 const ST=$('#stage>div');
 /* ================= 3D: escenari comú ================= */
 const canvas=$('#c');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,powerPreference:'high-performance'}); setTimeout(()=>window.__LITE&&__LITE(renderer,scene),0);   renderer.setClearColor(0x000000,0); renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.15;
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,powerPreference:'high-performance'}); setTimeout(()=>window.__LITE&&__LITE(renderer,scene),0);    renderer.setClearColor(0x000000,0); renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.15;
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.outputColorSpace=THREE.SRGBColorSpace;
 const scene=new THREE.Scene(); scene.background=null; scene.fog=new THREE.Fog(0xefe6ee,30,90);
 const camera=new THREE.PerspectiveCamera(40,1,0.01,400);

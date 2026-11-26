@@ -1111,7 +1111,7 @@ const {$,shuf,html,showCard,quiz,subtabs}=Kit; Kit.setPrefix('medilab_e_');
 
 /* ================= 3D ================= */
 const canvas=$('#c');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'}); setTimeout(()=>window.__LITE&&__LITE(renderer,scene),0); 
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'}); setTimeout(()=>window.__LITE&&__LITE(renderer,scene),0);  
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.outputColorSpace=THREE.SRGBColorSpace; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.0; renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene(); { const pm=new THREE.PMREMGenerator(renderer); scene.environment=pm.fromScene(new RoomEnvironment(),.04).texture; scene.environmentIntensity=.35; pm.dispose(); }
 const SKY=new THREE.Color(0x6fb3e8), SKYD=new THREE.Color(0x8a8f96); scene.background=SKY.clone(); scene.fog=new THREE.Fog(0x9cc8ec,90,220);
@@ -2010,6 +2010,7 @@ UX.boot({items:[...Object.values(SDATA).map(x=>({k:x.n,n:x.n,ic:x.renov?'🌱':'
 window.__e={cam:(a,b,c2,x,y,z)=>{fl=null;camera.position.set(a,b,c2);controls.target.set(x,y,z);},setNight,setMode,loadPreset,edges:()=>edges,sim:()=>sim,selectCentral,edgeTap,setTool:t=>tool=t};
 </script>
 <style>#homeBtn{display:none;flex:0 0 auto;width:40px;height:40px;line-height:40px;text-align:center;padding:0;font-size:20px;border-radius:12px;background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.45);color:#00e5ff;text-decoration:none}#homeBtn:hover{background:#00e5ff;color:#021}#homeBtn.fx{position:fixed;top:14px;left:12px;z-index:60}body.walking #homeBtn.fx{display:none!important}</style><a id="homeBtn" href="../index.html" title="Torna al laboratori central" aria-label="Torna al laboratori central">🔬</a><script>(function(){var b=document.getElementById("homeBtn");if(!(/github\.io|localhost|127\.0\.0\.1/.test(location.hostname)||location.protocol==="file:"))return;var t=document.getElementById("top");if(t)t.insertBefore(b,t.firstChild);else b.className="fx";b.style.display="block"})()</script>
+
 
 <!--VIDEO--><script>window.VCLIPS={"intro": {"src": "../clips/energia.mp4", "poster": "../clips/energia.jpg", "unit": "Medi·Lab 3D · Unitat 6", "title": "⚡ L'energia", "sub": "D'on ve l'energia que fem servir cada dia?"}, "cards": {"fonts": [{"src": "../clips/energia.mp4", "poster": "../clips/energia.jpg", "title": "Un parc d'energia renovable", "cap": "Molins i plaques solars de veritat", "dur": 8, "q": {"t": "Quines dues fonts d'energia renovable hi has vist?", "o": ["El vent i el Sol", "El carbó i el petroli", "L'urani i el gas natural"], "ok": 0, "why": "Els aerogeneradors aprofiten el vent i les plaques solars, la llum del Sol."}}]}};</script><script>/* Medi·Lab 3D · vídeos: intro d'entrada + targetes «Mira-ho de veritat» amb pregunta.
    Config a window.VCLIPS = { intro:{src,poster,unit,title,sub}, cards:{ <mode>:[{src,poster,title,cap,q:{t,o:[...],ok:index}}] } }

@@ -1141,7 +1141,7 @@ const ERAS=[
 
 /* ================= ESCENA ================= */
 const canvas=$('#c');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'}); setTimeout(()=>window.__LITE&&__LITE(renderer,scene),0);  
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'}); setTimeout(()=>window.__LITE&&__LITE(renderer,scene),0);   
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.outputColorSpace=THREE.SRGBColorSpace; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.0;
 const scene=new THREE.Scene(); { const pm=new THREE.PMREMGenerator(renderer); scene.environment=pm.fromScene(new RoomEnvironment(),.04).texture; scene.environmentIntensity=.35; pm.dispose(); } scene.background=new THREE.Color(0x050a18); setTimeout(()=>{ Vis.backdrop(THREE,scene,'time',{radius:380}); window.__dust=Vis.dust(THREE,scene,260,[120,30,60],{size:4,color:0xc9b8ff,y:-4}); },0); scene.fog=new THREE.Fog(0x050a18,40,120);
 const camera=new THREE.PerspectiveCamera(45,1,0.1,800);

@@ -959,7 +959,7 @@ const ITEMS=[['🥫','Llauna de refresc','groc'],['🧴','Ampolla de plàstic','
 
 /* ================= 3D MAPA ================= */
 const canvas=$('#c');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'}); setTimeout(()=>window.__LITE&&__LITE(renderer,scene),0);  
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'}); setTimeout(()=>window.__LITE&&__LITE(renderer,scene),0);   
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.outputColorSpace=THREE.SRGBColorSpace; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.0;
 const scene=new THREE.Scene(); { const pm=new THREE.PMREMGenerator(renderer); scene.environment=pm.fromScene(new RoomEnvironment(),.04).texture; scene.environmentIntensity=.35; pm.dispose(); } scene.background=new THREE.Color(0x061224); setTimeout(()=>{ Vis.backdrop(THREE,scene,'map',{radius:600}); window.__dust=Vis.dust(THREE,scene,200,[160,40,120],{size:4,color:0x9fe7ff,y:0}); if(Vis.bd) Vis.bd.visible=mode!=='inst'; if(__dust) __dust.visible=mode!=='inst'; },0);
 const camera=new THREE.PerspectiveCamera(40,1,0.1,1000);

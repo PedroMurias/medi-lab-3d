@@ -5,7 +5,7 @@ files=sys.argv[1:] or [os.path.join(here,'..','index.html')]+glob.glob(os.path.j
 for f in files:
     s=open(f,encoding='utf-8').read()
     s=re.sub(r'<script id="mlux">.*?</script>','',s,flags=re.S)
-    s=re.sub(r'setTimeout\(\(\)=>window\.__LITE&&__LITE\(renderer,scene\),0\);','',s)
+    s=re.sub(r' *setTimeout\(\(\)=>window\.__LITE&&__LITE\(renderer,scene\),0\);','',s)
     m=re.search(r'<body[^>]*>',s); 
     if not m: print('no body',f); continue
     s=s[:m.end()]+'<script id="mlux">'+js+'</script>'+s[m.end():]

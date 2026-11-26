@@ -1095,7 +1095,7 @@ const {$,shuf,html,showCard,quiz,subtabs}=Kit; Kit.setPrefix('medilab_esp_');
 const D2R=Math.PI/180;
 /* ================= RENDER ================= */
 const canvas=$('#c');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'}); setTimeout(()=>window.__LITE&&__LITE(renderer,scene),0);  
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'}); setTimeout(()=>window.__LITE&&__LITE(renderer,scene),0);   
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.outputColorSpace=THREE.SRGBColorSpace;
 const scene=new THREE.Scene(); scene.background=new THREE.Color(0x071528); setTimeout(()=>{ Vis.backdrop(THREE,scene,'map',{radius:1200}); },0);
 const camera=new THREE.PerspectiveCamera(40,1,0.1,2000);
@@ -2022,6 +2022,7 @@ UX.boot({items:[...TERR.map(t=>({k:t.n,n:t.n,ic:'🗺️'})),...RANGES.filter(r=
 window.__s={camera,controls,THREE,MAP:()=>MAP,qshot:(kind,id)=>{ document.querySelectorAll('.pin,.lbl').forEach(e=>e.style.display='none'); if(window.__qx){ MAP.group.remove(window.__qx); } const isR=kind==='riu'; setMode(isR?'rius':'relleu'); const r=(isR?RIVERS:RANGES).find(r=>r.id===id); if(isR) for(const q of RIVERS){ q.tube.visible=q.flow.visible=false; } const pts=r.p.map(([lo,la])=>MAP.v3(lo,la,isR?.35:.9)); const tube=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),pts.length*10,isR?.32:.45,8,false),new THREE.MeshBasicMaterial({color:isR?0x1fd2ff:0xffd23f})); MAP.group.add(tube); window.__qx=tube; if(marker) marker.visible=false; const c=pts.reduce((a,b)=>a.add(b),new THREE.Vector3()).multiplyScalar(1/pts.length); home(); wake(300); return 1; },cam:(a,b,c,x,y,z)=>{camera.position.set(a,b,c);controls.target.set(x,y,z);controls.update();wake(80);},land:(lo,la)=>MAP.landAt(lo,la),X:MAP.X,Z:MAP.Z,setMode,sub,applyMode,selectClim,setMap,startGame:k=>repte.start(k),pick:(lo,la)=>R.onPick&&R.onPick([lo,la])};
 </script>
 <style>#homeBtn{display:none;flex:0 0 auto;width:40px;height:40px;line-height:40px;text-align:center;padding:0;font-size:20px;border-radius:12px;background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.45);color:#00e5ff;text-decoration:none}#homeBtn:hover{background:#00e5ff;color:#021}#homeBtn.fx{position:fixed;top:14px;left:12px;z-index:60}body.walking #homeBtn.fx{display:none!important}</style><a id="homeBtn" href="../index.html" title="Torna al laboratori central" aria-label="Torna al laboratori central">🔬</a><script>(function(){var b=document.getElementById("homeBtn");if(!(/github\.io|localhost|127\.0\.0\.1/.test(location.hostname)||location.protocol==="file:"))return;var t=document.getElementById("top");if(t)t.insertBefore(b,t.firstChild);else b.className="fx";b.style.display="block"})()</script>
+
 
 
 
