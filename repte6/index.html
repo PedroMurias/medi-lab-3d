@@ -117,6 +117,23 @@
         /* Franja de sota la capçalera */
         html[data-theme="light"] .game-ribbon { background: linear-gradient(90deg, #1E3A8A, #2F6BFF) !important; color: #fff !important; }
 
+
+        /* Preguntes: targeta i opcions ben clares */
+        html[data-theme="light"] #p1-question-card, html[data-theme="light"] #rosco-clue-card, html[data-theme="light"] #screen-login form, html[data-theme="light"] #screen-board .glass-panel { background: rgba(255,255,255,.92) !important; }
+        html[data-theme="light"] #p1-question-text, html[data-theme="light"] #rosco-clue-text { color: #0E1B5B !important; }
+        html[data-theme="light"] #p1-options-grid button { background: #FFFFFF !important; border: 2px solid #C9D8F5 !important; border-bottom-width: 4px !important; border-bottom-color: #AFC3EC !important; color: #0E1B5B !important; box-shadow: 0 4px 14px rgba(47,107,255,.10); }
+        html[data-theme="light"] #p1-options-grid button span:last-child { color: #0E1B5B !important; font-weight: 700; }
+        html[data-theme="light"] #p1-options-grid button .opt-letter { background: #FFC93C !important; color: #0E1B5B !important; }
+        html[data-theme="light"] #p1-options-grid button:hover:not(:disabled) { border-color: #2F6BFF !important; background: #F3F7FF !important; }
+        html[data-theme="light"] #p1-options-grid button.opt-ok { background: #E3F8EE !important; border-color: #1DB47A !important; box-shadow: 0 0 0 3px rgba(29,180,122,.25) !important; }
+        html[data-theme="light"] #p1-options-grid button.opt-ok .opt-letter { background: #1DB47A !important; color: #fff !important; }
+        html[data-theme="light"] #p1-options-grid button.opt-ko { background: #FDE8E9 !important; border-color: #E5484D !important; }
+        html[data-theme="light"] #p1-options-grid button.opt-ko .opt-letter { background: #E5484D !important; color: #fff !important; }
+        html[data-theme="light"] #p1-options-grid button.opt-dim { opacity: .55; }
+        html[data-theme="light"] #p1-feedback-bar { background: #fff !important; }
+        html[data-theme="light"] #p1-cat-badge { background: rgba(47,107,255,.10) !important; color: #0E1B5B !important; border-color: #BFD0F5 !important; }
+        html[data-theme="light"] #rosco-input, html[data-theme="light"] #rosco-clue-card .bg-slate-950\/70 { background: #fff !important; }
+
         /* ===== Fons animats (data-bg="aurora" | "particules" | "plato") ===== */
         #bgfx { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: #0B0F19; }
         #bgfx .blob { position: absolute; width: 60vmax; height: 60vmax; border-radius: 50%; filter: blur(70px); opacity: .55; mix-blend-mode: screen; animation: drift 28s ease-in-out infinite alternate; }

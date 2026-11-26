@@ -1,5 +1,5 @@
 // El Gran Repte 6è: funciona sense connexió un cop obert una vegada.
-const V='granrepte-v7';
+const V='granrepte-v8';
 const CORE=['./','./index.html','./manifest.webmanifest','./q.js','./content.js','./flags.js','./photos.js','./gen.js','./gen2.js','./rosco.js','./en6.js','./en6_en.js','./gr.js','./q_llengues6.js','./q_mates6.js','./icons/icon-192.png','./icons/icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==V).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
