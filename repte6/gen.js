@@ -49,9 +49,9 @@ const GEN={
  'ma-geo':h=>{ if(R(0,2)===0) return null; if(R(0,1)){const a=R(3,15),b=R(3,12);return numQ(`Quina és l'àrea d'un rectangle de ${a} cm per ${b} cm? (en cm²)`,a*b,[2*(a+b),a+b,a*b+a,a*b-b],`Àrea del rectangle = base × altura = ${a} × ${b}.`,2)}
   const b=R(2,10)*2,hh=R(3,12);return numQ(`Quina és l'àrea d'un triangle de base ${b} cm i altura ${hh} cm? (en cm²)`,b*hh/2,[b*hh,b+hh,b*hh/2+b,(b+hh)*2],`Àrea = base × altura : 2 = ${b} × ${hh} : 2.`,3)},
  'en-irr':h=>{ const v=pickA(window.IRREG),others=shuffle(window.IRREG.filter(x=>x!==v)).slice(0,3),t=h?R(1,2):R(0,1);
-  if(t===0) return {q:`What is the past simple of «${v[0]}»?`,o:[v[1],v[0]+(v[0].endsWith('e')?'d':'ed'),others[0][1],others[1][1]],e:`${v[0]} – ${v[1]} – ${v[2]} (${v[3]}).`,l:1};
-  if(t===1) return {q:`What is the past participle of «${v[0]}»?`,o:[v[2],v[0]+(v[0].endsWith('e')?'d':'ed'),others[0][2],others[1][2]],e:`${v[0]} – ${v[1]} – ${v[2]} (${v[3]}).`,l:2};
-  return {q:`Què vol dir «${v[0]}» i quin és el seu passat?`,o:[`${v[3]} · ${v[1]}`,`${others[0][3]} · ${v[1]}`,`${v[3]} · ${others[1][1]}`,`${others[2][3]} · ${others[2][1]}`],e:`${v[0]} – ${v[1]} – ${v[2]} (${v[3]}).`,l:3}},
+  if(t===0) return {q:`What is the past simple of «${v[0]}»?`,o:[v[1],v[0]+(v[0].endsWith('e')?'d':'ed'),others[0][1],others[1][1]],e:`${v[0]} – ${v[1]} – ${v[2]}.`,l:1};
+  if(t===1) return {q:`What is the past participle of «${v[0]}»?`,o:[v[2],v[0]+(v[0].endsWith('e')?'d':'ed'),others[0][2],others[1][2]],e:`${v[0]} – ${v[1]} – ${v[2]}.`,l:2};
+  return {q:`Complete: I have never ___ (${v[0]}) that before.`,o:[v[2],v[1],v[0],others[0][2]],e:`After «have» we use the past participle: ${v[0]} – ${v[1]} – ${v[2]}.`,l:3}},
  flag:(h,tops)=>{ const pool=window.COUNTRIES.filter(c=>tops.has('fl-'+c[3])); const c=pickA(pool); const same=shuffle(window.COUNTRIES.filter(x=>x!==c&&x[3]===c[3])); const rest=shuffle(window.COUNTRIES.filter(x=>x!==c&&x[3]!==c[3]));
   return {q:'De quin país és aquesta bandera?',o:[c[0],...same.concat(rest).slice(0,3).map(x=>x[0])],e:`És la bandera ${de(c[0])}${c[1]?'; la capital és '+c[1]:''}.`,img:window.FLAGS[c[2]],flag:1,l:2}},
  cap:(h,tops)=>{ const pool=window.COUNTRIES.filter(c=>c[1]&&tops.has('fl-'+c[3])); const c=pickA(pool); const ds=shuffle(window.COUNTRIES.filter(x=>x!==c&&x[1]&&x[3]===c[3])).concat(shuffle(window.COUNTRIES.filter(x=>x[1]&&x[3]!==c[3]))).slice(0,3);

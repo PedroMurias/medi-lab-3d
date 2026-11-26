@@ -214,6 +214,12 @@
             .game-ribbon span:nth-child(2), .game-ribbon span:nth-child(4) { display:none; }
             .welcome-board-art { max-width:290px; }
         }
+        /* Estat de les opcions (CSS propi: no depèn de classes generades) */
+        .opt-ok { background: rgba(16,185,129,.28) !important; border-color: #34d399 !important; box-shadow: 0 0 0 2px rgba(52,211,153,.35), 0 10px 25px rgba(16,185,129,.2); }
+        .opt-ok .opt-letter { background: #34d399 !important; color: #0b0f19 !important; }
+        .opt-ko { background: rgba(244,63,94,.28) !important; border-color: #f43f5e !important; }
+        .opt-ko .opt-letter { background: #f43f5e !important; color: #fff !important; }
+        .opt-dim { opacity: .35; }
         .chest { transition: transform .18s cubic-bezier(.34,1.56,.64,1); }
         .chest:hover:not(:disabled) { transform: translateY(-6px) scale(1.05); }
         .chest.open { animation: chestPop .5s cubic-bezier(.2,1.3,.4,1) both; }
@@ -793,6 +799,7 @@
     <script src="gen2.js"></script>
     <script src="rosco.js"></script>
     <script src="en6.js"></script>
+    <script src="en6_en.js"></script>
     <script src="q_llengues6.js"></script>
     <script src="q_mates6.js"></script>
     <script src="gr.js"></script>
@@ -812,6 +819,7 @@
         /* Bancs construïts amb els llibres de 6è (q.js, content.js, rosco.js) i generadors (gen.js) */
         const escHTML = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
         const { GEN, shuffle, pickA } = window.GENQ;
+        if (window.EN6_T) window.EN6.forEach((q, i) => { const t = window.EN6_T[i]; if (t) { q[2] = t[0]; q[4] = t[1]; } });
         const MEDI_Q = window.RQ.filter(q => !q[5] || (window.RQIMG && window.RQIMG[q[5]]));
         const UNIT = Object.fromEntries(window.RUNITS.map(u => [u[0], u]));
         const CONTS = [['fl-eu','Europa'],['fl-am','Amèrica'],['fl-af','Àfrica'],['fl-as','Àsia'],['fl-oc','Oceania']];
@@ -1559,7 +1567,7 @@
                 btn.id = `p1-opt-${idx}`;
                 btn.className = 'p-4 rounded-2xl bg-slate-900/90 hover:bg-slate-800 border-2 border-slate-700/80 hover:border-cyan-400/70 text-left flex items-center gap-3.5 transition-all group btn-arcade border-b-slate-950';
                 btn.innerHTML = `
-                    <span class="w-9 h-9 rounded-xl bg-slate-800 group-hover:bg-cyan-500 group-hover:text-slate-950 font-display font-black text-sm text-cyan-300 flex items-center justify-center shrink-0 transition">
+                    <span class="opt-letter w-9 h-9 rounded-xl bg-slate-800 group-hover:bg-cyan-500 group-hover:text-slate-950 font-display font-black text-sm text-cyan-300 flex items-center justify-center shrink-0 transition">
                         ${letters[idx]}
                     </span>
                     <span class="font-semibold text-slate-100 text-sm sm:text-base leading-snug">${escHTML(opt)}</span>
@@ -1617,14 +1625,13 @@
                 btn.disabled = true;
                 btn.classList.remove('hover:bg-slate-800', 'hover:border-cyan-400/70');
 
+                btn.classList.remove('group', 'btn-arcade');
                 if (idx === qObj.answer) {
-                    btn.className = 'p-4 rounded-2xl bg-emerald-500/25 border-2 border-emerald-400 text-left flex items-center gap-3.5 shadow-lg shadow-emerald-500/15';
-                    btn.querySelector('span:first-child').className = 'w-9 h-9 rounded-xl bg-emerald-400 text-slate-950 font-display font-black text-sm flex items-center justify-center shrink-0';
+                    btn.classList.add('opt-ok');
                 } else if (idx === selectedIdx && !isCorrect) {
-                    btn.className = 'p-4 rounded-2xl bg-rose-500/25 border-2 border-rose-500 text-left flex items-center gap-3.5 animate-shake';
-                    btn.querySelector('span:first-child').className = 'w-9 h-9 rounded-xl bg-rose-500 text-white font-display font-black text-sm flex items-center justify-center shrink-0';
+                    btn.classList.add('opt-ko', 'animate-shake');
                 } else {
-                    btn.classList.add('opacity-40');
+                    btn.classList.add('opt-dim');
                 }
             });
 
