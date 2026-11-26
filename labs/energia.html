@@ -205,7 +205,10 @@ body.walking #panel{display:none!important}body.walking #c{cursor:move}
 
 #stage{position:fixed;top:84px;left:394px;right:76px;bottom:calc(var(--tb) + 10px);z-index:4;display:none;align-items:center;justify-content:center;padding:10px}
 #stage.show{display:flex}
-#stage>div{width:100%;height:100%;display:flex;flex-direction:column;gap:10px;background:rgba(3,8,20,.82);border:1px solid var(--gb);border-radius:18px;padding:12px}
+#stage>div>*{flex-shrink:0}
+#stTog{position:absolute;top:18px;right:18px;z-index:2;border:1px solid var(--gb);background:rgba(10,20,40,.9);color:#fff;font:600 13px 'Space Grotesk',system-ui;padding:6px 12px;border-radius:999px;cursor:pointer}
+#stage.mini{pointer-events:none;background:none} #stage.mini>div{display:none} #stage.mini #stTog{pointer-events:auto;top:auto;bottom:6px;right:50%;transform:translateX(50%);padding:8px 16px;background:rgba(0,150,200,.9)}
+#stage>div{width:100%;height:100%;display:flex;flex-direction:column;gap:10px;overflow:auto;background:rgba(3,8,20,.82);border:1px solid var(--gb);border-radius:18px;padding:12px}
 .stbox{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
 .stbox svg{max-width:100%;max-height:100%;width:100%;height:100%}
 .chain{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;min-height:60px}
@@ -259,7 +262,7 @@ body.walking #panel{display:none!important}body.walking #c{cursor:move}
 </nav>
 <aside id="panel" class="glass"><button id="pmin" class="mini">▾ Amaga el text</button><div class="pbody"></div></aside>
 <aside id="rep" class="glass" style="display:none"></aside>
-<div id="stage"><div></div></div>
+<div id="stage"><button id="stTog" type="button">▾ Amaga</button><div></div></div>
 <nav id="tools" class="glass">
   <button id="tPlay" title="Atura / continua" aria-label="Atura o continua">⏸</button>
   <button id="tHome" title="Vista inicial" aria-label="Vista inicial">⟲</button>
@@ -315,8 +318,9 @@ function showCard(I){const card=$('#card');if(!card)return;card.querySelector('.
 /* qüestionari curt del panell */
 function quiz(list){const box=document.createElement('div');box.className='sbox';box.innerHTML='<p class="h">Comprova-ho</p>';
  list.forEach(([q,opts,ok])=>{const d=document.createElement('div');d.className='q';d.innerHTML='<p></p>';d.querySelector('p').textContent=q;const fb=document.createElement('div');fb.className='fb';let tries=0,done=false;
-  opts.forEach((o,i)=>{const b=document.createElement('button');b.textContent=o;b.onclick=()=>{if(done)return;const U=window.UX;if(i===ok){done=true;d.querySelectorAll('button').forEach(x=>x.classList.remove('ko'));b.classList.add('ok');fb.textContent=tries?'Ara sí! Molt bé.':'Molt bé!';fb.style.color='var(--li)';U&&U.sfx.ok();}
-   else{tries++;b.classList.add('ko');if(tries>=2){done=true;d.querySelectorAll('button')[ok].classList.add('ok');fb.textContent='La resposta era «'+opts[ok]+'». Fixa-t\'hi per a la propera.';fb.style.color='var(--ye)';}else{fb.textContent='Gairebé… torna-ho a provar.';fb.style.color='var(--ye)';}U&&U.sfx.ko();}};d.appendChild(b);});d.appendChild(fb);box.appendChild(d);});return box;}
+  const ord=opts.map((_,i)=>i);for(let k=ord.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[ord[k],ord[j]]=[ord[j],ord[k]];} let okB=null;
+  ord.forEach(i=>{const o=opts[i];const b=document.createElement('button');b.textContent=o;if(i===ok)okB=b;b.onclick=()=>{if(done)return;const U=window.UX;if(i===ok){done=true;d.querySelectorAll('button').forEach(x=>x.classList.remove('ko'));b.classList.add('ok');fb.textContent=tries?'Ara sí! Molt bé.':'Molt bé!';fb.style.color='var(--li)';U&&U.sfx.ok();}
+   else{tries++;b.classList.add('ko');if(tries>=2){done=true;okB.classList.add('ok');fb.textContent='La resposta era «'+opts[ok]+'». Fixa-t\'hi per a la propera.';fb.style.color='var(--ye)';}else{fb.textContent='Gairebé… torna-ho a provar.';fb.style.color='var(--ye)';}U&&U.sfx.ko();}};d.appendChild(b);});d.appendChild(fb);box.appendChild(d);});return box;}
 function subtabs(list,cur,cb){const d=document.createElement('div');d.className='sub';list.forEach(([k,ico,n])=>{const b=document.createElement('button');b.innerHTML=`<b>${ico}</b>${n}`;b.classList.toggle('on',k===cur);b.onclick=()=>cb(k);d.appendChild(b);});return d;}
 /* ajuda */
 function initHelp(seenKey){const H=$('#help');const open=t=>{H.classList.add('show');document.querySelectorAll('.htabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));document.querySelectorAll('.hpage').forEach(p=>p.style.display=p.dataset.p===t?'':'none');};
@@ -1312,7 +1316,7 @@ function updLive(dt){ const k=live.nightT+=((live.night)-live.nightT)*Math.min(1
 
 /* ================= STATE ================= */
 let mode='formes', paused=false, renewPct=40, filter='tots', selSrc=null, flowT=0, chainT=0;
-const P=$('#panel .pbody'), ST=$('#stage>div');
+const P=$('#panel .pbody'), ST=$('#stage>div'); $('#stTog').onclick=()=>{ const m=$('#stage').classList.toggle('mini'); $('#stTog').textContent=m?'▴ Mostra l\'activitat':'▾ Amaga'; };
 function srcClick(k){ if(mode==='central'){ selectCentral(k); return; } const s=SRC[k]; showCard(s); fly(s); }
 function fly(s){ const t=new THREE.Vector3(s.x,hgt(s.x,s.z)+3,s.z); const f=s.id==='vent'||s.id==='fossil'?1.8:1.2; flyTo(t,t.clone().add(new THREE.Vector3(18*f,14*f,24*f))); }
 let fl=null; function flyTo(t,p,d=1){fl={t:0,d,ft:controls.target.clone(),tt:t,fp:camera.position.clone(),tp:p};}
@@ -1345,12 +1349,28 @@ const OBJS=[
  {n:'Torradora',e:'🍞',ch:['electrica','termica'],t:"L'energia elèctrica es transforma en energia tèrmica."},
  {n:'Foguera',e:'🔥',ch:['quimica',['termica','lluminosa']],t:"Quan la fusta crema, la seva energia química es transforma en energia tèrmica i lluminosa."},
  {n:'Mòbil carregant',e:'📱',ch:['electrica','quimica'],t:"L'energia elèctrica es guarda a la bateria com a energia química."}];
+/* explicació detallada de cada transformació */
+const ODET={
+ 'Radiador':["⚡ <b>D'on ve:</b> l'electricitat arriba pels cables des de la central fins a l'endoll.","♨️ <b>Què passa a dins:</b> el corrent passa per una <b>resistència</b>, un fil de metall que costa de travessar. En passar-hi, el fil s'escalfa molt.","🔥 <b>On acaba:</b> la calor passa a l'aire de l'habitació (energia <b>tèrmica</b>). L'aire calent puja i fa circular l'escalfor per tota la sala.","💡 <b>Fixa-t'hi:</b> gairebé tota l'energia es converteix en calor; per això els radiadors elèctrics gasten molt."],
+ 'Espelma':["⚗️ <b>D'on ve:</b> la <b>cera</b> guarda energia <b>química</b>. Es va fer amb petroli o amb cera d'abella.","🔥 <b>Com comença:</b> amb un llumí li donem una mica de calor al ble i la cera es fon.","🕯️ <b>Què passa a dins:</b> la cera líquida puja pel ble i es crema a la flama: reacciona amb l'oxigen de l'aire.","☀️ <b>On acaba:</b> en cremar, l'energia química es transforma en <b>calor</b> (energia tèrmica) i en <b>llum</b> (energia lluminosa). L'espelma es fa petita perquè la cera es va gastant."],
+ 'Ventilador':["⚡ <b>D'on ve:</b> l'energia elèctrica de l'endoll.","🧲 <b>Què passa a dins:</b> el corrent passa per un <b>motor</b> amb imants i bobines de coure. L'electricitat crea una força magnètica que fa girar l'eix.","🌀 <b>On acaba:</b> l'eix fa girar les aspes i mouen l'aire: energia <b>mecànica</b> (moviment).","♨️ <b>Fixa-t'hi:</b> una mica d'energia es perd en calor: per això el motor s'escalfa una mica."],
+ 'Llanterna':["🔋 <b>D'on ve:</b> les <b>piles</b> guarden energia <b>química</b> a dins.","⚡ <b>Primer canvi:</b> quan prems el botó, es tanca el circuit i les piles transformen l'energia química en energia <b>elèctrica</b>.","💡 <b>Segon canvi:</b> el corrent arriba a la bombeta (o al LED) i es transforma en energia <b>lluminosa</b>.","🔁 <b>Resum:</b> química → elèctrica → lluminosa. Quan les piles s'esgoten, ja no queda energia química."],
+ 'Aerogenerador':["☀️ <b>D'on ve:</b> el Sol escalfa l'aire i es forma el <b>vent</b>, aire en moviment (energia mecànica).","🌀 <b>Primer canvi:</b> el vent empeny les aspes i les fa girar.","🧲 <b>Segon canvi:</b> les aspes fan girar un <b>generador</b> amb imants i bobines que produeix energia <b>elèctrica</b>.","🏙️ <b>On acaba:</b> els cables porten l'electricitat a les cases. És una energia <b>renovable</b>: el vent no s'acaba."],
+ 'Cotxe':["⛽ <b>D'on ve:</b> la <b>gasolina</b> guarda energia <b>química</b>. Ve del petroli.","🔥 <b>Primer canvi:</b> al motor, la gasolina explota en petites cremades: energia química → <b>tèrmica</b>.","⚙️ <b>Segon canvi:</b> l'escalfor empeny els pistons, que fan girar les rodes: energia <b>mecànica</b>.","🏭 <b>Fixa-t'hi:</b> molta energia es perd en calor i en fum; per això els cotxes contaminen."],
+ 'Planta':["☀️ <b>D'on ve:</b> la <b>llum del Sol</b> (energia lluminosa).","🌿 <b>Què passa a dins:</b> les fulles tenen <b>clorofil·la</b>, que capta la llum. Amb aigua i diòxid de carboni la planta fa la <b>fotosíntesi</b>.","🍎 <b>On acaba:</b> la planta fabrica el seu aliment i guarda l'energia com a energia <b>química</b>: a les fulles, als fruits, a la fusta…","🍽️ <b>Fixa-t'hi:</b> quan mengem plantes, aprofitem aquesta energia química."],
+ 'Nen corrent':["🍞 <b>D'on ve:</b> els <b>aliments</b> guarden energia <b>química</b>.","🫁 <b>Què passa a dins:</b> el cos digereix els aliments i, amb l'oxigen que respirem, n'allibera l'energia a les cèl·lules.","🏃 <b>On acaba:</b> els músculs la fan servir per moure's: energia <b>mecànica</b>.","♨️ <b>Fixa-t'hi:</b> també en fem calor; per això quan corres tens calor i sues."],
+ 'Placa solar':["☀️ <b>D'on ve:</b> la <b>llum del Sol</b> (energia lluminosa).","🔲 <b>Què passa a dins:</b> la placa té cel·les de <b>silici</b>. Quan la llum les toca, mou unes partícules molt petites (els electrons) i es crea un corrent.","⚡ <b>On acaba:</b> energia <b>elèctrica</b>, que podem fer servir a casa o guardar en bateries.","🌙 <b>Fixa-t'hi:</b> de nit no produeix res, perquè no hi ha llum."],
+ 'Torradora':["⚡ <b>D'on ve:</b> l'energia elèctrica de l'endoll.","🟥 <b>Què passa a dins:</b> el corrent passa per uns fils de metall (resistències) que s'escalfen tant que es posen <b>vermells</b>.","🍞 <b>On acaba:</b> la calor (energia <b>tèrmica</b>) torra el pa. També fa una mica de llum vermella.","⚠️ <b>Compte:</b> no hi fiquis mai res de metall, que hi passa corrent."],
+ 'Foguera':["🪵 <b>D'on ve:</b> la <b>fusta</b> guarda l'energia <b>química</b> que l'arbre va fabricar amb la llum del Sol.","🔥 <b>Què passa:</b> la fusta crema amb l'oxigen de l'aire.","☀️ <b>On acaba:</b> l'energia química es transforma en <b>calor</b> (tèrmica) i <b>llum</b> (lluminosa).","🌳 <b>Fixa-t'hi:</b> la llum de la foguera va ser, fa anys, llum del Sol guardada a l'arbre!"],
+ 'Mòbil carregant':["⚡ <b>D'on ve:</b> l'energia <b>elèctrica</b> de l'endoll arriba pel carregador.","🔋 <b>Què passa a dins:</b> a la <b>bateria</b>, l'electricitat provoca canvis en unes substàncies i queda guardada com a energia <b>química</b>.","📱 <b>Després:</b> quan fas servir el mòbil, la bateria torna a convertir l'energia química en elèctrica per a la pantalla (lluminosa) i l'altaveu (so).","♨️ <b>Fixa-t'hi:</b> mentre carrega, el mòbil s'escalfa una mica: una part es perd en calor."]};
+
+window.ODET=ODET; { const st=document.createElement('style'); st.textContent='.odet{width:100%;margin:8px 0 0;padding:10px 14px 10px 30px;background:rgba(255,255,255,.05);border-radius:12px;font-size:14.5px;line-height:1.45;color:#dbe8f8;text-align:left}.odet li{margin:4px 0}'; document.head.appendChild(st); }
 let selObj=null, objT=0;
-function stageFormes(){ ST.innerHTML='<p class="bigq">Toca un objecte: quina transformació d\'energia s\'hi produeix?</p><div class="chain" id="fChain"></div><div class="objs" id="fObjs"></div>';
+function stageFormes(){ ST.innerHTML='<p class="bigq" style="padding-right:96px">Toca un objecte: quina transformació d\'energia s\'hi produeix?</p><div class="chain" id="fChain"></div><div class="objs" id="fObjs"></div><div id="fDet"></div>';
  OBJS.forEach((o,i)=>{const b=document.createElement('button');b.className='obj';b.innerHTML=`<span>${o.e}</span>${o.n}`;b.onclick=()=>{selObj=i;objT=0;document.querySelectorAll('.obj').forEach((x,j)=>x.classList.toggle('on',j===i));drawChain();};$('#fObjs').appendChild(b);}); drawChain(); }
 function chipHTML(k){const f=FORMS[k];return `<span class="chip" style="color:${f[2]};border-color:${f[2]}55">${f[0]} ${f[1]}</span>`;}
 function drawChain(){ const C=$('#fChain'); if(!C) return; if(selObj==null){C.innerHTML='<span style="color:var(--mu)">Formes d\'energia: '+Object.keys(FORMS).map(k=>FORMS[k][0]+' '+FORMS[k][1]).join(' · ')+'</span>';return;}
- const o=OBJS[selObj]; let h=`<span class="chip on" style="font-size:22px">${o.e}</span><span class="arr on">:</span>`; o.ch.forEach((s,i)=>{ if(i) h+='<span class="arr">→</span>'; h+= Array.isArray(s)? '<span style="display:flex;flex-direction:column;gap:4px">'+s.map(chipHTML).join('')+'</span>' : chipHTML(s); }); h+=`<div style="width:100%;text-align:center;color:#dbe8f8;font-size:15px;margin-top:4px">${o.t}</div>`; C.innerHTML=h; }
+ const o=OBJS[selObj]; let h=`<span class="chip on" style="font-size:22px">${o.e}</span><span class="arr on">:</span>`; o.ch.forEach((s,i)=>{ if(i) h+='<span class="arr">→</span>'; h+= Array.isArray(s)? '<span style="display:flex;flex-direction:column;gap:4px">'+s.map(chipHTML).join('')+'</span>' : chipHTML(s); }); h+=`<div style="width:100%;text-align:center;color:#dbe8f8;font-size:15px;margin-top:4px">${o.t}</div>`; C.innerHTML=h; const Dt=$('#fDet'); if(Dt){ Dt.innerHTML=(window.SLOW&&SLOW[o.n]?`<div style="text-align:center"><button class="slBtn" onclick="openSlow('${o.n}')">🐢 Mira-ho a càmera lenta</button></div>`:'')+(window.ODET&&ODET[o.n]?`<ol class="odet">${ODET[o.n].map(x=>`<li>${x}</li>`).join('')}</ol>`:''); } }
 function animChain(dt){ const C=$('#fChain'); if(!C||selObj==null) return; objT+=dt; const parts=[...C.children].filter(x=>x.classList.contains('arr')||x.classList.contains('chip')||x.tagName==='SPAN'&&x.style.flexDirection); let idx=Math.floor(objT/0.7); parts.forEach((p,i)=>{ if(i<2) return; const on=i-2<=idx; p.classList.toggle('on',on); p.querySelectorAll&&p.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',on)); }); }
 
 /* ================= CENTRAL ================= */
@@ -1432,6 +1452,28 @@ function animCircuit(dt){ circT+=dt; for(const d of dots){ const sp=Math.min(1.6
  document.querySelectorAll('#board .ring').forEach(t=>t.setAttribute('transform',`rotate(${Math.sin(circT*40)*12} 45 0)`)); }
 function loadPreset(n){ edges={}; tested={}; if(n==='llibre'){ edges[ekey('v',1,1)]={t:'pila',flip:true}; edges[ekey('h',1,1)]={t:'cable'}; edges[ekey('h',2,1)]={t:'interruptor',on:false}; edges[ekey('v',3,1)]={t:'bombeta'}; edges[ekey('h',2,2)]={t:'cable'}; edges[ekey('h',1,2)]={t:'cable'}; }
  if(n==='mat'){ edges[ekey('v',1,1)]={t:'pila',flip:true}; edges[ekey('h',1,1)]={t:'cable'}; edges[ekey('h',2,1)]={t:'cable'}; edges[ekey('v',3,1)]={t:'bombeta'}; edges[ekey('h',2,2)]={t:'cable'}; } runSim(); }
+
+/* ===== Circuits: Explica'm amb exemples ===== */
+const CEXP=[
+ ['La pila sola',"Una <b>pila</b> té energia guardada, però sola no fa res: el corrent necessita un <b>camí tancat</b> per circular.",{'v,1,1':{t:'pila',flip:true}}],
+ ['Pila + bombeta: circuit tancat',"Unim la pila i la bombeta amb <b>cables</b> fent una volta completa. El corrent surt de la pila, passa per la bombeta i torna a la pila: la bombeta <b>s'encén</b>. 💡",{'v,1,1':{t:'pila',flip:true},'h,1,1':{t:'cable'},'h,2,1':{t:'cable'},'v,3,1':{t:'bombeta'},'h,2,2':{t:'cable'},'h,1,2':{t:'cable'}}],
+ ['Circuit obert',"Si falta un tros de cable, el camí queda <b>obert</b>. El corrent no pot passar i la bombeta s'apaga.",{'v,1,1':{t:'pila',flip:true},'h,1,1':{t:'cable'},'h,2,1':{t:'cable'},'v,3,1':{t:'bombeta'},'h,2,2':{t:'cable'}}],
+ ["L'interruptor","L'<b>interruptor</b> serveix per obrir i tancar el circuit quan volem. <b>Toca'l</b> al tauler per encendre i apagar la bombeta.",{'v,1,1':{t:'pila',flip:true},'h,1,1':{t:'cable'},'h,2,1':{t:'interruptor',on:false},'v,3,1':{t:'bombeta'},'h,2,2':{t:'cable'},'h,1,2':{t:'cable'}}],
+ ['Altres receptors: el motor',"Els <b>receptors</b> transformen l'electricitat en una altra energia. El <b>motor</b> la converteix en <b>moviment</b> ⚙️.",{'v,1,1':{t:'pila',flip:true},'h,1,1':{t:'cable'},'h,2,1':{t:'cable'},'v,3,1':{t:'motor'},'h,2,2':{t:'cable'},'h,1,2':{t:'cable'}}],
+ ['El timbre',"El <b>timbre</b> converteix l'electricitat en <b>so</b> 🔔.",{'v,1,1':{t:'pila',flip:true},'h,1,1':{t:'cable'},'h,2,1':{t:'cable'},'v,3,1':{t:'timbre'},'h,2,2':{t:'cable'},'h,1,2':{t:'cable'}}],
+ ['Dues bombetes en sèrie',"Posem dues bombetes <b>una darrere l'altra</b> (en sèrie). El corrent ha de passar per totes dues i s'han de repartir l'energia: fan <b>menys llum</b>. Si se'n fon una, s'apaguen totes dues.",{'v,1,1':{t:'pila',flip:true},'h,1,1':{t:'cable'},'h,2,1':{t:'bombeta'},'v,3,1':{t:'bombeta'},'h,2,2':{t:'cable'},'h,1,2':{t:'cable'}}],
+ ['Dues bombetes en paral·lel',"Ara cada bombeta té <b>el seu propi camí</b> (en paral·lel). Totes dues fan <b>molta llum</b>, i si una es fon, l'altra continua encesa. Així estan connectats els llums de casa.",{'v,1,1':{t:'pila',flip:true},'h,1,1':{t:'cable'},'h,2,1':{t:'cable'},'v,3,1':{t:'bombeta'},'h,3,1':{t:'cable'},'v,4,1':{t:'bombeta'},'h,3,2':{t:'cable'},'h,2,2':{t:'cable'},'h,1,2':{t:'cable'}}],
+ ['Un material conductor',"Canviem un tros de cable per una <b>moneda</b>. És de metall, un <b>conductor</b>: deixa passar el corrent i la bombeta s'encén.",{'v,1,1':{t:'pila',flip:true},'h,1,1':{t:'cable'},'h,2,1':{t:'moneda'},'v,3,1':{t:'bombeta'},'h,2,2':{t:'cable'},'h,1,2':{t:'cable'}}],
+ ['Un material aïllant',"Ara hi posem un tros de <b>fusta</b>. És un <b>aïllant</b>: no deixa passar el corrent i la bombeta no s'encén. Per això els cables estan tapats amb plàstic.",{'v,1,1':{t:'pila',flip:true},'h,1,1':{t:'cable'},'h,2,1':{t:'fusta'},'v,3,1':{t:'bombeta'},'h,2,2':{t:'cable'},'h,1,2':{t:'cable'}}],
+ ['⚠️ Curtcircuit',"Si posem un cable que fa <b>drecera</b> i el corrent pot tornar a la pila sense passar per cap receptor, hi ha un <b>curtcircuit</b>: la bombeta s'apaga i la pila s'escalfa. És perillós!",{'v,1,1':{t:'pila',flip:true},'h,1,1':{t:'cable'},'h,2,1':{t:'cable'},'v,2,1':{t:'cable'},'v,3,1':{t:'bombeta'},'h,2,2':{t:'cable'},'h,1,2':{t:'cable'}}]];
+let cexI=-1;
+function cexShow(i){ cexI=Math.max(0,Math.min(CEXP.length-1,i)); const [t,txt,E]=CEXP[cexI]; edges={}; for(const k in E){ const [o,x,y]=k.split(','); edges[ekey(o,+x,+y)]={...E[k]}; } runSim();
+ let c=$('#cexCard'); const box=$('#stage .stbox'); if(!c&&box){ c=document.createElement('div'); c.id='cexCard'; box.appendChild(c); }
+ if(!c) return; c.innerHTML=`<div style="display:flex;align-items:center;gap:8px"><small style="opacity:.7">Exemple ${cexI+1} de ${CEXP.length}</small><div style="flex:1;height:5px;border-radius:9px;background:rgba(255,255,255,.12);overflow:hidden"><i style="display:block;height:100%;width:${(cexI+1)/CEXP.length*100}%;background:#00e5ff"></i></div><button class="cx" id="cexX">✕</button></div><b style="font-size:17px;display:block;margin:4px 0">${t}</b><div style="font-size:15px;line-height:1.45">${txt}</div><div style="display:flex;gap:8px;margin-top:8px"><button class="cb" id="cexP" ${cexI?'':'disabled'}>◀ Anterior</button><button class="cb go" id="cexN">${cexI<CEXP.length-1?'Següent ▶':'✔ Acabar'}</button></div>`;
+ $('#cexP').onclick=()=>cexShow(cexI-1); $('#cexN').onclick=()=>cexI<CEXP.length-1?cexShow(cexI+1):cexClose(); $('#cexX').onclick=cexClose; }
+function cexClose(){ cexI=-1; const c=$('#cexCard'); c&&c.remove(); }
+{ const st=document.createElement('style'); st.textContent=`#cexCard{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);width:min(560px,94%);background:rgba(6,14,28,.94);border:1px solid rgba(0,229,255,.35);border-radius:16px;padding:10px 14px;color:#eaf4ff;z-index:3;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+ #cexCard .cb{border:0;border-radius:10px;padding:8px 14px;font:700 14px inherit;font-family:inherit;color:#fff;background:#24405a;cursor:pointer} #cexCard .cb.go{background:#1f8a5a;margin-left:auto} #cexCard .cb[disabled]{opacity:.35} #cexCard .cx{border:0;background:none;color:#fff;font-size:16px;cursor:pointer}`; document.head.appendChild(st); }
 
 /* ================= CASA ================= */
 const ROOMS=[{id:'hab',n:'Habitació',x:60,y:110,w:240,h:130,ppl:0},{id:'bany',n:'Bany',x:300,y:110,w:240,h:130,ppl:0},{id:'cuina',n:'Cuina',x:60,y:240,w:240,h:150,ppl:1},{id:'menj',n:'Menjador',x:300,y:240,w:240,h:150,ppl:1}];
@@ -1718,6 +1760,89 @@ function actCasa(){ PLAY.close(); if(mode!=='casa') setMode('casa'); setTimeout(
 
 window.ENERACT={central:actCentral,circuits:actCircuit,formes:actChain,fonts:actXarxa,casa:actCasa};
 
+/* ===== Càmera lenta: com es transforma l'energia en cada objecte ===== */
+{ const st=document.createElement('style'); st.textContent=`
+ .slBox{position:relative;width:100%;height:min(46vh,400px);border-radius:16px;overflow:hidden;background:#0b0f16;margin:6px 0 8px}
+ .slBox canvas{width:100%;height:100%;display:block;touch-action:none}
+ .slCap{margin:0 0 8px;min-height:64px;background:rgba(6,12,22,.88);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:9px 14px;font-size:15.5px;line-height:1.4;text-align:center;transition:opacity .3s}
+ .slCap .tr{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;margin-top:5px;font-weight:700;font-size:15px}
+ .slCap .tr span{padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.08)}
+ .slTime{position:absolute;left:12px;top:10px;display:flex;gap:6px;align-items:center;font-weight:700;font-size:13px;background:rgba(6,12,22,.75);padding:4px 10px;border-radius:999px}
+ .slBar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+ .slBar button{border:0;border-radius:12px;padding:9px 14px;font:700 14px inherit;font-family:inherit;color:#fff;background:#1d3a52;cursor:pointer}
+ .slBar button.on{background:#1f8a5a} .slBar .prog{flex:1;min-width:120px;height:8px;border-radius:9px;background:rgba(255,255,255,.1);position:relative;overflow:hidden}
+ .slBar .prog i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#ffd23f,#ff7a3c)}
+ .slBar .prog b{position:absolute;top:-3px;width:3px;height:14px;background:#fff;border-radius:2px;opacity:.7}
+ .slBtn{margin-top:8px;border:0;border-radius:12px;padding:9px 16px;font:700 14.5px inherit;font-family:inherit;color:#fff;background:linear-gradient(135deg,#ff9a3c,#ff5a5a);cursor:pointer}`; document.head.appendChild(st); }
+const SLOW={};
+const glowTex=(()=>{ const C={}; return (inner,outer,w=128,h=128,tear=false)=>{ const k=inner+outer+w+h+tear; if(C[k]) return C[k]; const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d');
+  if(tear){ /* flama en forma de gota */ g.save(); g.translate(w/2,h*.78); const gr=g.createRadialGradient(0,-h*.08,0,0,-h*.12,h*.55); gr.addColorStop(0,inner); gr.addColorStop(.35,outer); gr.addColorStop(1,'rgba(255,80,0,0)'); g.fillStyle=gr; g.beginPath(); g.moveTo(0,-h*.74); g.bezierCurveTo(w*.34,-h*.32,w*.3,h*.14,0,h*.16); g.bezierCurveTo(-w*.3,h*.14,-w*.34,-h*.32,0,-h*.74); g.fill(); g.restore(); }
+  else { const gr=g.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2); gr.addColorStop(0,inner); gr.addColorStop(1,outer); g.fillStyle=gr; g.fillRect(0,0,w,h); }
+  const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return C[k]=t; }; })();
+const addSpr=(p,tex,sx,sy,add=true)=>{ const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false,blending:add?THREE.AdditiveBlending:THREE.NormalBlending})); s.scale.set(sx,sy,1); p.add(s); return s; };
+const SFX={lum:['💡','Lluminosa','#ffd23f'],ter:['🔥','Tèrmica','#ff7a3c'],qui:['⚗️','Química','#b6ff3b'],mec:['⚙️','Mecànica','#7fd0ff'],ele:['⚡','Elèctrica','#ffe14d'],nuc:['⚛️','Nuclear','#c48bff']};
+const trHTML=(a,b)=>`<div class="tr">${a.map(k=>`<span style="color:${SFX[k][2]}">${SFX[k][0]} ${SFX[k][1]}</span>`).join(' + ')}${b?` <span style="background:none">→</span> ${b.map(k=>`<span style="color:${SFX[k][2]}">${SFX[k][0]} ${SFX[k][1]}</span>`).join(' + ')}`:''}</div>`;
+
+/* ---------- ESPELMA ---------- */
+SLOW['Espelma']={dur:11,cam:[1.5,2.8,5.2],target:[.6,1.15,.3],
+ steps:[[1.15,"Fregues el llumí contra la capsa: el <b>moviment</b> es converteix en <b>calor</b> pel fregament.",['mec'],['ter']],
+  [1.75,"La calor encén el cap del llumí: la seva <b>energia química</b> es transforma en <b>calor</b> i <b>llum</b>.",['qui'],['ter','lum']],
+  [3.75,"Acostem la flama al <b>ble</b>: la calor passa del llumí a l'espelma (l'energia es <b>transfereix</b>).",['ter'],null],
+  [6.4,"La calor fon la <b>cera</b>. La cera líquida puja pel ble: és el combustible, on hi ha l'<b>energia química</b> guardada.",['qui'],null],
+  [9.0,"La cera es crema a la flama: l'<b>energia química</b> es transforma en <b>energia tèrmica</b> (escalfa) i <b>lluminosa</b> (fa llum).",['qui'],['ter','lum']]],
+ build(S){ const M=o=>new THREE.MeshStandardMaterial(o); const add=(g,m,x,y,z,p=S)=>{ const o=new THREE.Mesh(g,m); o.position.set(x,y,z); o.castShadow=o.receiveShadow=true; p.add(o); return o; };
+  /* taula */ { const c=document.createElement('canvas'); c.width=c.height=512; const g=c.getContext('2d'); g.fillStyle='#6b4428'; g.fillRect(0,0,512,512); for(let i=0;i<140;i++){ g.strokeStyle=`rgba(${Math.random()<.5?'40,22,10':'150,100,60'},.25)`; g.lineWidth=1+Math.random()*2.5; const y=Math.random()*512; g.beginPath(); g.moveTo(0,y); g.bezierCurveTo(170,y+8,340,y-8,512,y+Math.random()*6); g.stroke(); } const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; add(new THREE.BoxGeometry(6,.12,4),M({map:t,roughness:.55}),0,-.06,0); }
+  S.background=new THREE.Color(0x0a0d14); S.environmentIntensity=.12; S.children.filter(o=>o.isLight).forEach(l=>l.intensity*=.25);
+  /* plat i espelma */ add(new THREE.CylinderGeometry(.62,.52,.06,40),M({color:0xd8c7a0,metalness:.7,roughness:.3}),0,.03,0);
+  const waxM=M({color:0xf4ecd8,roughness:.55,emissive:0xff8a30,emissiveIntensity:0}); waxM.onBeforeCompile=()=>{}; const cand=add(new THREE.CylinderGeometry(.3,.31,1.7,40),waxM,0,.91,0);
+  const pool=add(new THREE.CylinderGeometry(.27,.27,.012,32),M({color:0xfff4dc,roughness:.05,transparent:true,opacity:0}),0,1.762,0);
+  const drip=add(new THREE.CapsuleGeometry(.03,.3,4,8),waxM,.29,1.55,.05); drip.scale.set(1,0,1);
+  const wick=add(new THREE.CylinderGeometry(.012,.014,.16,8),M({color:0x2a2018,roughness:.9,emissive:0xff4a00,emissiveIntensity:0}),0,1.84,0); wick.rotation.z=.12;
+  /* capsa de llumins */ const bx=new THREE.Group(); bx.position.set(1.4,0,.7); bx.rotation.y=-.5; S.add(bx); add(new THREE.BoxGeometry(.9,.25,.6),M({color:0xc8302a,roughness:.6}),0,.125,0,bx); add(new THREE.BoxGeometry(.92,.2,.03),M({color:0x5a3a2a,roughness:1}),0,.125,.31,bx);
+  /* llumí */ const match=new THREE.Group(); S.add(match); add(new THREE.CylinderGeometry(.018,.018,.9,8),M({color:0xe8cf9a,roughness:.8}),0,.45,0,match); const head=add(new THREE.SphereGeometry(.04,12,10),M({color:0xb81c1c,roughness:.6,emissive:0xff3a00,emissiveIntensity:0}),0,.92,0,match); head.scale.y=1.4;
+  const mFlame=addSpr(match,glowTex('rgba(255,250,220,1)','rgba(255,150,30,.9)',96,160,true),.16,.28); mFlame.position.y=1.0;
+  const sparks=[]; for(let i=0;i<16;i++){ const s=addSpr(S,glowTex('rgba(255,240,180,1)','rgba(255,120,0,0)'),.06,.06); s.visible=false; s.userData.v=new THREE.Vector3((Math.random()-.5)*1.2,Math.random()*1.4+.4,(Math.random()-.5)*1.2); sparks.push(s); }
+  /* flama de l'espelma */ const fl=new THREE.Group(); fl.position.set(0,1.93,0); S.add(fl); const outer=addSpr(fl,glowTex('rgba(255,250,225,1)','rgba(255,160,40,.95)',96,160,true),.22,.42); outer.position.y=.08; const core=addSpr(fl,glowTex('rgba(255,255,255,1)','rgba(255,230,160,.9)',96,160,true),.09,.18); core.position.y=.02; const blue=addSpr(fl,glowTex('rgba(120,170,255,.9)','rgba(40,80,255,0)'),.12,.07); blue.position.y=-.06;
+  const halo=addSpr(S,glowTex('rgba(255,190,110,.55)','rgba(255,120,30,0)'),2.6,2.6); halo.position.set(0,1.95,0);
+  const L=new THREE.PointLight(0xffa04a,0,9,1.7); L.position.set(0,2.05,0); L.castShadow=true; L.shadow.mapSize.set(512,512); S.add(L); const Lm=new THREE.PointLight(0xffa04a,0,5,2); S.add(Lm);
+  /* calor (ones) i llum (raigs) */ const heat=[]; for(let i=0;i<22;i++){ const s=addSpr(S,glowTex('rgba(255,110,40,.9)','rgba(255,60,0,0)'),.18,.18); s.userData.ph=i/22; heat.push(s); }
+  const rays=new THREE.Group(); rays.position.set(0,1.98,0); S.add(rays); for(let i=0;i<10;i++){ const a=i/10*Math.PI*2; const r=new THREE.Mesh(new THREE.PlaneGeometry(.04,.55),new THREE.MeshBasicMaterial({color:0xffe27a,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide})); r.position.set(Math.cos(a)*.55,Math.sin(a)*.55,0); r.rotation.z=a-Math.PI/2; rays.add(r); }
+  const climb=[]; for(let i=0;i<10;i++){ const s=addSpr(S,glowTex('rgba(255,250,200,1)','rgba(255,220,120,0)'),.035,.035); s.userData.ph=i/10; climb.push(s); }
+  /* fletxes d'energia */ const arrows=new THREE.Group(); S.add(arrows); const arr=(col,from,dir,len)=>{ const a=new THREE.ArrowHelper(new THREE.Vector3(...dir).normalize(),new THREE.Vector3(...from),len,col,.16,.1); a.line.material.linewidth=3; arrows.add(a); return a; };
+  const AR={ter:[arr(0xff5a2a,[0,2.3,0],[0,1,0],.7),arr(0xff5a2a,[-.2,2.2,0],[-.6,1,0],.6),arr(0xff5a2a,[.2,2.2,0],[.6,1,0],.6)],lum:[arr(0xffd23f,[.35,1.95,0],[1,0,0],.8),arr(0xffd23f,[-.35,1.95,0],[-1,0,0],.8),arr(0xffd23f,[0,1.95,.35],[0,0,1],.8),arr(0xffd23f,[.25,1.75,.25],[1,-.5,1],.7)],mec:[],qui:[]};
+  const showArr=k=>{ for(const q in AR) AR[q].forEach(a=>a.visible=k.includes(q)); }; showArr([]);
+  const ease=t=>t<0?0:t>1?1:t*t*(3-2*t); const lerp=(a,b,t)=>a+(b-a)*t; const P=(a,b,t)=>new THREE.Vector3(lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t));
+  return { arrows:showArr, update(T,t){ /* trajectòria del llumí */ let pos, rz=0; const boxSide=[1.55,.14,1.0];
+    if(T<1.3){ const k=ease(T/1.3); pos=P([2.2,.6,1.6],boxSide,Math.min(1,k*1.4)); if(T>.85) pos.add(new THREE.Vector3(-(T-.85)*1.3,0,(T-.85)*.3)); rz=-1.2; }
+    else if(T<3.6){ const k=ease((T-1.3)/2.3); pos=P([1.0,.16,1.1],[.12,1.0,0],k); rz=lerp(-1.2,-.55,k); }
+    else if(T<4.4){ pos=new THREE.Vector3(.12,1.0,0); rz=-.55; }
+    else { const k=ease((T-4.4)/1.4); pos=P([.12,1.0,0],[1.6,.6,1.2],k); rz=lerp(-.55,-1.3,k); }
+    match.position.copy(pos); match.rotation.set(0,0,rz);
+    const lit=T>1.25, out=T>5.6; const mf=lit&&!out?Math.min(1,(T-1.25)*4):0; mFlame.visible=mf>0; mFlame.scale.set(.16*mf*(1+.08*Math.sin(t*31)),.28*mf*(1+.1*Math.sin(t*23)),1); head.material.emissiveIntensity=lit?(out?.4:2):0; if(lit) head.material.color.set(0x2a1a12);
+    if(mf>0) Lm.position.copy(match.localToWorld(new THREE.Vector3(0,1.0,0))); Lm.intensity=mf*2.2;
+    sparks.forEach((s,i)=>{ const u=T-1.05; s.visible=u>0&&u<.55; if(!s.visible) return; const st=new THREE.Vector3(...boxSide).add(new THREE.Vector3(-.15,0,0)); s.position.copy(st).addScaledVector(s.userData.v,u).add(new THREE.Vector3(0,-2*u*u,0)); s.material.opacity=1-u/.55; });
+    /* flama espelma */ const cf=T<3.75?0:Math.min(1,(T-3.75)/.9); const fk=1+.07*Math.sin(t*17)+.05*Math.sin(t*29); fl.visible=cf>0; outer.scale.set(.22*cf*(1+.04*Math.sin(t*23)),.42*cf*fk,1); core.scale.set(.09*cf,.18*cf*fk,1); blue.scale.set(.12*cf,.07*cf,1); fl.rotation.z=Math.sin(t*3)*.04*cf;
+    halo.material.opacity=cf*.9*fk; L.intensity=cf*7*fk; wick.material.emissiveIntensity=cf*1.5; L.position.x=Math.sin(t*9)*.01;
+    const melt=Math.max(0,Math.min(1,(T-4.6)/2.2)); pool.material.opacity=melt*.85; waxM.emissiveIntensity=cf*.12; drip.scale.y=Math.max(0,(T-7)/3); drip.position.y=1.62-drip.scale.y*.08;
+    heat.forEach(s=>{ const on=cf>.5; s.visible=on; if(!on) return; const u=(t*.45+s.userData.ph)%1; s.position.set(Math.sin(u*9+s.userData.ph*20)*.06*u*3,2.15+u*1.1,Math.cos(u*7+s.userData.ph*9)*.05); s.material.opacity=.32*Math.sin(u*Math.PI); s.scale.setScalar(.12+u*.3); });
+    climb.forEach(s=>{ const on=melt>.3; s.visible=on; if(!on) return; const u=(t*.35+s.userData.ph)%1; s.position.set(Math.sin(u*20)*.012,1.765+u*.15,0); s.material.opacity=.9*(1-u); });
+    rays.visible=cf>.5; rays.children.forEach((r,i)=>{ r.material.opacity=cf*(.12+.1*Math.sin(t*4+i)); }); rays.quaternion.copy(this._cam.quaternion); } };
+ }};
+
+/* ---------- reproductor ---------- */
+function openSlow(name){ const D=SLOW[name]; if(!D) return; const B=PLAY.open(`${name} a càmera lenta`,'🐢 Mira-ho a poc a poc',"Mira com es transforma l'energia. Amb <b>🐢 Càmera lenta</b> s'atura a cada pas.");
+ B.insertAdjacentHTML('beforeend',`<div class="slBox" id="slBox"><div class="slTime" id="slT">▶ 1×</div></div><div class="slCap" id="slCap">Prem <b>▶ Mira-ho</b> o <b>🐢 Càmera lenta</b>.</div><div class="slBar"><button id="slPlay">▶ Mira-ho</button><button id="slSlow">🐢 Càmera lenta</button><button id="slNext" disabled>⏭ Pas següent</button><button id="slRe">↺</button><div class="prog" id="slProg"><i></i>${D.steps.map(s=>`<b style="left:${s[0]/D.dur*100}%"></b>`).join('')}</div></div>`);
+ const V=mini3d(B.querySelector('#slBox'),{cam:D.cam,target:D.target}); V.O.minDistance=1; V.O.maxDistance=9; const sc=D.build(V.S); sc._cam=V.C;
+ let T=0, speed=0, slow=false, stepI=0, wait=false; const cap=B.querySelector('#slCap'), tl=B.querySelector('#slT'), nx=B.querySelector('#slNext');
+ const setCap=(i)=>{ const s=D.steps[i]; cap.innerHTML=`<small style="opacity:.7">Pas ${i+1} de ${D.steps.length}</small><br>${s[1]}${trHTML(s[2],s[3])}`; const k=[...(s[2]||[]),...(s[3]||[])]; sc.arrows(i===D.steps.length-1&&s[3]?s[3]:[]); };
+ const start=(sl)=>{ slow=sl; T=0; stepI=0; wait=false; speed=sl?.28:1; nx.disabled=true; B.querySelector('#slPlay').classList.toggle('on',!sl); B.querySelector('#slSlow').classList.toggle('on',sl); sc.arrows([]); cap.innerHTML=sl?'🐢 Càmera lenta…':'▶'; };
+ B.querySelector('#slPlay').onclick=()=>start(false); B.querySelector('#slSlow').onclick=()=>start(true); B.querySelector('#slRe').onclick=()=>{ T=0; speed=0; stepI=0; sc.arrows([]); cap.innerHTML='Prem <b>▶ Mira-ho</b> o <b>🐢 Càmera lenta</b>.'; };
+ nx.onclick=()=>{ wait=false; nx.disabled=true; speed=.28; stepI++; };
+ V.ticks.push((dt,t)=>{ if(!wait&&speed>0){ T=Math.min(D.dur,T+dt*speed); while(stepI<D.steps.length&&T>=D.steps[stepI][0]){ if(slow){ T=D.steps[stepI][0]; wait=true; speed=0; setCap(stepI); nx.disabled=stepI>=D.steps.length-1; if(stepI>=D.steps.length-1){ nx.disabled=true; setTimeout(()=>{ if(stepI>=D.steps.length-1){ wait=false; speed=.6; stepI++; } },2500); } break; } else { setCap(stepI); stepI++; } } if(T>=D.dur){ speed=0; cap.innerHTML=`<b>✔ Resum:</b> ${D.steps[D.steps.length-1][1]}${trHTML(D.steps[D.steps.length-1][2],D.steps[D.steps.length-1][3])}`; sc.arrows(D.steps[D.steps.length-1][3]||[]); } }
+  tl.textContent=(wait?'⏸ ':speed>0?(slow?'🐢 ':'▶ '):'⏹ ')+(slow?'0,25×':'1×')+' · '+T.toFixed(1)+' s'; B.querySelector('#slProg i').style.width=(T/D.dur*100)+'%'; sc.update(T,t); });
+ sc.update(0,0); window.__slSeek=(x,i)=>{ T=x; speed=0; wait=true; slow=true; if(i!=null){ stepI=i; setCap(i); } }; }
+window.openSlow=openSlow; window.SLOW=SLOW;
+
 const PLAY=EspPlay({CM:ENER_CM,go:k=>{ if(mode!=='central') setMode('central'); setTimeout(()=>selectCentral(k),50); },act:(window.ENERACT||{})});
 let casa3d=null; function stageCasa(){ if(casa3d) casa3d.dispose(); ST.innerHTML='<div class="stbox" id="casaBox" style="width:100%;height:100%;align-items:stretch"></div>'; const box=$('#casaBox'); try{ casa3d=Casa3D(box,{APPS,ROOMS,EFF,onToggle:a=>{ casaStats(); casaInfo(a); }}); }catch(e){ console.warn('casa3d',e); casa3d=null; box.innerHTML='<svg id="house" viewBox="0 0 600 410"></svg>'; } drawHouse(); }
 function drawHouse(){ if(casa3d&&$('#casaBox')){ casa3d.sync(); casaStats(); return; } const S=$('#house'); if(!S) return; let h=`<polygon points="40,110 300,20 560,110" fill="#5b2b22" stroke="#b5523b" stroke-width="3"/>`;
@@ -1755,13 +1880,13 @@ function renderPanel(){ P.innerHTML=''; { const pb=PLAY.bar3(mode); if(pb) P.app
   P.appendChild(quiz([["Quina màquina produeix l'electricitat en una central?",["El generador","La torre elèctrica","L'embassament"],0],["Quina central no fa servir turbina?",["La hidroelèctrica","La solar fotovoltaica","La nuclear"],1]])); }
  if(mode==='circuits'){ P.appendChild(html(`<h3>El corrent elèctric</h3><p class="lead">Munta circuits a la placa</p><p class="t">Tria una peça i toca una línia de la placa per posar-la. Toca l'<b>interruptor</b> per obrir-lo o tancar-lo. Toca la <b>pila</b> amb l'eina pila per girar-la.</p>
   <div class="tools" id="tls"></div>
-  <div class="row" style="margin:10px 0"><button class="pill" id="pL">📘 Circuit del llibre</button><button class="pill" id="pM">🧪 Prova materials</button><button class="pill" id="pB">🧹 Buida</button></div>
+  <button class="pill" id="pX" style="width:100%;margin-top:8px;padding:10px;font-size:15px;background:linear-gradient(135deg,#00b4d8,#7b5cff);color:#fff;border:0">🎓 Explica'm amb exemples</button><div class="row" style="margin:10px 0"><button class="pill" id="pL">📘 Circuit del llibre</button><button class="pill" id="pM">🧪 Prova materials</button><button class="pill" id="pB">🧹 Buida</button></div>
   <div class="sbox"><p class="h">Missions</p><ul class="mis" id="misL"></ul></div>
   <div class="sbox"><p class="h">Conductors i aïllants</p><div id="matL" class="row"></div></div>
   <div class="sbox"><p class="h">Elements d'un circuit</p><ul><li><b>Generador</b>: dona l'energia (la pila).</li><li><b>Cables</b>: condueixen l'electricitat. Són de coure tapat amb plàstic.</li><li><b>Interruptor</b>: obre i tanca el circuit.</li><li><b>Receptor</b>: transforma l'electricitat en llum, moviment, so…</li></ul></div>
   <div class="sbox"><p class="h">Taller tecnològic (pàg. 118)</p><p class="act">Dibuixa a la llibreta el circuit que has muntat i després construeix-lo amb pila, cable, interruptor i bombeta.</p></div>`));
   const T=$('#tls'); TOOL_ORDER.forEach(k=>{const b=document.createElement('button');b.innerHTML=`<b>${PARTS[k].e}</b>${PARTS[k].n.split(' (')[0].replace('Regle de plàstic','Plàstic').replace('Got de vidre','Vidre').replace('Clau de ferro','Clau')}`;b.classList.toggle('on',k===tool);b.onclick=()=>{tool=k;T.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');};T.appendChild(b);});
-  $('#pL').onclick=()=>loadPreset('llibre'); $('#pM').onclick=()=>{loadPreset('mat');tool='clip';renderPanel();}; $('#pB').onclick=()=>loadPreset('buida'); checkMissions(); }
+  $('#pX').onclick=()=>cexShow(0); $('#pL').onclick=()=>{cexClose();loadPreset('llibre');}; $('#pM').onclick=()=>{loadPreset('mat');tool='clip';renderPanel();}; $('#pB').onclick=()=>loadPreset('buida'); checkMissions(); }
  if(mode==='casa'){ P.appendChild(html(`<h3>Els efectes del corrent</h3><p class="lead">Toca els aparells per encendre'ls</p>
   <div class="hud" id="cEff"></div>
   <div class="sbox"><p class="h">Consum ara</p><div class="meter"><i id="cMeter"></i></div><div class="row" style="justify-content:space-between;margin-top:6px;font-size:14px"><span>Total: <b id="cW"></b></span><span>A habitacions buides: <b id="cWaste" style="color:#ff8a9c"></b></span></div></div>
@@ -1782,7 +1907,7 @@ const repte=Kit.Repte(RP,{
  preguntes:{ic:'❓',n:'Preguntes de la unitat',d:'Tot el que has après.',make:()=>Kit.mc([["Què és l'energia?",["La causa dels canvis a la matèria","Un tipus de matèria","Un aparell elèctric"],0],["Quina energia té un cotxe en marxa?",["Mecànica","Nuclear","Lluminosa"],0],["Què fa un generador en una central?",["Produeix electricitat quan gira","Guarda l'electricitat","Refreda l'aigua"],0],["Quins són els quatre elements d'un circuit?",["Generador, cables, interruptor i receptor","Pila, aigua, imant i vidre","Turbina, torre, cable i casa"],0],["Per què els cables de coure estan tapats de plàstic?",["Perquè el plàstic és aïllant","Perquè el plàstic condueix","Perquè fa bonic"],0],["Quin gas és el principal responsable de l'escalfament global?",["El diòxid de carboni","L'oxigen","El vapor d'aigua"],0],["Per què l'electricitat s'ha de produir a mesura que es gasta?",["Perquè no es pot emmagatzemar fàcilment","Perquè s'esgota","Perquè és molt lenta"],0],["Què és un hort solar?",["Un camp ple de plaques fotovoltaiques","Un hort que creix al sol","Una central tèrmica"],0],["Quina és una manera d'estalviar energia?",["Desconnectar els aparells que no fem servir","Deixar els llums encesos","Anar sempre amb cotxe"],0],["Què produeixen les centrals nuclears que és perillós?",["Residus radioactius","Fum negre","Soroll"],0],["En un circuit en sèrie amb dues bombetes…",["fan menys llum que una de sola","fan el doble de llum","no s'encenen mai"],0]],10)}
 });
 function applyMode(){ $('#card').classList.remove('show'); const is3d=['fonts','central'].includes(mode);
- $('#stage').classList.toggle('show',['formes','circuits','casa'].includes(mode)); canvas.style.visibility=is3d||mode==='formes'||mode==='repte'?'visible':'hidden';
+ $('#stage').classList.toggle('show',['formes','circuits','casa'].includes(mode)); $('#stTog').style.display=mode==='formes'?'':'none'; $('#pins').style.visibility=(mode==='circuits'||mode==='casa')?'hidden':''; if(mode!=='formes'&&$('#stage').classList.contains('mini')){ $('#stage').classList.remove('mini'); $('#stTog').textContent='▾ Amaga'; } canvas.style.visibility=is3d||mode==='formes'||mode==='repte'?'visible':'hidden';
  $('#panel').style.display=mode==='repte'?'none':''; RP.style.display=mode==='repte'?'block':'none';
  if(mode==='formes'){ stageFormes(); } if(mode==='circuits'){ stageCircuits(); if(!Object.keys(edges).length) loadPreset('llibre'); } if(mode==='casa'){ stageCasa(); }
  if(mode==='central'&&!selSrc) setTimeout(()=>selectCentral('vent'),50);

@@ -306,8 +306,9 @@ function showCard(I){const card=$('#card');if(!card)return;card.querySelector('.
 /* qüestionari curt del panell */
 function quiz(list){const box=document.createElement('div');box.className='sbox';box.innerHTML='<p class="h">Comprova-ho</p>';
  list.forEach(([q,opts,ok])=>{const d=document.createElement('div');d.className='q';d.innerHTML='<p></p>';d.querySelector('p').textContent=q;const fb=document.createElement('div');fb.className='fb';let tries=0,done=false;
-  opts.forEach((o,i)=>{const b=document.createElement('button');b.textContent=o;b.onclick=()=>{if(done)return;const U=window.UX;if(i===ok){done=true;d.querySelectorAll('button').forEach(x=>x.classList.remove('ko'));b.classList.add('ok');fb.textContent=tries?'Ara sí! Molt bé.':'Molt bé!';fb.style.color='var(--li)';U&&U.sfx.ok();}
-   else{tries++;b.classList.add('ko');if(tries>=2){done=true;d.querySelectorAll('button')[ok].classList.add('ok');fb.textContent='La resposta era «'+opts[ok]+'». Fixa-t\'hi per a la propera.';fb.style.color='var(--ye)';}else{fb.textContent='Gairebé… torna-ho a provar.';fb.style.color='var(--ye)';}U&&U.sfx.ko();}};d.appendChild(b);});d.appendChild(fb);box.appendChild(d);});return box;}
+  const ord=opts.map((_,i)=>i);for(let k=ord.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[ord[k],ord[j]]=[ord[j],ord[k]];} let okB=null;
+  ord.forEach(i=>{const o=opts[i];const b=document.createElement('button');b.textContent=o;if(i===ok)okB=b;b.onclick=()=>{if(done)return;const U=window.UX;if(i===ok){done=true;d.querySelectorAll('button').forEach(x=>x.classList.remove('ko'));b.classList.add('ok');fb.textContent=tries?'Ara sí! Molt bé.':'Molt bé!';fb.style.color='var(--li)';U&&U.sfx.ok();}
+   else{tries++;b.classList.add('ko');if(tries>=2){done=true;okB.classList.add('ok');fb.textContent='La resposta era «'+opts[ok]+'». Fixa-t\'hi per a la propera.';fb.style.color='var(--ye)';}else{fb.textContent='Gairebé… torna-ho a provar.';fb.style.color='var(--ye)';}U&&U.sfx.ko();}};d.appendChild(b);});d.appendChild(fb);box.appendChild(d);});return box;}
 function subtabs(list,cur,cb){const d=document.createElement('div');d.className='sub';list.forEach(([k,ico,n])=>{const b=document.createElement('button');b.innerHTML=`<b>${ico}</b>${n}`;b.classList.toggle('on',k===cur);b.onclick=()=>cb(k);d.appendChild(b);});return d;}
 /* ajuda */
 function initHelp(seenKey){const H=$('#help');const open=t=>{H.classList.add('show');document.querySelectorAll('.htabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));document.querySelectorAll('.hpage').forEach(p=>p.style.display=p.dataset.p===t?'':'none');};
@@ -729,7 +730,7 @@ window.EspPlay=function(C){
 
  /* ===== MAPES CONCEPTUALS ===== */
  const CAN=[-15.6,28.3];
- const CM={
+ const CM=C.CM||{
   territori:{t:'Espanya',ch:[
    {l:'és al',t:"Sud-oest d'Europa",ch:[{t:'Hemisferi nord'},{t:'Zona de climes temperats'}]},
    {l:'està formada per',t:'Territori',ch:[{t:'Península Ibèrica',go:[-3.7,40.2]},{t:'Illes Balears',go:[2.9,39.6]},{t:'Illes Canàries',go:CAN},{t:'Ceuta i Melilla',go:[-4.2,35.6]}]},
@@ -1980,6 +1981,7 @@ UX.boot({items:[...TERR.map(t=>({k:t.n,n:t.n,ic:'🗺️'})),...RANGES.filter(r=
 window.__s={camera,controls,THREE,MAP:()=>MAP,qshot:(kind,id)=>{ document.querySelectorAll('.pin,.lbl').forEach(e=>e.style.display='none'); if(window.__qx){ MAP.group.remove(window.__qx); } const isR=kind==='riu'; setMode(isR?'rius':'relleu'); const r=(isR?RIVERS:RANGES).find(r=>r.id===id); if(isR) for(const q of RIVERS){ q.tube.visible=q.flow.visible=false; } const pts=r.p.map(([lo,la])=>MAP.v3(lo,la,isR?.35:.9)); const tube=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),pts.length*10,isR?.32:.45,8,false),new THREE.MeshBasicMaterial({color:isR?0x1fd2ff:0xffd23f})); MAP.group.add(tube); window.__qx=tube; if(marker) marker.visible=false; const c=pts.reduce((a,b)=>a.add(b),new THREE.Vector3()).multiplyScalar(1/pts.length); home(); wake(300); return 1; },cam:(a,b,c,x,y,z)=>{camera.position.set(a,b,c);controls.target.set(x,y,z);controls.update();wake(80);},land:(lo,la)=>MAP.landAt(lo,la),X:MAP.X,Z:MAP.Z,setMode,sub,applyMode,selectClim,setMap,startGame:k=>repte.start(k),pick:(lo,la)=>R.onPick&&R.onPick([lo,la])};
 </script>
 <style>#homeBtn{display:none;flex:0 0 auto;width:40px;height:40px;line-height:40px;text-align:center;padding:0;font-size:20px;border-radius:12px;background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.45);color:#00e5ff;text-decoration:none}#homeBtn:hover{background:#00e5ff;color:#021}#homeBtn.fx{position:fixed;top:14px;left:12px;z-index:60}body.walking #homeBtn.fx{display:none!important}</style><a id="homeBtn" href="../index.html" title="Torna al laboratori central" aria-label="Torna al laboratori central">🔬</a><script>(function(){var b=document.getElementById("homeBtn");if(!(/github\.io|localhost|127\.0\.0\.1/.test(location.hostname)||location.protocol==="file:"))return;var t=document.getElementById("top");if(t)t.insertBefore(b,t.firstChild);else b.className="fx";b.style.display="block"})()</script>
+
 
 <!--VIDEO--><script>window.VCLIPS={"intro": {"src": "../clips/espanya.mp4", "poster": "../clips/espanya.jpg", "unit": "Medi·Lab 3D · Unitat 5", "title": "⛰️ Espanya i Europa", "sub": "Muntanyes, rius i paisatges"}};</script><script>/* Medi·Lab 3D · vídeos: intro d'entrada + targetes «Mira-ho de veritat» amb pregunta.
    Config a window.VCLIPS = { intro:{src,poster,unit,title,sub}, cards:{ <mode>:[{src,poster,title,cap,q:{t,o:[...],ok:index}}] } }
