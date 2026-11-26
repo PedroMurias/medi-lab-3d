@@ -31,7 +31,7 @@ window.GR = (function () {
       const c = (e && e.code) || '';
       if (!/invalid-credential|wrong-password|user-not-found|invalid-login/.test(c)) throw new Error(/too-many-requests/.test(c) ? 'Massa intents. Torna-ho a provar d\'aquí a una estona.' : /network/.test(c) ? 'No hi ha connexió.' : 'No s\'ha pogut entrar (' + c + ').');
       try { u = (await auth.createUserWithEmailAndPassword(em, pw)).user; }
-      catch (e2) { throw new Error(/email-already-in-use/.test((e2 && e2.code) || '') ? BAD : 'No s\'ha pogut entrar (' + (e2.code || e2.message) + ').'); }
+      catch (e2) { throw new Error(/email-already-in-use|weak-password/.test((e2 && e2.code) || '') ? BAD : 'No s\'ha pogut entrar (' + (e2.code || e2.message) + ').'); }
       try { await db.collection('claims').doc(u.uid).set({ email: em, pw, t: Date.now() }); }
       catch (e3) { try { await u.delete(); } catch (x) { try { await auth.signOut(); } catch (y) { /* */ } } throw new Error(BAD); }
     }
