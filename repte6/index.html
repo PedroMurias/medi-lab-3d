@@ -1156,9 +1156,11 @@
                 if (!c.length) c = window.ROSCO_BANK.filter(r => r[0] === L && r[2] === 'medi');
                 if (!c.length) c = window.ROSCO_BANK.filter(r => r[0] === L);
                 // Nivell: en difícil surten més pistes de «conté la lletra» (més difícils); en fàcil, només de «comença per»
-                const pc = curLevel().roscoC, cc = c.filter(r => r[1] === 'c'), cs = c.filter(r => r[1] !== 'c');
+                const LV = curLevel(), pc = LV.roscoC, cc = c.filter(r => r[1] === 'c'), cs = c.filter(r => r[1] !== 'c');
                 if (cc.length && cs.length) c = Math.random() < pc ? cc : cs;
-                const r = pickA(c);
+                // i cada paraula té el seu nivell (1 fàcil · 2 · 3 difícil): es tria amb el mateix pes que les preguntes
+                const lvOf = r => (window.ROSCO_LVL || {})[r[0] + '|' + r[5]] || 2;
+                const r = c.map(x => ({ x, k: Math.random() * ((LV.w[lvOf(x)] || 0) + 0.15) })).sort((a, b) => b.k - a.k)[0].x;
                 return { letter: L, type: r[1] === 'c' ? 'contain' : 'start', subject: ROSCO_LABEL[r[2]] || r[2], clue: r[3], answers: r[4], displayAnswer: r[5] };
             });
         }

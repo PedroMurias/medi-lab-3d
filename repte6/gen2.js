@@ -12,7 +12,7 @@ const byCont=c=>CC.filter(x=>x[3]===c[3]&&x!==c), others=c=>CC.filter(x=>x[3]!==
 const tierOf=c=>(window.FLAG_TIER||{})[c[2]]||2;
 const pool=t=>{ const base=CC.filter(c=>!t||!t.size||[...t].some(k=>k==='en-world'||k==='fl-'+c[3])); const lv=window.GENQ.level; const f=lv==='facil'?base.filter(c=>tierOf(c)===1):lv==='dificil'?base.filter(c=>tierOf(c)>=2&&(tierOf(c)===3||Math.random()<0.4)):base.filter(c=>tierOf(c)<=2); return f.length?f:base.length?base:CC; };
 GEN['en-world']=(h,t)=>{
- const c=pickA(pool(t)), e=EC[c[2]], ds=shuffle(byCont(c)).concat(shuffle(others(c))), k=R(0,h?5:4);
+ const lv=window.GENQ.level, c=pickA(pool(t)), e=EC[c[2]], ds=shuffle(byCont(c)).concat(shuffle(others(c))), k=lv==='facil'?pickA([0,3]):h?pickA([1,2,4,5,4]):R(0,4);
  if(k===0) return {q:'Which country is this flag from?',o:uniq([e[0],...ds.map(x=>EC[x[2]][0])],4),e:`It's the flag of ${e[0]}.`,img:window.FLAGS[c[2]],flag:1,l:1};
  if(k===1&&e[2]) return {q:`What is the capital of ${e[0]}?`,o:uniq([e[2],...ds.map(x=>EC[x[2]][2])],4),e:`${e[2]} is the capital of ${e[0]}.`,l:2};
  if(k===2) return {q:`People from ${e[0]} are...`,o:uniq([e[1],...ds.map(x=>EC[x[2]][1])],4),e:`${cap(e[1])} is the nationality; the country is ${e[0]}.`,l:2};
@@ -23,7 +23,7 @@ GEN['en-world']=(h,t)=>{
 
 /* ---------- ENGLISH · comparatives & superlatives ---------- */
 GEN['en-comp']=h=>{
- const a=pickA(window.ADJ), oth=shuffle(window.ADJ.filter(x=>x!==a)), k=R(0,h?4:3);
+ const a=pickA(window.ADJ), oth=shuffle(window.ADJ.filter(x=>x!==a)), k=window.GENQ.level==='facil'?pickA([0,2]):h?pickA([1,3,4,4,3]):R(0,3);
  const isLong=a[1].startsWith('more '), isIrr=['good','bad','far'].includes(a[0]);
  const wrongComp=isIrr?a[0]+'er':isLong?a[0]+'er':'more '+a[0];
  const wrongSup=isIrr?'the '+a[0]+'est':isLong?'the '+a[0]+'est':'the most '+a[0];
@@ -37,7 +37,7 @@ GEN['en-comp']=h=>{
 /* ---------- ENGLISH · tenses ---------- */
 const beOf=p=>p==='1'?'am':p==='3'?'is':'are';
 GEN['en-tense']=h=>{
- const v=pickA(window.VERBS_EN), [S0,p]=pickA(window.SUBJ_EN), C=v[5], k=R(0,h?6:4);
+ const v=pickA(window.VERBS_EN), [S0,p]=pickA(window.SUBJ_EN), C=v[5], k=window.GENQ.level==='facil'?R(0,1):h?pickA([2,3,4,5,6,5,6]):R(0,4);
  const S=S0, s=(S0==='I'||S0==='Anna and Pau')?S0:S0.toLowerCase();
  const third=p==='3', base=v[0], s3=v[1], ing=v[2], past=v[3], be=beOf(p);
  const reg=past===base+'ed'||past===base+'d'||past===base.slice(0,-1)+'ied'||past===base+base.slice(-1)+'ed';
@@ -71,9 +71,10 @@ const caForms=(inf,c,tense)=>{
 };
 const CA_T=['present','imperfet','futur','passat perifràstic'];
 GEN['ca-conj']=h=>{
- const [inf,c]=pickA(window.CA_VERBS), t=pickA(h?CA_T:CA_T.slice(0,3)), p=R(0,5), f=caForms(inf,c,t), ok=f[p];
+ const easy=window.GENQ.level==='facil'; // fàcil: només present i persones del singular · difícil: tots els temps i sobretot plurals
+ const [inf,c]=pickA(window.CA_VERBS), t=easy?'present':pickA(h?CA_T:CA_T.slice(0,3)), p=easy?R(0,2):h?(Math.random()<0.7?R(3,5):R(0,2)):R(0,5), f=caForms(inf,c,t), ok=f[p];
  const otherT=CA_T.filter(x=>x!==t).map(x=>caForms(inf,c,x)[p]);
- const k=R(0,2);
+ const k=easy?0:h?R(1,2):R(0,2);
  if(k===0) return {q:`Com es conjuga «${inf}» en ${t} per a «${window.CA_PRON[p]}»?`,o:uniq([ok,...shuffle(f.filter(x=>x!==ok)).slice(0,2),...shuffle(otherT)],4),e:`${cap(window.CA_PRON[p])} ${ok} (${t} del verb ${inf}).`,l:t==='present'?1:2};
  if(k===1) return {q:`En quin temps verbal està «${window.CA_PRON[p].split(' ')[0]} ${ok}»?`,o:uniq([cap(t),...shuffle(CA_T.filter(x=>x!==t)).map(cap)],4),e:`«${ok}» és el ${t} del verb ${inf}.`,l:2};
  return {q:`Quina forma correspon a «${window.CA_PRON[p]}» (${t})? Verb: ${inf}`,o:uniq([ok,...shuffle(f.filter(x=>x!==ok))],4),e:`Les persones del ${t}: ${f.join(', ')}.`,l:3};
@@ -90,9 +91,10 @@ const esForms=(inf,c,tense)=>{
 };
 const ES_T=['presente','pretérito perfecto simple','pretérito imperfecto','futuro'];
 GEN['es-conj']=h=>{
- const [inf,c]=pickA(window.ES_VERBS), t=pickA(h?ES_T:[ES_T[0],ES_T[1],ES_T[3]]), p=R(0,5), f=esForms(inf,c,t), ok=f[p];
+ const easy=window.GENQ.level==='facil';
+ const [inf,c]=pickA(window.ES_VERBS), t=easy?'presente':pickA(h?ES_T:[ES_T[0],ES_T[1],ES_T[3]]), p=easy?R(0,2):h?(Math.random()<0.7?R(3,5):R(0,2)):R(0,5), f=esForms(inf,c,t), ok=f[p];
  const otherT=ES_T.filter(x=>x!==t).map(x=>esForms(inf,c,x)[p]);
- const k=R(0,2);
+ const k=easy?0:h?R(1,2):R(0,2);
  if(k===0) return {q:`¿Cómo se conjuga «${inf}» en ${t} para «${window.ES_PRON[p]}»?`,o:uniq([ok,...shuffle(f.filter(x=>x!==ok)).slice(0,2),...shuffle(otherT)],4),e:`${cap(window.ES_PRON[p])} ${ok} (${t} del verbo ${inf}).`,l:t==='presente'?1:2};
  if(k===1) return {q:`¿En qué tiempo verbal está «${window.ES_PRON[p].split(' ')[0]} ${ok}»?`,o:uniq([cap(t),...shuffle(ES_T.filter(x=>x!==t)).map(cap)],4),e:`«${ok}» es el ${t} del verbo ${inf}.`,l:2};
  return {q:`¿Qué forma corresponde a «${window.ES_PRON[p]}» (${t})? Verbo: ${inf}`,o:uniq([ok,...shuffle(f.filter(x=>x!==ok))],4),e:`Las personas del ${t}: ${f.join(', ')}.`,l:3};
@@ -115,7 +117,8 @@ const synGen=(list,lang)=>h=>{
  const e=pickA(list), oth=shuffle(list.filter(x=>x!==e)), k=R(0,h?2:1);
  if(k===0) return {q:lang==='ca'?`Quin és un sinònim de «${e[0]}»?`:`¿Cuál es un sinónimo de «${e[0]}»?`,o:[e[1],e[2],oth[0][1],oth[1][2]],e:lang==='ca'?`«${e[1]}» vol dir el mateix que «${e[0]}»; «${e[2]}» és l'antònim.`:`«${e[1]}» significa lo mismo que «${e[0]}»; «${e[2]}» es el antónimo.`,l:1};
  if(k===1) return {q:lang==='ca'?`Quin és l'antònim de «${e[0]}»?`:`¿Cuál es el antónimo de «${e[0]}»?`,o:[e[2],e[1],oth[0][2],oth[1][1]],e:lang==='ca'?`«${e[2]}» és el contrari de «${e[0]}».`:`«${e[2]}» es lo contrario de «${e[0]}».`,l:1};
- return {q:lang==='ca'?`Quina parella són antònims?`:`¿Qué pareja son antónimos?`,o:[`${e[0]} – ${e[2]}`,`${e[0]} – ${e[1]}`,`${oth[0][0]} – ${oth[0][1]}`,`${oth[1][0]} – ${oth[2][1]}`],e:lang==='ca'?`«${e[0]}» i «${e[2]}» volen dir el contrari.`:`«${e[0]}» y «${e[2]}» significan lo contrario.`,l:2};
+ if(k===2&&R(0,1)) return {q:lang==='ca'?`Quina parella NO són sinònims?`:`¿Qué pareja NO son sinónimos?`,o:[`${e[0]} – ${e[2]}`,`${e[0]} – ${e[1]}`,`${oth[0][0]} – ${oth[0][1]}`,`${oth[1][0]} – ${oth[1][1]}`],e:lang==='ca'?`«${e[0]}» i «${e[2]}» són antònims, no sinònims.`:`«${e[0]}» y «${e[2]}» son antónimos, no sinónimos.`,l:3};
+ return {q:lang==='ca'?`Quina parella són antònims?`:`¿Qué pareja son antónimos?`,o:[`${e[0]} – ${e[2]}`,`${e[0]} – ${e[1]}`,`${oth[0][0]} – ${oth[0][1]}`,`${oth[1][0]} – ${oth[2][1]}`],e:lang==='ca'?`«${e[0]}» i «${e[2]}» volen dir el contrari.`:`«${e[0]}» y «${e[2]}» significan lo contrario.`,l:3};
 };
 GEN['ca-syn']=synGen(window.CA_SYN,'ca');
 GEN['es-syn']=synGen(window.ES_SYN,'es');
