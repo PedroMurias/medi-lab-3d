@@ -315,7 +315,68 @@
         <!-- =================================================================
              PANTALLA 0: PERFIL INDIVIDUAL Y BIENVENIDA
              ================================================================= -->
-        <section id="screen-welcome" class="max-w-5xl w-full mx-auto space-y-5">
+        <section id="screen-login" class="max-w-5xl w-full mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                <div class="lg:col-span-6 space-y-5">
+                    <div class="flex items-center gap-4">
+                        <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600 p-[3px] shadow-xl shadow-cyan-500/25 shrink-0">
+                            <div class="w-full h-full bg-slate-950 rounded-[21px] flex items-center justify-center font-display font-black text-3xl sm:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-indigo-400">6è</div>
+                        </div>
+                        <div>
+                            <h2 class="font-display font-black text-4xl sm:text-6xl leading-none text-white">EL GRAN REPTE <span class="text-cyan-400">6È</span></h2>
+                            <p class="text-slate-400 text-sm sm:text-base mt-2">Concurs de preguntes de tots els llibres de 6è · Centre d'Estudis Jaume Balmes</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                        <div class="p-3 rounded-2xl bg-slate-900/80 border border-white/10 text-center"><div class="text-3xl">🎬</div><p class="text-xs font-display font-bold text-white mt-1">Concurs</p><p class="text-[11px] text-slate-500">Ràfega + Rosco</p></div>
+                        <div class="p-3 rounded-2xl bg-slate-900/80 border border-white/10 text-center"><div class="text-3xl">💰</div><p class="text-xs font-display font-bold text-white mt-1">Cofres</p><p class="text-[11px] text-slate-500">Or i sort</p></div>
+                        <div class="p-3 rounded-2xl bg-slate-900/80 border border-white/10 text-center"><div class="text-3xl">🎯</div><p class="text-xs font-display font-bold text-white mt-1">Entrenament</p><p class="text-[11px] text-slate-500">Sense temps</p></div>
+                        <div class="p-3 rounded-2xl bg-slate-900/80 border border-white/10 text-center"><div class="text-3xl">👥</div><p class="text-xs font-display font-bold text-white mt-1">Equips</p><p class="text-[11px] text-slate-500">Pissarra</p></div>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-amber-400/10 border border-amber-400/30 text-sm text-amber-100">
+                        <p class="font-display font-bold text-amber-300 mb-1">🏆 Amb el teu compte de l'escola</p>
+                        <p class="text-xs text-amber-100/80 leading-relaxed">Cada partida suma punts a la <b>classificació de la classe</b>, veus el teu <b>progrés per matèria</b> i guanyes <b>insígnies</b>. Els punts són per encerts, mai per velocitat.</p>
+                    </div>
+                </div>
+                <div class="lg:col-span-6">
+                    <form id="login-form" onsubmit="doLandingLogin(event)" class="glass-panel rounded-3xl p-6 sm:p-8 space-y-4 relative overflow-hidden">
+                        <div class="absolute -top-20 -right-20 w-56 h-56 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                        <div class="relative">
+                            <h3 class="font-display font-black text-2xl text-white">Entra amb el compte de l'escola</h3>
+                            <p class="text-xs text-slate-400 mt-1">El mateix nom i la mateixa contrasenya de l'agenda que fas servir a Explora.</p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 relative">
+                            <div>
+                                <label for="lg-nom" class="block text-[11px] font-display font-bold uppercase tracking-wider text-slate-400 mb-1.5">Nom</label>
+                                <input id="lg-nom" type="text" autocomplete="given-name" autocapitalize="words" placeholder="Laia" class="w-full px-4 py-3.5 rounded-xl bg-slate-950 border-2 border-slate-700 focus:border-cyan-400 text-white font-display font-bold text-lg placeholder:text-slate-600 focus:outline-none transition">
+                            </div>
+                            <div>
+                                <label for="lg-cognom" class="block text-[11px] font-display font-bold uppercase tracking-wider text-slate-400 mb-1.5">Cognom</label>
+                                <input id="lg-cognom" type="text" autocomplete="family-name" autocapitalize="words" placeholder="Puig" class="w-full px-4 py-3.5 rounded-xl bg-slate-950 border-2 border-slate-700 focus:border-cyan-400 text-white font-display font-bold text-lg placeholder:text-slate-600 focus:outline-none transition">
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <label for="lg-pw" class="block text-[11px] font-display font-bold uppercase tracking-wider text-slate-400 mb-1.5">Contrasenya</label>
+                            <input id="lg-pw" type="password" autocomplete="current-password" placeholder="La de l'agenda" class="w-full px-4 py-3.5 rounded-xl bg-slate-950 border-2 border-slate-700 focus:border-cyan-400 text-white font-display font-bold text-lg placeholder:text-slate-600 focus:outline-none transition">
+                        </div>
+                        <p id="lg-mail" class="text-[11px] text-slate-500 relative min-h-[1em]"></p>
+                        <details class="relative text-[11px] text-slate-400"><summary class="cursor-pointer hover:text-slate-200">El meu correu de l'escola no és nom.cognom</summary>
+                            <input id="lg-email" type="text" inputmode="email" autocomplete="username" placeholder="correu@balmesonline.com" class="mt-2 w-full px-3 py-2.5 rounded-xl bg-slate-950 border-2 border-slate-700 focus:border-cyan-400 text-white font-bold text-sm focus:outline-none">
+                        </details>
+                        <p id="lg-err" class="text-xs text-rose-300 font-semibold min-h-[1em] relative"></p>
+                        <button type="submit" id="lg-btn" class="relative w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-600 border-indigo-900 text-white font-display font-black text-lg tracking-wide shadow-lg shadow-cyan-500/25 btn-arcade flex items-center justify-center gap-2">
+                            <span>ENTRAR</span><span class="text-xl">🔑</span>
+                        </button>
+                        <p id="lg-offline" class="hidden text-[11px] text-amber-200/80 relative">L'entrada amb el compte de l'escola només funciona a la web de l'escola. Aquí pots jugar com a convidat.</p>
+                        <div class="relative text-center pt-1">
+                            <button type="button" onclick="enterAsGuest()" class="text-xs text-slate-400 hover:text-white underline underline-offset-4">Jugar com a convidat (sense punts ni classificació)</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section id="screen-welcome" class="hidden max-w-5xl w-full mx-auto space-y-5">
 
             <!-- Capçalera: logo + nom -->
             <div class="flex items-center justify-center gap-4 pt-2">
@@ -1225,21 +1286,58 @@
         function renderAccount() {
             const acc = window.GR && GR.acc, box = document.getElementById('acc-box'), input = document.getElementById('input-player-name');
             const bBoard = document.getElementById('btn-board');
+            const nameRow = input.closest('.flex');
             if (acc) {
-                box.innerHTML = `<div class="flex items-center gap-2 flex-wrap"><span class="px-3 py-2 rounded-xl bg-emerald-500/15 border border-emerald-400/40 text-emerald-200 text-xs font-bold">✅ ${escHTML(acc.name)}${acc.clsName ? ' · ' + escHTML(acc.clsName) : ''}${acc.teacher ? ' · mestre/a' : ''}</span>
-                    <button type="button" onclick="openBoard()" class="px-3 py-2 rounded-xl bg-amber-400/15 border border-amber-400/40 text-amber-200 text-xs font-bold hover:bg-amber-400/25">🏆 Classificació</button>
-                    <button type="button" onclick="GR.logout()" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-slate-300 text-xs font-bold hover:bg-white/10">Sortir</button></div>`;
-                if (!acc.teacher) { input.value = acc.name; input.readOnly = true; input.classList.add('opacity-70'); }
+                nameRow.classList.add('hidden');
+                box.innerHTML = `<div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                    <div class="flex-1 flex items-center gap-3 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-400/30">
+                        <span class="text-3xl">${escHTML(game.avatar)}</span>
+                        <div><p class="font-display font-black text-lg text-white leading-tight">${escHTML(acc.name)}</p><p class="text-xs text-emerald-200">${acc.teacher ? 'Mestre/a' : (acc.clsName ? 'Classe ' + escHTML(acc.clsName) : 'Alumne/a')} · ${escHTML(acc.email)}</p></div>
+                    </div>
+                    <button type="button" onclick="openBoard()" class="px-5 py-3.5 rounded-2xl bg-amber-400 border-amber-700 text-slate-950 font-display font-black text-sm btn-arcade flex items-center justify-center gap-2">🏆 Classificació i progrés</button>
+                    <button type="button" onclick="changeUser()" class="px-4 py-3.5 rounded-2xl bg-white/5 border border-white/10 text-slate-300 text-xs font-bold hover:bg-white/10">Canviar d'usuari</button></div>`;
                 bBoard.classList.remove('hidden'); bBoard.classList.add('flex');
             } else {
-                const ok = window.GR && GR.available();
-                box.innerHTML = ok
-                    ? `<button type="button" onclick="openLogin()" class="px-3 py-2 rounded-xl bg-cyan-500/15 border border-cyan-400/40 text-cyan-200 text-xs font-bold hover:bg-cyan-500/25">🔑 Entra amb el compte d'Explora</button><span class="text-[11px] text-slate-500 ml-2">per guardar els punts i sortir a la classificació</span>`
-                    : `<span class="text-[11px] text-slate-500">🔑 L'entrada amb el compte d'Explora (punts i classificació) s'activa quan el joc és a la web de l'escola.</span>`;
+                nameRow.classList.remove('hidden');
                 input.readOnly = false; input.classList.remove('opacity-70');
+                box.innerHTML = `<div class="flex items-center gap-2 flex-wrap"><span class="px-3 py-2 rounded-xl bg-slate-900/80 border border-white/10 text-slate-300 text-xs font-bold">👤 Convidat · sense punts ni classificació</span>
+                    <button type="button" onclick="changeUser()" class="px-3 py-2 rounded-xl bg-cyan-500/15 border border-cyan-400/40 text-cyan-200 text-xs font-bold hover:bg-cyan-500/25">🔑 Entrar amb el compte de l'escola</button></div>`;
                 bBoard.classList.add('hidden'); bBoard.classList.remove('flex');
             }
         }
+        /* ---- Pantalla d'entrada ---- */
+        let guestMode = false;
+        const slug = s => String(s || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '');
+        function landingEmail() {
+            const custom = (document.getElementById('lg-email').value || '').trim().toLowerCase();
+            if (custom) return custom.includes('@') ? custom : custom + '@balmesonline.com';
+            const n = slug(document.getElementById('lg-nom').value), c = slug(document.getElementById('lg-cognom').value);
+            return n && c ? `${n}.${c}@balmesonline.com` : '';
+        }
+        function updateLandingMail() { const em = landingEmail(); document.getElementById('lg-mail').textContent = em ? 'Entraràs com a ' + em : ''; }
+        ['lg-nom', 'lg-cognom', 'lg-email'].forEach(id => document.getElementById(id).addEventListener('input', updateLandingMail));
+        async function doLandingLogin(e) {
+            if (e) e.preventDefault();
+            const err = document.getElementById('lg-err'), btn = document.getElementById('lg-btn'); err.textContent = '';
+            const em = landingEmail(), pw = document.getElementById('lg-pw').value;
+            if (!em) { err.textContent = 'Escriu el nom i el cognom.'; return; }
+            if (!pw) { err.textContent = 'Escriu la contrasenya de l\'agenda.'; return; }
+            if (!window.GR || !GR.available()) { err.textContent = 'Aquí no es pot entrar amb el compte. Juga com a convidat.'; return; }
+            btn.disabled = true; btn.firstElementChild.textContent = 'ENTRANT…';
+            try { await GR.login(em, pw); playSFX('correct'); guestMode = false; showWelcome(); }
+            catch (ex) { err.textContent = ex.message || 'No s\'ha pogut entrar.'; playSFX('wrong'); }
+            btn.disabled = false; btn.firstElementChild.textContent = 'ENTRAR';
+        }
+        function enterAsGuest() { guestMode = true; playSFX('click'); showWelcome(); }
+        function showWelcome() { const bb = document.getElementById('btn-back'); bb.classList.remove('hidden'); bb.classList.add('flex'); switchScreen('screen-welcome'); renderAccount(); renderModeSelector(); window.scrollTo(0, 0); }
+        function showLanding() {
+            const bb = document.getElementById('btn-back'); bb.classList.add('hidden'); bb.classList.remove('flex');
+            switchScreen('screen-login');
+            document.getElementById('lg-offline').classList.toggle('hidden', !!(window.GR && GR.available()));
+            document.getElementById('lg-pw').value = '';
+        }
+        async function changeUser() { if (window.GR && GR.acc) await GR.logout(); guestMode = false; showLanding(); }
+
         function openLogin() { document.getElementById('modal-login').classList.remove('hidden'); document.getElementById('login-err').textContent = ''; setTimeout(() => document.getElementById('login-email').focus(), 50); }
         function closeLogin() { document.getElementById('modal-login').classList.add('hidden'); }
         async function doLogin(e) {
@@ -1249,7 +1347,7 @@
             catch (ex) { err.textContent = ex.message || 'No s\'ha pogut entrar.'; playSFX('wrong'); }
             btn.disabled = false;
         }
-        if (window.GR) { GR.onChange(renderAccount); if (GR.available()) GR.resume().then(renderAccount).catch(() => {}); }
+        if (window.GR) { GR.onChange(renderAccount); if (GR.available()) GR.resume().then(acc => { renderAccount(); if (acc) showWelcome(); }).catch(() => {}); }
 
         /* Estadístiques d'una partida per al registre */
         function gameStats() {
@@ -1435,6 +1533,7 @@
                     game.avatar = av.icon;
                     playSFX('click');
                     renderAvatarSelector();
+                    renderAccount();
                 };
                 container.appendChild(btn);
             });
@@ -1442,6 +1541,8 @@
 
         function startChallenge() {
             const input = document.getElementById('input-player-name');
+            if (window.GR && GR.acc && !GR.acc.teacher) input.value = GR.acc.name;
+            if (window.GR && GR.acc && GR.acc.teacher && !input.value.trim()) input.value = GR.acc.name;
             const nameVal = input.value.trim();
             const err = document.getElementById('name-error');
 
@@ -2045,7 +2146,7 @@
            9. UTILIDADES DE NAVEGACIÓN Y ATADOS DE TECLADO
            ========================================================================= */
         function switchScreen(screenId) {
-            ['screen-welcome', 'screen-phase1', 'screen-transition', 'screen-phase2', 'screen-results', 'screen-mode-results', 'screen-board'].forEach(id => {
+            ['screen-login', 'screen-welcome', 'screen-phase1', 'screen-transition', 'screen-phase2', 'screen-results', 'screen-mode-results', 'screen-board'].forEach(id => {
                 const screen = document.getElementById(id);
                 screen.classList.add('hidden');
                 screen.classList.remove('screen-enter');
@@ -2070,7 +2171,7 @@
             }
         }
 
-        function goHome() { playSFX('click'); resetFullApp(); }
+        function goHome() { playSFX('click'); if (!document.getElementById('screen-welcome').classList.contains('hidden')) { showLanding(); return; } resetFullApp(); }
 
         function openQuitModal() {
             document.getElementById('modal-quit').classList.remove('hidden');
@@ -2088,14 +2189,12 @@
             document.getElementById('header-player-badge').classList.add('hidden');
             document.getElementById('header-phases').classList.add('hidden');
             document.getElementById('btn-quit').classList.add('hidden');
-            document.getElementById('btn-back').classList.add('hidden');
-            document.getElementById('btn-back').classList.remove('flex');
             document.getElementById('modal-chests').classList.add('hidden');
             if (window.speechSynthesis) speechSynthesis.cancel();
             setHeaderPhaseActive(1);
             renderModeSelector();
             renderAccount();
-            switchScreen('screen-welcome');
+            if ((window.GR && GR.acc) || guestMode) showWelcome(); else showLanding();
         }
 
         // Atajos de teclado: 1-4 / A-D en Fase 1, y Barra Espaciadora para Pasapalabra en Fase 2
@@ -2135,6 +2234,7 @@
             renderTopicSelector();
             renderModeSelector();
             renderAccount();
+            showLanding();
         };
     </script>
 </body>
