@@ -52,7 +52,7 @@ GEN['en-tense']=h=>{
 
 /* ---------- ENGLISH · prepositions & question words ---------- */
 GEN['en-prep']=h=>{
- if(R(0,1)){ const [x,pr]=pickA(window.PREP_T); const f=pickA([`See you ___ ${x}.`,`The party is ___ ${x}.`,`We usually play football ___ ${x}.`,`She was born ___ ${x}.`]);
+ if(R(0,1)){ const [x,pr]=pickA(window.PREP_T); const yr=/\d{4}|century/.test(x); const f=yr?pickA([`She was born ___ ${x}.`,`My parents got married ___ ${x}.`,`The school opened ___ ${x}.`]):pickA([`See you ___ ${x}.`,`The party is ___ ${x}.`,`We usually play football ___ ${x}.`,`I always get up early ___ ${x}.`]);
    return {q:`Complete: ${f}`,o:[pr,...['at','on','in'].filter(p=>p!==pr)],e:`We say "${pr} ${x}".`,l:pr==='at'?2:1}; }
  const [q,w]=pickA(window.QW); return {q:`Complete: ${q}`,o:uniq([w,...shuffle(['Who','Where','When','Why','How','What','Whose','Which']).filter(x=>x!==w)],4),e:`The answer tells us ${w==='Who'?'a person':w==='Where'?'a place':w==='When'?'a time':w==='Why'?'a reason':w==='Whose'?'an owner':'what we asked about'}: ${w}.`,l:2};
 };
