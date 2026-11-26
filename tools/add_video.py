@@ -29,7 +29,7 @@ CFG = {
 JS = open('src/shared/video.js').read()
 for lab, cfg in CFG.items():
     p = f'labs/{lab}.html'; s = open(p).read()
-    s = re.sub(r'\n?<!--VIDEO-->.*?<!--/VIDEO-->', '', s, flags=re.S)
+    s = re.sub(r'\n?<!--VIDEO-->.*?<!--/VIDEO-->\n?', '', s, flags=re.S)
     block = '\n<!--VIDEO--><script>window.VCLIPS=' + json.dumps(cfg, ensure_ascii=False) + ';</script><script>' + JS + '</script><!--/VIDEO-->'
     i = s.rfind('</body>'); s = s[:i] + block + '\n' + s[i:]
     open(p, 'w').write(s); print(lab, 'ok')
