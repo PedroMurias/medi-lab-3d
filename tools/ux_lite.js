@@ -18,6 +18,7 @@
  '#mlLoad b{font-size:20px;letter-spacing:.5px}#mlLoad p{max-width:min(520px,86vw);text-align:center;font-size:16px;line-height:1.45;margin:0;opacity:.9}#mlLoad small{opacity:.6}'+
  '@keyframes mlspin{to{transform:rotate(360deg)}}'+
  '#mlLite{position:fixed;right:10px;bottom:10px;z-index:70;border:1px solid rgba(0,229,255,.4);background:rgba(6,14,28,.82);color:#cfefff;font:600 12px "Space Grotesk",system-ui,sans-serif;padding:6px 11px;border-radius:999px;cursor:pointer;backdrop-filter:blur(4px)}#mlLite.on{background:#1f8a5a;color:#fff;border-color:#7dffb2}'+
+ '@media (max-width:1100px){#mlLite{top:14px;bottom:auto;right:8px;width:40px;height:40px;padding:0;font-size:0;border-radius:12px}#mlLite::before{content:"⚡";font-size:18px}#mlLite.on::before{content:"🐢"}}'+
  '#mlToast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);z-index:9998;background:rgba(6,14,28,.94);color:#fff;border:1px solid rgba(255,210,63,.5);border-radius:14px;padding:10px 14px;font:500 14px "Space Grotesk",system-ui;display:flex;gap:10px;align-items:center;max-width:92vw}#mlToast button{border:0;border-radius:9px;padding:6px 12px;font:700 13px inherit;cursor:pointer}';
  document.head.appendChild(st);
  var L=document.createElement('div'); L.id='mlLoad'; L.innerHTML='<div class="r"></div><b>Carregant el laboratori…</b><p>💡 <i>Saps que…?</i> '+F[Math.floor(Math.random()*F.length)]+'</p><small>La primera vegada pot trigar una mica.</small>';

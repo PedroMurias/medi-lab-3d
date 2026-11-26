@@ -253,6 +253,7 @@ body.walking #panel{display:none!important}body.walking #c{cursor:move}
  '#mlLoad b{font-size:20px;letter-spacing:.5px}#mlLoad p{max-width:min(520px,86vw);text-align:center;font-size:16px;line-height:1.45;margin:0;opacity:.9}#mlLoad small{opacity:.6}'+
  '@keyframes mlspin{to{transform:rotate(360deg)}}'+
  '#mlLite{position:fixed;right:10px;bottom:10px;z-index:70;border:1px solid rgba(0,229,255,.4);background:rgba(6,14,28,.82);color:#cfefff;font:600 12px "Space Grotesk",system-ui,sans-serif;padding:6px 11px;border-radius:999px;cursor:pointer;backdrop-filter:blur(4px)}#mlLite.on{background:#1f8a5a;color:#fff;border-color:#7dffb2}'+
+ '@media (max-width:1100px){#mlLite{top:14px;bottom:auto;right:8px;width:40px;height:40px;padding:0;font-size:0;border-radius:12px}#mlLite::before{content:"⚡";font-size:18px}#mlLite.on::before{content:"🐢"}}'+
  '#mlToast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);z-index:9998;background:rgba(6,14,28,.94);color:#fff;border:1px solid rgba(255,210,63,.5);border-radius:14px;padding:10px 14px;font:500 14px "Space Grotesk",system-ui;display:flex;gap:10px;align-items:center;max-width:92vw}#mlToast button{border:0;border-radius:9px;padding:6px 12px;font:700 13px inherit;cursor:pointer}';
  document.head.appendChild(st);
  var L=document.createElement('div'); L.id='mlLoad'; L.innerHTML='<div class="r"></div><b>Carregant el laboratori…</b><p>💡 <i>Saps que…?</i> '+F[Math.floor(Math.random()*F.length)]+'</p><small>La primera vegada pot trigar una mica.</small>';
@@ -444,7 +445,7 @@ const DOORS=[
  {f:'ciutadania',e:'🏛️',u:'Unitats 8 i 9',n:'Ciutadania i món',c:0x34e0e0,d:'Institucions, Unió Europea, riquesa, ODS i consum responsable.'},
  {f:'repte',e:'🏆',u:'Concurs',n:'El Gran Repte',c:0xf5b62e,d:'Concurs de preguntes de totes les unitats: 15 preguntes, comodins i fins a 1.000.000 de punts.'}];
 $('#mGrid').innerHTML=DOORS.map(D=>`<a href="labs/${D.f}.html"><span class="ic">${D.e}</span><span class="u">${D.u}</span><h3>${D.n}</h3><p>${D.d}</p></a>`).join('');
-const canvas=$('#c'), renderer=new THREE.WebGLRenderer({canvas,antialias:true}); setTimeout(()=>window.__LITE&&__LITE(renderer,scene),0); renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.18;
+const canvas=$('#c'), renderer=new THREE.WebGLRenderer({canvas,antialias:true}); setTimeout(()=>window.__LITE&&__LITE(renderer,scene),0);   renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.18;
 const scene=new THREE.Scene(); scene.background=new THREE.Color(0x050b18); scene.fog=new THREE.Fog(0x050b18,18,40);
 /* il·luminació d'entorn (reflexos suaus als materials) */
 { const pm=new THREE.PMREMGenerator(renderer); scene.environment=pm.fromScene(new RoomEnvironment(),.04).texture; scene.environmentIntensity=.35; pm.dispose(); }

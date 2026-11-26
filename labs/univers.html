@@ -222,6 +222,7 @@ body.walking #panel{display:none!important}body.walking #c{cursor:move}
  '#mlLoad b{font-size:20px;letter-spacing:.5px}#mlLoad p{max-width:min(520px,86vw);text-align:center;font-size:16px;line-height:1.45;margin:0;opacity:.9}#mlLoad small{opacity:.6}'+
  '@keyframes mlspin{to{transform:rotate(360deg)}}'+
  '#mlLite{position:fixed;right:10px;bottom:10px;z-index:70;border:1px solid rgba(0,229,255,.4);background:rgba(6,14,28,.82);color:#cfefff;font:600 12px "Space Grotesk",system-ui,sans-serif;padding:6px 11px;border-radius:999px;cursor:pointer;backdrop-filter:blur(4px)}#mlLite.on{background:#1f8a5a;color:#fff;border-color:#7dffb2}'+
+ '@media (max-width:1100px){#mlLite{top:14px;bottom:auto;right:8px;width:40px;height:40px;padding:0;font-size:0;border-radius:12px}#mlLite::before{content:"⚡";font-size:18px}#mlLite.on::before{content:"🐢"}}'+
  '#mlToast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);z-index:9998;background:rgba(6,14,28,.94);color:#fff;border:1px solid rgba(255,210,63,.5);border-radius:14px;padding:10px 14px;font:500 14px "Space Grotesk",system-ui;display:flex;gap:10px;align-items:center;max-width:92vw}#mlToast button{border:0;border-radius:9px;padding:6px 12px;font:700 13px inherit;cursor:pointer}';
  document.head.appendChild(st);
  var L=document.createElement('div'); L.id='mlLoad'; L.innerHTML='<div class="r"></div><b>Carregant el laboratori…</b><p>💡 <i>Saps que…?</i> '+F[Math.floor(Math.random()*F.length)]+'</p><small>La primera vegada pot trigar una mica.</small>';
@@ -711,7 +712,7 @@ const D2R=Math.PI/180;
 
 /* ================= RENDER ================= */
 const canvas=$('#c');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'}); setTimeout(()=>window.__LITE&&__LITE(renderer,scene),0);
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'}); setTimeout(()=>window.__LITE&&__LITE(renderer,scene),0);  
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.outputColorSpace=THREE.SRGBColorSpace;
 const scene=new THREE.Scene(); scene.background=new THREE.Color(0x02050c);
 if(window.UTEX2&&UTEX2.mw_px){ const cb=new THREE.CubeTextureLoader().load(['px','nx','py','ny','pz','nz'].map(k=>UTEX2['mw_'+k])); cb.colorSpace=THREE.SRGBColorSpace; scene.background=cb; scene.backgroundIntensity=.55; }
@@ -1299,6 +1300,7 @@ UX.boot({prefix:'medilab_u_',items:[{k:SUNINFO.n,n:SUNINFO.n,ic:'☀️'},...PL.
 window.__u={cimg:()=>cloudTexU.image.toDataURL(),setMode,sub,applyMode,startGame,selectClimate,openLandscape,camera,controls,ssObjs,llAng:v=>{llAng=v},trAng:v=>{trAng=v},pause:v=>{paused=v}};
 </script>
 <style>#homeBtn{display:none;flex:0 0 auto;width:40px;height:40px;line-height:40px;text-align:center;padding:0;font-size:20px;border-radius:12px;background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.45);color:#00e5ff;text-decoration:none}#homeBtn:hover{background:#00e5ff;color:#021}#homeBtn.fx{position:fixed;top:14px;left:12px;z-index:60}body.walking #homeBtn.fx{display:none!important}</style><a id="homeBtn" href="../index.html" title="Torna al laboratori central" aria-label="Torna al laboratori central">🔬</a><script>(function(){var b=document.getElementById("homeBtn");if(!(/github\.io|localhost|127\.0\.0\.1/.test(location.hostname)||location.protocol==="file:"))return;var t=document.getElementById("top");if(t)t.insertBefore(b,t.firstChild);else b.className="fx";b.style.display="block"})()</script>
+
 
 
 <!--VIDEO--><script>window.VCLIPS={"intro": {"src": "../clips/univers.mp4", "poster": "../clips/univers.jpg", "unit": "Medi·Lab 3D · Unitat 4", "title": "🌌 L'univers", "sub": "Un viatge des del Sol fins a la Terra"}};</script><script>/* Medi·Lab 3D · vídeos: intro d'entrada + targetes «Mira-ho de veritat» amb pregunta.

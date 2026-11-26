@@ -254,6 +254,7 @@ svg.chart{width:100%;height:auto;display:block}
  '#mlLoad b{font-size:20px;letter-spacing:.5px}#mlLoad p{max-width:min(520px,86vw);text-align:center;font-size:16px;line-height:1.45;margin:0;opacity:.9}#mlLoad small{opacity:.6}'+
  '@keyframes mlspin{to{transform:rotate(360deg)}}'+
  '#mlLite{position:fixed;right:10px;bottom:10px;z-index:70;border:1px solid rgba(0,229,255,.4);background:rgba(6,14,28,.82);color:#cfefff;font:600 12px "Space Grotesk",system-ui,sans-serif;padding:6px 11px;border-radius:999px;cursor:pointer;backdrop-filter:blur(4px)}#mlLite.on{background:#1f8a5a;color:#fff;border-color:#7dffb2}'+
+ '@media (max-width:1100px){#mlLite{top:14px;bottom:auto;right:8px;width:40px;height:40px;padding:0;font-size:0;border-radius:12px}#mlLite::before{content:"⚡";font-size:18px}#mlLite.on::before{content:"🐢"}}'+
  '#mlToast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);z-index:9998;background:rgba(6,14,28,.94);color:#fff;border:1px solid rgba(255,210,63,.5);border-radius:14px;padding:10px 14px;font:500 14px "Space Grotesk",system-ui;display:flex;gap:10px;align-items:center;max-width:92vw}#mlToast button{border:0;border-radius:9px;padding:6px 12px;font:700 13px inherit;cursor:pointer}';
  document.head.appendChild(st);
  var L=document.createElement('div'); L.id='mlLoad'; L.innerHTML='<div class="r"></div><b>Carregant el laboratori…</b><p>💡 <i>Saps que…?</i> '+F[Math.floor(Math.random()*F.length)]+'</p><small>La primera vegada pot trigar una mica.</small>';
@@ -1094,7 +1095,7 @@ const {$,shuf,html,showCard,quiz,subtabs}=Kit; Kit.setPrefix('medilab_esp_');
 const D2R=Math.PI/180;
 /* ================= RENDER ================= */
 const canvas=$('#c');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'}); setTimeout(()=>window.__LITE&&__LITE(renderer,scene),0);
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'}); setTimeout(()=>window.__LITE&&__LITE(renderer,scene),0);  
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.outputColorSpace=THREE.SRGBColorSpace;
 const scene=new THREE.Scene(); scene.background=new THREE.Color(0x071528); setTimeout(()=>{ Vis.backdrop(THREE,scene,'map',{radius:1200}); },0);
 const camera=new THREE.PerspectiveCamera(40,1,0.1,2000);
@@ -2021,6 +2022,7 @@ UX.boot({items:[...TERR.map(t=>({k:t.n,n:t.n,ic:'🗺️'})),...RANGES.filter(r=
 window.__s={camera,controls,THREE,MAP:()=>MAP,qshot:(kind,id)=>{ document.querySelectorAll('.pin,.lbl').forEach(e=>e.style.display='none'); if(window.__qx){ MAP.group.remove(window.__qx); } const isR=kind==='riu'; setMode(isR?'rius':'relleu'); const r=(isR?RIVERS:RANGES).find(r=>r.id===id); if(isR) for(const q of RIVERS){ q.tube.visible=q.flow.visible=false; } const pts=r.p.map(([lo,la])=>MAP.v3(lo,la,isR?.35:.9)); const tube=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),pts.length*10,isR?.32:.45,8,false),new THREE.MeshBasicMaterial({color:isR?0x1fd2ff:0xffd23f})); MAP.group.add(tube); window.__qx=tube; if(marker) marker.visible=false; const c=pts.reduce((a,b)=>a.add(b),new THREE.Vector3()).multiplyScalar(1/pts.length); home(); wake(300); return 1; },cam:(a,b,c,x,y,z)=>{camera.position.set(a,b,c);controls.target.set(x,y,z);controls.update();wake(80);},land:(lo,la)=>MAP.landAt(lo,la),X:MAP.X,Z:MAP.Z,setMode,sub,applyMode,selectClim,setMap,startGame:k=>repte.start(k),pick:(lo,la)=>R.onPick&&R.onPick([lo,la])};
 </script>
 <style>#homeBtn{display:none;flex:0 0 auto;width:40px;height:40px;line-height:40px;text-align:center;padding:0;font-size:20px;border-radius:12px;background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.45);color:#00e5ff;text-decoration:none}#homeBtn:hover{background:#00e5ff;color:#021}#homeBtn.fx{position:fixed;top:14px;left:12px;z-index:60}body.walking #homeBtn.fx{display:none!important}</style><a id="homeBtn" href="../index.html" title="Torna al laboratori central" aria-label="Torna al laboratori central">🔬</a><script>(function(){var b=document.getElementById("homeBtn");if(!(/github\.io|localhost|127\.0\.0\.1/.test(location.hostname)||location.protocol==="file:"))return;var t=document.getElementById("top");if(t)t.insertBefore(b,t.firstChild);else b.className="fx";b.style.display="block"})()</script>
+
 
 
 <!--VIDEO--><script>window.VCLIPS={"intro": {"src": "../clips/espanya.mp4", "poster": "../clips/espanya.jpg", "unit": "Medi·Lab 3D · Unitat 5", "title": "⛰️ Espanya i Europa", "sub": "Muntanyes, rius i paisatges"}};</script><script>/* Medi·Lab 3D · vídeos: intro d'entrada + targetes «Mira-ho de veritat» amb pregunta.

@@ -235,7 +235,8 @@ body.walking #panel{display:none!important}body.walking #c{cursor:move}
 .meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--li),var(--ye),var(--rd));transition:width .3s}
 .flt{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
 @media (max-width:860px){
- #stage{left:8px;right:8px;top:60px;bottom:auto;height:calc(60% - 70px);padding:4px}
+ #stage{left:8px;right:56px;top:60px;bottom:auto;height:calc(60% - 70px);padding:4px}
+ #stage .bigq{font-size:16px!important}
  .objs{grid-template-columns:repeat(auto-fill,minmax(88px,1fr))}
  .obj span{font-size:30px}
  .chip{font-size:12px;padding:5px 8px}
@@ -264,6 +265,7 @@ body.walking #panel{display:none!important}body.walking #c{cursor:move}
  '#mlLoad b{font-size:20px;letter-spacing:.5px}#mlLoad p{max-width:min(520px,86vw);text-align:center;font-size:16px;line-height:1.45;margin:0;opacity:.9}#mlLoad small{opacity:.6}'+
  '@keyframes mlspin{to{transform:rotate(360deg)}}'+
  '#mlLite{position:fixed;right:10px;bottom:10px;z-index:70;border:1px solid rgba(0,229,255,.4);background:rgba(6,14,28,.82);color:#cfefff;font:600 12px "Space Grotesk",system-ui,sans-serif;padding:6px 11px;border-radius:999px;cursor:pointer;backdrop-filter:blur(4px)}#mlLite.on{background:#1f8a5a;color:#fff;border-color:#7dffb2}'+
+ '@media (max-width:1100px){#mlLite{top:14px;bottom:auto;right:8px;width:40px;height:40px;padding:0;font-size:0;border-radius:12px}#mlLite::before{content:"⚡";font-size:18px}#mlLite.on::before{content:"🐢"}}'+
  '#mlToast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);z-index:9998;background:rgba(6,14,28,.94);color:#fff;border:1px solid rgba(255,210,63,.5);border-radius:14px;padding:10px 14px;font:500 14px "Space Grotesk",system-ui;display:flex;gap:10px;align-items:center;max-width:92vw}#mlToast button{border:0;border-radius:9px;padding:6px 12px;font:700 13px inherit;cursor:pointer}';
  document.head.appendChild(st);
  var L=document.createElement('div'); L.id='mlLoad'; L.innerHTML='<div class="r"></div><b>Carregant el laboratori…</b><p>💡 <i>Saps que…?</i> '+F[Math.floor(Math.random()*F.length)]+'</p><small>La primera vegada pot trigar una mica.</small>';
@@ -1109,7 +1111,7 @@ const {$,shuf,html,showCard,quiz,subtabs}=Kit; Kit.setPrefix('medilab_e_');
 
 /* ================= 3D ================= */
 const canvas=$('#c');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'}); setTimeout(()=>window.__LITE&&__LITE(renderer,scene),0);
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'}); setTimeout(()=>window.__LITE&&__LITE(renderer,scene),0); 
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.outputColorSpace=THREE.SRGBColorSpace; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.0; renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene(); { const pm=new THREE.PMREMGenerator(renderer); scene.environment=pm.fromScene(new RoomEnvironment(),.04).texture; scene.environmentIntensity=.35; pm.dispose(); }
 const SKY=new THREE.Color(0x6fb3e8), SKYD=new THREE.Color(0x8a8f96); scene.background=SKY.clone(); scene.fog=new THREE.Fog(0x9cc8ec,90,220);
