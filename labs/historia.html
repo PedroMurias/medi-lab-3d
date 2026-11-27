@@ -183,7 +183,7 @@ button{font-family:inherit;color:inherit}
  var lite=false; try{ lite=localStorage.getItem('mlLite')==='1'; }catch(e){}
  var R=null,S=null,rendered=0;
  function applyLite(on){ lite=on; try{ localStorage.setItem('mlLite',on?'1':'0'); }catch(e){} var b=document.getElementById('mlLite'); if(b){ b.classList.toggle('on',on); b.textContent=on?'🐢 Mode lleuger: sí':'⚡ Mode lleuger'; }
-  if(!R) return; R.__ppr=R.__ppr||R.getPixelRatio(); R.setPixelRatio(on?Math.min(1,R.__ppr)*0.75:R.__ppr); R.shadowMap.enabled=!on; try{ var c=R.domElement; R.setSize(c.clientWidth,c.clientHeight,false); }catch(e){}
+  if(!R) return; R.__ppr=R.__ppr||R.getPixelRatio(); R.setPixelRatio(on?Math.min(1,R.__ppr)*0.75:R.__ppr); R.shadowMap.enabled=!on; try{ var c=R.domElement; if(c.clientWidth>0&&c.clientHeight>0) R.setSize(c.clientWidth,c.clientHeight,false); }catch(e){}
   if(S) S.traverse(function(o){ if(o.isLight&&o.castShadow!==undefined){ if(on){ o.userData.__cs=o.castShadow; o.castShadow=false; } else if(o.userData.__cs!=null) o.castShadow=o.userData.__cs; } if(o.material){ (Array.isArray(o.material)?o.material:[o.material]).forEach(function(m){ m.needsUpdate=true; }); } }); }
  window.__LITE=function(renderer,scene){ R=renderer; S=scene;
   var orig=R.render.bind(R); R.render=function(a,b){ orig(a,b); if(++rendered===2) setTimeout(hide,400); };
@@ -1045,7 +1045,7 @@ function focus(sp){ if(!cur) return; user.yaw=0; user.pitch=0; user.zoom=1;
  ring.position.copy(P).add(new THREE.Vector3(0,0,.15)); const rs=dist*.2; ring.scale.set(rs,rs,1); ringT0=performance.now(); }
 const getE=k=>{ let pr=cache.get(k); if(!pr){ pr=build(k).catch(e=>{ console.warn(e); cache.delete(k); return null; }); cache.set(k,pr); } return pr; };
 function preload(k){ getE(k); }
-async function open(k){ active=true;
+async function open(k){ active=true; size();
  if(key!==k||!cur){ key=k; if(cur){ cur.G.visible=false; cur=null; } cv.style.display='none';
   const e=await getE(k); if(key!==k||!active) return false; if(!e){ active=false; return false; }
   cur=e; cur.G.visible=true; curP.set(0,0,ZC*1.15); curL.set(0,0,-DEPTH*.45); cutT=100; U.uCut.value=100; }

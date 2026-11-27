@@ -4,7 +4,7 @@ import json, re, os
 
 def q(t,o,ok,why): return {'t':t,'o':o,'ok':ok,'why':why}
 FORMES = [
- {'src':'../clips/espelma.mp4','poster':'../clips/espelma.jpg','title':'Espelma','cap':'Encenem una espelma amb un llumí',
+ {'src':'../clips/espelma.mp4','poster':'../clips/espelma.jpg','title':'Espelma','cap':'La flama d\'una espelma','dur':5,
   'q':q("Quina transformació d'energia has vist a l'espelma?",['Química → tèrmica i lluminosa','Elèctrica → lluminosa','Mecànica → tèrmica'],0,"L'energia química de la cera es transforma en energia tèrmica (calor) i lluminosa (llum).")},
  {'src':'../clips/radiador.mp4','poster':'../clips/radiador.jpg','title':'Radiador','cap':'Endollem un radiador elèctric',
   'q':q('Quina transformació fa el radiador?',['Química → tèrmica','Elèctrica → tèrmica','Elèctrica → mecànica'],1,"L'electricitat passa per la resistència, que s'escalfa: energia elèctrica → tèrmica.")},

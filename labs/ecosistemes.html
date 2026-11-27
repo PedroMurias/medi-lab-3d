@@ -255,7 +255,7 @@ body.followMode .pin{opacity:0!important;pointer-events:none} body.followMode #p
  var lite=false; try{ lite=localStorage.getItem('mlLite')==='1'; }catch(e){}
  var R=null,S=null,rendered=0;
  function applyLite(on){ lite=on; try{ localStorage.setItem('mlLite',on?'1':'0'); }catch(e){} var b=document.getElementById('mlLite'); if(b){ b.classList.toggle('on',on); b.textContent=on?'🐢 Mode lleuger: sí':'⚡ Mode lleuger'; }
-  if(!R) return; R.__ppr=R.__ppr||R.getPixelRatio(); R.setPixelRatio(on?Math.min(1,R.__ppr)*0.75:R.__ppr); R.shadowMap.enabled=!on; try{ var c=R.domElement; R.setSize(c.clientWidth,c.clientHeight,false); }catch(e){}
+  if(!R) return; R.__ppr=R.__ppr||R.getPixelRatio(); R.setPixelRatio(on?Math.min(1,R.__ppr)*0.75:R.__ppr); R.shadowMap.enabled=!on; try{ var c=R.domElement; if(c.clientWidth>0&&c.clientHeight>0) R.setSize(c.clientWidth,c.clientHeight,false); }catch(e){}
   if(S) S.traverse(function(o){ if(o.isLight&&o.castShadow!==undefined){ if(on){ o.userData.__cs=o.castShadow; o.castShadow=false; } else if(o.userData.__cs!=null) o.castShadow=o.userData.__cs; } if(o.material){ (Array.isArray(o.material)?o.material:[o.material]).forEach(function(m){ m.needsUpdate=true; }); } }); }
  window.__LITE=function(renderer,scene){ R=renderer; S=scene;
   var orig=R.render.bind(R); R.render=function(a,b){ orig(a,b); if(++rendered===2) setTimeout(hide,400); };
