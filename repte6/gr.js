@@ -172,6 +172,18 @@ window.GR = (function () {
     const sent = [], got = []; a.forEach(d => sent.push(d.data())); b.forEach(d => got.push(d.data()));
     const by = (x, y) => y.t - x.t; return { sent: sent.sort(by), got: got.sort(by) };
   }
+  /* ---- escoltes en directe (Firestore només cobra una lectura per document que canvia) ---- */
+  async function watchChal(cb) {
+    if (!ACC) return () => {}; await sdk();
+    let s = [], g = []; const by = (x, y) => y.t - x.t, emit = () => cb({ sent: s.slice().sort(by), got: g.slice().sort(by) });
+    const u1 = db.collection('gr_chal').where('fromUid', '==', ACC.uid).limit(40).onSnapshot(q => { s = []; q.forEach(d => s.push(d.data())); emit(); }, () => {});
+    const u2 = db.collection('gr_chal').where('toUid', '==', ACC.uid).limit(40).onSnapshot(q => { g = []; q.forEach(d => g.push(d.data())); emit(); }, () => {});
+    return () => { u1(); u2(); };
+  }
+  async function watchClass(cb) {
+    if (!ACC || !ACC.cls) return () => {}; await sdk();
+    return db.collection('gr_users').where('cls', '==', ACC.cls).onSnapshot(q => { const rows = []; q.forEach(d => { const x = d.data(); if (x.games) rows.push(x); }); cb(rows); }, () => {});
+  }
   async function chalSet(id, fields) { await sdk(); return db.collection('gr_chal').doc(id).update(fields); }
   async function setClassDuels(cid, on) { await sdk(); return db.collection('classes').doc(cid).update({ noDuels: !on }); }
 
@@ -191,5 +203,5 @@ window.GR = (function () {
   async function teacherClasses() { await sdk(); if (!ACC || !ACC.teacher) return []; const out = []; const q = ACC.admin ? await db.collection('classes').get() : await db.collection('classes').where('teacher', '==', ACC.email).get(); q.forEach(d => out.push({ id: d.id, ...d.data() })); return out; }
 
   return { get acc() { return ACC; }, get lastErr() { return lastErr; }, preload: () => sdk().catch(() => {}), login, loginGoogle, logout, resume, record, points, duelBonus,
-    presence, setAcceptCh, classMates, duelCreate, duelJoin, duelWatch, duelSet, watchInvites, chalCreate, chalList, chalSet, setClassDuels, classBoard, myGames, me, student, studentGames, teacherClasses, weekKey, onChange: f => listeners.push(f), available: () => location.protocol === 'https:' && !/claude\.ai|claudeusercontent/.test(location.hostname) };
+    presence, setAcceptCh, classMates, duelCreate, duelJoin, duelWatch, duelSet, watchInvites, chalCreate, chalList, chalSet, setClassDuels, watchChal, watchClass, classBoard, myGames, me, student, studentGames, teacherClasses, weekKey, onChange: f => listeners.push(f), available: () => location.protocol === 'https:' && !/claude\.ai|claudeusercontent/.test(location.hostname) };
 })();

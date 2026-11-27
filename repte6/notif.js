@@ -1,13 +1,11 @@
 /* El Gran Repte 6è · AVISOS (campana de la capçalera)
    - Duels: invitacions en directe, reptes rebuts i resultats dels reptes enviats (venen del mòdul Duel).
    - Classificació de la setmana: companys nous, qui t'avança, qui entra al top 3, nou líder…
-   La classificació es compara amb l'última que vas veure (guardada en aquest dispositiu). Per no gastar
-   lectures de Firebase, només es consulta en entrar i, com a molt, cada 10 minuts en obrir la campana. */
+   La classificació s'escolta en directe i es compara amb l'última que vas veure (guardada en aquest dispositiu). */
 window.Notif = (function () {
   const $ = id => document.getElementById(id);
   const E = s => escHTML(s == null ? '' : s);
-  const MIN_GAP = 10 * 60e3, KEEP = 40;
-  let busy = false;
+  const KEEP = 40;
   const acc = () => window.GR && GR.acc;
   const key = k => 'egr6_' + k + '_' + (acc() ? acc().uid : 'x');
   const load = (k, d) => { try { return JSON.parse(localStorage.getItem(key(k))) || d; } catch (e) { return d; } };
@@ -18,13 +16,19 @@ window.Notif = (function () {
 
   /* ---------- avisos de la classificació (comparant amb l'última foto) ---------- */
   function add(list, icon, text, act) { list.unshift({ id: Date.now() + '_' + Math.random().toString(36).slice(2, 6), t: Date.now(), icon, text, act: act || 'board', read: false }); }
-  async function checkBoard(force) {
-    const a = acc(); if (!a || a.teacher || !a.cls || !GR.available() || busy) return;
-    const last = load('nb_t', 0); if (!force && Date.now() - last < MIN_GAP) return;
-    busy = true;
+  let unsubClass = null, pend = null, debounce = null;
+  /* escolta en directe de la classificació de la classe: cada canvi (una partida de qualsevol company) arriba sol */
+  async function listen() {
+    const a = acc(); if (unsubClass || !a || a.teacher || !a.cls || !GR.available() || !GR.watchClass) return;
+    unsubClass = true;
+    try { unsubClass = await GR.watchClass(rows => { pend = rows; clearTimeout(debounce); debounce = setTimeout(() => diff(pend), 1200); }); } catch (e) { unsubClass = null; }
+  }
+  async function checkBoard() { listen(); }
+  function diff(raw) {
+    const a = acc(); if (!a || !raw) return;
     try {
       const wk = GR.weekKey();
-      const rows = (await GR.classBoard(a.cls)).map(r => ({ uid: r.uid, name: r.name, p: r.wk === wk ? (r.ptsW || 0) : 0 })).filter(r => r.p > 0).sort((x, y) => y.p - x.p);
+      const rows = raw.map(r => ({ uid: r.uid, name: r.name, p: r.wk === wk ? (r.ptsW || 0) : 0 })).filter(r => r.p > 0).sort((x, y) => y.p - x.p);
       const pos = {}; rows.forEach((r, i) => { pos[r.uid] = i + 1; });
       const prev = load('snap', null), list = load('list', []), before = list.length;
       const names = {}; rows.forEach(r => { names[r.uid] = r.name; });
@@ -50,8 +54,8 @@ window.Notif = (function () {
       save('snap', { wk, pos }); save('nb_t', Date.now());
       save('list', list.slice(0, KEEP));
       if (list.length > before) ding();
-    } catch (e) { /* sense connexió: ja ho mirarem més tard */ }
-    busy = false; render();
+    } catch (e) { /* */ }
+    render();
   }
 
   /* ---------- avisos de duels (en viu, del mòdul Duel) ---------- */
@@ -107,6 +111,6 @@ window.Notif = (function () {
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('notif-panel') && !$('notif-panel').classList.contains('hidden')) close(); });
 
   /* en entrar amb el compte: una consulta de la classificació (si fa més de 10 min de l'última) */
-  function onLogin() { render(); checkBoard(false); }
+  function onLogin() { render(); listen(); }
   return { open, close, render, onLogin, check: checkBoard };
 })();

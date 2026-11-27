@@ -54,6 +54,8 @@ window.Duel = (function () {
     startInvites();
   }
   function renderHub(loading) {
+    const typed = ($('duel-code') || {}).value || '', focused = document.activeElement && document.activeElement.id === 'duel-code';
+    setTimeout(() => { const i = $('duel-code'); if (i && typed) { i.value = typed; if (focused) i.focus(); } }, 0);
     const a = acc(), c = cfgNow(), now = Date.now();
     const online = mates.filter(m => m.seen && now - m.seen < 3 * 60e3);
     const accepting = mates.filter(m => m.acceptCh);
@@ -72,7 +74,7 @@ window.Duel = (function () {
           ${btn('Crear duel', 'create')}
           <div class="flex gap-2 mt-3"><input id="duel-code" maxlength="4" autocapitalize="characters" autocomplete="off" placeholder="CODI" class="flex-1 min-w-0 px-3 py-2.5 rounded-xl bg-slate-950 border-2 border-slate-700 focus:border-cyan-400 text-white font-display font-black text-lg tracking-[.3em] text-center uppercase focus:outline-none">${sbtn('Unir-me', 'joincode')}</div>
           <p id="duel-err" class="text-xs text-rose-400 font-bold mt-2"></p>
-          ${online.length ? `<p class="text-[11px] font-bold uppercase text-slate-400 mt-3 mb-1">Connectats ara</p><div class="flex flex-wrap gap-1.5">${online.slice(0, 12).map(m => `<span class="px-2 py-1 rounded-lg bg-emerald-500/10 border border-emerald-400/40 text-[11px] font-bold text-slate-200">🟢 ${E(first(m.name))}</span>`).join('')}</div>` : ''}
+          ${online.length ? `<p class="text-[11px] font-bold uppercase text-slate-400 mt-3 mb-1">Ara mateix a Duels</p><div class="flex flex-wrap gap-1.5">${online.slice(0, 12).map(m => `<span class="px-2 py-1 rounded-lg bg-emerald-500/10 border border-emerald-400/40 text-[11px] font-bold text-slate-200">🟢 ${E(first(m.name))}</span>`).join('')}</div>` : ''}
         </div>
         <div class="p-4 rounded-2xl bg-white/80 border border-white/60">
           <p class="font-display font-black text-white text-lg">📨 Repte</p><p class="text-xs text-slate-400 mb-3">Tu jugues ara; el company, quan pugui (3 dies).</p>
@@ -136,7 +138,7 @@ window.Duel = (function () {
     el().innerHTML = card(head('Duel en directe', `${E(D.cfg.label)} · ${E(D.cfg.lvlName)} · ${D.n} preguntes`) + (isHost ? `
       <div class="text-center p-5 rounded-3xl bg-white border-2 border-blue-200 mb-4"><p class="text-xs font-bold uppercase tracking-widest text-slate-400">Codi del duel</p><p class="font-display font-black text-6xl tracking-[.25em] text-white leading-none mt-1">${E(D.code)}</p><p class="text-xs text-slate-400 mt-2">El rival l'escriu a «Duel → Unir-me».</p></div>
       ${D.invUid ? `<p class="text-center text-sm font-bold text-blue-300 mb-3">📨 Has convidat ${E(first(D.invName))}. Esperant que accepti…</p>` : ''}
-      ${online.length ? `<p class="text-[11px] font-bold uppercase text-slate-400 mb-1.5">O convida algú connectat</p><div class="space-y-1.5 mb-3">${online.map(m => `<div class="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/70 border border-white/60"><span class="text-emerald-500">●</span><span class="flex-1 text-sm font-bold text-slate-200">${E(m.name)}</span>${D.invUid === m.uid ? '<span class="text-[11px] text-blue-300 font-bold">convidat</span>' : sbtn('Convidar', 'invite', `data-uid="${E(m.uid)}" data-name="${E(m.name)}"`)}</div>`).join('')}</div>` : '<p class="text-xs text-slate-400 text-center mb-3">Ara mateix no veig cap company connectat: digues-li el codi.</p>'}
+      ${online.length ? `<p class="text-[11px] font-bold uppercase text-slate-400 mb-1.5">O convida algú que és ara a Duels</p><div class="space-y-1.5 mb-3">${online.map(m => `<div class="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/70 border border-white/60"><span class="text-emerald-500">●</span><span class="flex-1 text-sm font-bold text-slate-200">${E(m.name)}</span>${D.invUid === m.uid ? '<span class="text-[11px] text-blue-300 font-bold">convidat</span>' : sbtn('Convidar', 'invite', `data-uid="${E(m.uid)}" data-name="${E(m.name)}"`)}</div>`).join('')}</div>` : '<p class="text-xs text-slate-400 text-center mb-3">Ara mateix no hi ha cap company a Duels: digues-li el codi.</p>'}
       <div class="flex items-center justify-center gap-2 text-slate-400 text-sm"><span class="animate-pulse">⏳</span> Esperant rival…</div>` : `<p class="text-center text-slate-400 py-6">Entrant al duel…</p>`) + `<div class="mt-4">${btn('Cancel·lar', 'cancel', 'from-slate-200 to-slate-300 border-slate-400 text-slate-700')}</div>`);
   }
   function hud(idx, N) {
@@ -299,9 +301,16 @@ window.Duel = (function () {
   function alertMsg(m) { const e = $('duel-err'); if (e) e.textContent = m; else alert(m); }
 
   /* =================== invitacions i avisos =================== */
+  let unsubCh = null, starting = false;
+  const hubVisible = () => view === 'hub' && $('screen-duel') && !$('screen-duel').classList.contains('hidden');
   async function startInvites() {
-    if (unsubInv || !acc() || acc().teacher || !GR.available()) return;
-    try { unsubInv = await GR.watchInvites(list => { const had = invites.length; invites = list; if (list.length > had) playSFX('correct'); if (view === 'hub' && !$('screen-duel').classList.contains('hidden')) renderHub(false); badge(); }); } catch (e) { /* */ }
+    if (starting || unsubInv || !acc() || acc().teacher || !GR.available()) return;
+    starting = true;
+    try {
+      unsubInv = await GR.watchInvites(list => { const had = invites.length; invites = list; if (list.length > had) playSFX('correct'); if (hubVisible()) renderHub(false); badge(); });
+      unsubCh = await GR.watchChal(c => { CH = c; if (hubVisible()) renderHub(false); badge(); });
+    } catch (e) { /* */ }
+    starting = false;
   }
   function badge() {
     if (window.Notif) Notif.render();
@@ -310,7 +319,7 @@ window.Duel = (function () {
     const n = invites.length + CH.got.filter(x => x.st === 'pending' && x.exp > now).length + CH.sent.filter(x => x.st === 'done' && !x.seenFrom).length;
     b.textContent = n; b.classList.toggle('hidden', !n);
   }
-  async function refresh() { if (!acc() || acc().teacher || !GR.available()) return; GR.presence(); startInvites(); try { CH = await GR.chalList(); } catch (e) { /* */ } badge(); }
+  async function refresh() { if (!acc() || acc().teacher || !GR.available()) return; await startInvites(); if (!unsubCh) { try { CH = await GR.chalList(); } catch (e) { /* */ } } badge(); }
   function leave() {
     if (view === 'live' && D && (D.st === 'play' || D.st === 'lobby')) GR.duelSet(D.code, D.st === 'lobby' ? { st: 'done' } : { st: 'gone', goneUid: acc().uid }).catch(() => {});
     stopAll(); view = 'hub'; solo = null;
@@ -338,8 +347,8 @@ window.Duel = (function () {
   });
   document.addEventListener('change', e => { if (e.target && e.target.id === 'duel-accept') { const on = e.target.checked; try { localStorage.setItem('egr6_acceptch', on ? '1' : '0'); } catch (x) { /* */ } GR.setAcceptCh(on); } });
   document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target && e.target.id === 'duel-code') join(e.target.value); });
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && acc()) GR.presence && GR.presence(); });
-  setInterval(() => { if (document.visibilityState === 'visible' && acc() && !acc().teacher && GR.available()) GR.presence(); }, 120000);
+  /* «connectat»: només mentre ets a la pantalla de duels (així no es desperten les escoltes de tota la classe) */
+  setInterval(() => { if (document.visibilityState === 'visible' && acc() && !acc().teacher && GR.available() && $('screen-duel') && !$('screen-duel').classList.contains('hidden') && (view === 'hub' || (view === 'live' && D && D.st === 'lobby'))) GR.presence(); }, 60000);
 
   return { open, leave, refresh, badge, state: () => ({ invites, got: CH.got, sent: CH.sent }), get view() { return view; }, _pack: pack, _unpack: unpack };
 })();
