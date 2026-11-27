@@ -2259,7 +2259,11 @@ window.__app={sel:(id)=>select(id,true),R:()=>renderer,S:()=>scene,M:()=>motion,
 
 
 
-<!--VIDEO--><script>window.VCLIPS={"intro": {"src": "../clips/cos.mp4", "poster": "../clips/cos.jpg", "unit": "Medi·Lab 3D · Unitat 1", "title": "🫀 El cos humà", "sub": "Una màquina perfecta que treballa sense parar"}};</script><script>/* Medi·Lab 3D · vídeos: intro d'entrada + targetes «Mira-ho de veritat» amb pregunta.
+
+
+
+
+<!--VIDEO--><script>window.VCLIPS={"intro": {"src": "../clips/cos.mp4", "poster": "../clips/cos.jpg", "unit": "Medi·Lab 3D · Unitat 1", "title": "🫀 El cos humà", "sub": "Una màquina perfecta que treballa sense parar"}, "cards": {"moviment": [{"src": "../clips/cos_moviment.mp4", "poster": "../clips/cos_moviment.jpg", "title": "La cama en moviment", "cap": "Ossos i músculs quan correm", "dur": 5, "q": {"t": "Què fa moure els ossos de la cama?", "o": ["Els músculs, que s'encongeixen i s'estiren", "Els ossos es mouen sols", "La pell"], "ok": 0, "why": "Els músculs estan units als ossos. Quan s'encongeixen, estiren l'os i el fan moure; treballen per parelles."}}]}};</script><script>/* Medi·Lab 3D · vídeos: intro d'entrada + targetes «Mira-ho de veritat» amb pregunta.
    Config a window.VCLIPS = { intro:{src,poster,unit,title,sub}, cards:{ <mode>:[{src,poster,title,cap,q:{t,o:[...],ok:index}}] } }
    Els vídeos són fitxers a part (../clips/) i només es descarreguen quan cal. */
 (function(){
@@ -2401,9 +2405,6 @@ intro(false);
 if(document.readyState==='loading') addEventListener('DOMContentLoaded',()=>{ initCards(); helpBtn(); hookObjects(); }); else { initCards(); helpBtn(); hookObjects(); }
 })();
 </script><!--/VIDEO-->
-
-
-
 <script id="cosPlay">/* Espanya: esquemes (mapes conceptuals), completa i activitats 3D */
 window.EspPlay=function(C){
  const shuf=a=>{ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
