@@ -1,0 +1,225 @@
+rules_version = '2';
+// Regles de seguretat d'Explora Primària (Firestore).
+// Copia-les a Firebase → Firestore Database → Reglas → Publicar.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function prov() { return request.auth.token.firebase.sign_in_provider; }
+    function authed() { return request.auth != null && request.auth.token.email != null
+      && (request.auth.token.email_verified == true || prov() == 'microsoft.com' || prov() == 'password'); }
+    function email() { return request.auth.token.email.lower(); }
+    function rosterPath() { return /databases/$(database)/documents/roster/$(email()); }
+    function claimed() { return exists(/databases/$(database)/documents/claims/$(request.auth.uid)); }
+    function verified() { return authed() && (prov() != 'password' || claimed()); }
+    function school() { return verified() && email().matches('.*@balmesonline[.]com$'); }
+    function isTeacher() { return verified() && exists(/databases/$(database)/documents/teachers/$(email())); }
+    function member() { return school() || isTeacher(); }
+    function tPath() { return /databases/$(database)/documents/teachers/$(email()); }
+    // ESO: professors d'assignatura d'una classe (camp staffList de la classe)
+    function staffOf(d) { return email() in d.get('staffList', []); }
+    function staffIn(cid) { return staffOf(get(/databases/$(database)/documents/classes/$(cid)).data); }
+    function isAdmin() { return verified() && (email() in ['pmurias6@gmail.com', 'pedro.murias@balmesonline.com']
+      || (exists(tPath()) && get(tPath()).data.get('admin', false) == true)); }
+
+    // Mestres: només es donen d'alta des de la consola de Firebase (document amb el correu com a ID).
+    match /teachers/{em} {
+      allow get: if (authed() && em == email()) || isAdmin();
+      allow list: if isAdmin();
+      allow create, update: if isAdmin() && em == em.lower();
+      allow delete: if isAdmin() && em != email();
+    }
+
+    // Ajustos de l'escola (codi de convidat…): els llegeix tothom, els canvia l'administrador.
+    match /settings/{doc} {
+      allow get: if true;
+      allow write: if isAdmin();
+    }
+
+    // El primer cop que un alumne entra, demostra que sap la contrasenya de la llista del mestre.
+    match /claims/{uid} {
+      allow create: if authed() && prov() == 'password' && request.auth.uid == uid
+        && request.resource.data.email == email()
+        && ((exists(rosterPath()) && request.resource.data.pw == get(rosterPath()).data.pw)
+          || (exists(tPath()) && request.resource.data.pw == get(tPath()).data.get('pw', '')));
+      allow get: if authed() && request.auth.uid == uid;
+      allow list, update, delete: if false;
+    }
+
+    // Llista d'alumnes (correu, nom, contrasenya i classe), creada pel mestre des del panell.
+    match /roster/{em} {
+      allow get: if authed() && ((em == email() && claimed()) || isAdmin() || (isTeacher() && resource.data.teacher == email()));
+      allow list: if isAdmin() || (isTeacher() && (resource.data.teacher == email() || (resource.data.classId is string && staffIn(resource.data.classId))));
+      allow create: if em.matches('.*@balmesonline[.]com$') && (isAdmin() || (isTeacher() && request.resource.data.teacher == email()));
+      allow update: if isAdmin() || (isTeacher() && resource.data.teacher == email() && request.resource.data.teacher == email())
+        || (isTeacher() && resource.data.classId is string && staffIn(resource.data.classId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lv', 'ou']));
+      allow delete: if isAdmin() || (isTeacher() && resource.data.teacher == email());
+    }
+
+    // Revisió dels llibres: cada mestre escriu les seves notes (ID = pregunta__correu); l'administració les marca com a resoltes.
+    match /reviews/{rid} {
+      allow read: if isTeacher() || isAdmin();
+      allow create, update: if (isTeacher() || isAdmin()) && request.resource.data.by == email()
+        && rid == request.resource.data.q + '__' + email()
+        || (isAdmin() && resource != null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['done']));
+      allow delete: if isAdmin() || ((isTeacher()) && resource.data.by == email());
+    }
+
+    // Avisos de l'alumnat: «⚑ Aquesta pregunta està malament?» (ID = pregunta__uid). Cada alumne crea els seus, un per
+    // pregunta (si torna a avisar, es reescriu el seu i es torna a obrir); no pot llegir els avisos. Els llegeix el
+    // professorat; l'administració els marca com a resolts.
+    match /reports/{rid} {
+      allow create, update: if member() && request.resource.data.by == request.auth.uid
+        && rid == request.resource.data.q + '__' + request.auth.uid
+        && request.resource.data.keys().hasOnly(['q', 'c', 's', 'ti', 'si', 'xi', 'sub', 'ans', 'cls', 'by', 'name', 'at', 'done'])
+        && request.resource.data.q is string && request.resource.data.q.size() < 40
+        && request.resource.data.ans is string && request.resource.data.ans.size() <= 200
+        && request.resource.data.name is string && request.resource.data.name.size() <= 60
+        && request.resource.data.done == false;
+      allow read: if isTeacher() || isAdmin();
+      allow update: if isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['done']);
+      allow delete: if isAdmin();
+    }
+
+    // 🚩 Avisos d'errors del professorat (botó de qualsevol pantalla). Els crea un mestre o l'administració;
+    // els llegeix tot el professorat; només l'administració en canvia l'estat o els esborra.
+    match /errs/{eid} {
+      allow create: if (isTeacher() || isAdmin()) && request.resource.data.by == email()
+        && request.resource.data.st == 'open'
+        && request.resource.data.keys().hasOnly(['kind', 'note', 'patch', 'q', 'c', 's', 'ti', 'si', 'xi', 'sub', 'item', 'view', 'ua', 'by', 'name', 'at', 'st'])
+        && request.resource.data.note is string && request.resource.data.note.size() <= 600
+        && request.resource.data.item is string && request.resource.data.item.size() <= 5000;
+      allow read: if isTeacher() || isAdmin();
+      allow update: if isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['st', 'doneBy', 'doneAt']);
+      allow delete: if isAdmin();
+    }
+
+    // Correccions aprovades per l'administració: totes les apps les llegeixen i les apliquen en carregar els llibres.
+    match /fixes/{q} {
+      allow read: if member() || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // ⚔️ Desafiaments entre companys (ESO). duelban: alumnes amb els desafiaments desactivats pel professorat.
+    match /duelban/{uid} {
+      allow read: if member() || isTeacher() || isAdmin();
+      allow write: if isTeacher() || isAdmin();
+    }
+    function duelBanned(u) { return exists(/databases/$(database)/documents/duelban/$(u)); }
+    function duelsOff(cid) { return get(/databases/$(database)/documents/classes/$(cid)).data.get('noDuels', false) == true; }
+    // duelok: qui accepta desafiaments (nom de pila, classe, temes oberts). No es pot activar si està bloquejat.
+    match /duelok/{uid} {
+      allow read: if member() || isTeacher() || isAdmin();
+      allow delete: if (request.auth != null && request.auth.uid == uid) || isTeacher() || isAdmin();
+      allow create, update: if member() && request.auth.uid == uid && request.resource.data.uid == uid
+        && !duelBanned(uid) && !duelsOff(request.resource.data.cls)
+        && request.resource.data.keys().hasOnly(['uid', 'cls', 'name', 'av', 'open', 'at'])
+        && request.resource.data.name is string && request.resource.data.name.size() <= 30
+        && request.resource.data.cls is string;
+    }
+    // duels: el crea qui desafia (a) contra un company (b) que accepta desafiaments i és de la mateixa classe;
+    // cadascú només pot escriure el seu resultat, una sola vegada. Només el veuen els dos i el professorat.
+    match /duels/{did} {
+      function okDoc(u) { return exists(/databases/$(database)/documents/duelok/$(u)); }
+      function okCls(u) { return get(/databases/$(database)/documents/duelok/$(u)).data.cls; }
+      function part() { return request.auth != null && (resource.data.a == request.auth.uid || resource.data.b == request.auth.uid); }
+      allow read: if part() || isTeacher() || isAdmin();
+      allow create: if member() && request.resource.data.a == request.auth.uid && request.resource.data.b != request.auth.uid
+        && request.resource.data.st == 'open' && request.resource.data.ra == null && request.resource.data.rb == null
+        && request.resource.data.qs is list && request.resource.data.qs.size() <= 10
+        && request.resource.data.keys().hasOnly(['cls', 'a', 'an', 'aav', 'b', 'bn', 'bav', 's', 'qs', 'ra', 'rb', 'aAt', 'bAt', 'at', 'exp', 'st'])
+        && okDoc(request.auth.uid) && okDoc(request.resource.data.b)
+        && okCls(request.auth.uid) == request.resource.data.cls && okCls(request.resource.data.b) == request.resource.data.cls
+        && !duelBanned(request.auth.uid) && !duelBanned(request.resource.data.b) && !duelsOff(request.resource.data.cls);
+      allow update: if part() && (
+           (resource.data.a == request.auth.uid && resource.data.ra == null && request.resource.data.ra is int
+             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ra', 'aAt', 'st']))
+        || (resource.data.b == request.auth.uid && resource.data.rb == null && request.resource.data.rb is int
+             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rb', 'bAt', 'st'])));
+      allow delete: if isAdmin();
+    }
+
+    // Classes: el codi és l'ID del document.
+    match /classes/{cid} {
+      allow get: if member();
+      allow list: if isAdmin() || (isTeacher() && (resource.data.teacher == email() || staffOf(resource.data)));
+      allow create: if cid.size() == 6 && (isAdmin() || (isTeacher() && request.resource.data.teacher == email()));
+      allow update: if isAdmin() || (isTeacher() && resource.data.teacher == email() && request.resource.data.teacher == email())
+        || (isTeacher() && staffOf(resource.data) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['open', 'noDuels']));
+      allow delete: if isAdmin() || (isTeacher() && resource.data.teacher == email());
+    }
+
+    // Alumnes: cadascú escriu el seu resum; el llegeix ell i el mestre de la seva classe.
+    match /students/{uid} {
+      function okClass(d) {
+        return (d.classId == null && d.teacher == null)
+          || (d.classId is string && get(/databases/$(database)/documents/classes/$(d.classId)).data.teacher == d.teacher);
+      }
+      allow get: if authed() && (request.auth.uid == uid || isAdmin() || (isTeacher() && resource.data.teacher == email())
+        || (isTeacher() && resource.data.classId is string && staffIn(resource.data.classId)));
+      allow list: if isAdmin() || (isTeacher() && resource.data.teacher == email())
+        || (isTeacher() && resource.data.classId is string && staffIn(resource.data.classId));
+      allow create, update: if member() && request.auth.uid == uid
+        && request.resource.data.email == email() && okClass(request.resource.data);
+      allow delete: if isAdmin() || (isTeacher() && resource.data.teacher == email());
+
+      // Còpia completa del progrés (per continuar en un altre aparell): només l'alumne.
+      match /priv/{doc} {
+        allow read, write: if authed() && request.auth.uid == uid;
+      }
+    }
+
+    // ===== El Gran Repte 6è: punts i classificació =====
+    // Un document per alumne (totals) i, a dins, l'historial de partides. Els alumnes de l'escola veuen els totals
+    // (classificació de la classe); cada alumne només escriu els seus. El professorat ho llegeix tot.
+    match /gr_users/{uid} {
+      allow get, list: if member() || isTeacher() || isAdmin();
+      allow create, update: if member() && request.auth.uid == uid && request.resource.data.uid == uid
+        && request.resource.data.email == email()
+        && request.resource.data.name is string && request.resource.data.name.size() <= 60;
+      allow delete: if isAdmin();
+      match /games/{gid} {
+        allow read: if (request.auth != null && request.auth.uid == uid) || isTeacher() || isAdmin();
+        allow create: if member() && request.auth.uid == uid;
+        allow update, delete: if isAdmin();
+      }
+    }
+
+    // ⚔️ El Gran Repte · duels en directe (ID = codi de 4 lletres). Cadascú només escriu les seves respostes.
+    match /gr_duels/{code} {
+      function grPlayer() { return member() || isAdmin(); }
+      function isHost() { return request.auth != null && resource.data.hostUid == request.auth.uid; }
+      function isGuest() { return request.auth != null && resource.data.guestUid == request.auth.uid; }
+      allow get: if grPlayer();
+      allow list: if grPlayer() && (resource.data.invUid == request.auth.uid || resource.data.hostUid == request.auth.uid || isTeacher() || isAdmin());
+      allow create: if grPlayer() && code.size() == 4 && request.resource.data.hostUid == request.auth.uid
+        && request.resource.data.st == 'lobby' && request.resource.data.guestUid == null
+        && request.resource.data.qs is list && request.resource.data.qs.size() <= 12
+        && request.resource.data.aH.size() == 0 && request.resource.data.aG.size() == 0
+        && !duelBanned(request.auth.uid) && (request.resource.data.cls == '' || !duelsOff(request.resource.data.cls));
+      allow update: if grPlayer() && (
+           (resource.data.st == 'lobby' && resource.data.guestUid == null && request.resource.data.guestUid == request.auth.uid
+             && request.auth.uid != resource.data.hostUid && request.resource.data.st == 'play' && !duelBanned(request.auth.uid)
+             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['guestUid', 'guestName', 'guestAv', 'st', 'seenG']))
+        || (isHost() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['aH', 'seenH', 'st', 'goneUid', 'invUid', 'invName']))
+        || (isGuest() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['aG', 'seenG', 'st', 'goneUid'])));
+      allow delete: if isAdmin();
+    }
+    // 📨 El Gran Repte · reptes entre companys de classe (només a qui accepta reptes). Sense xat.
+    match /gr_chal/{cid} {
+      function grU(u) { return get(/databases/$(database)/documents/gr_users/$(u)).data; }
+      function partC() { return request.auth != null && (resource.data.fromUid == request.auth.uid || resource.data.toUid == request.auth.uid); }
+      allow read: if partC() || isTeacher() || isAdmin();
+      allow create: if member() && request.resource.data.fromUid == request.auth.uid && request.resource.data.toUid != request.auth.uid
+        && request.resource.data.id == cid && request.resource.data.st == 'pending' && request.resource.data.aTo == null
+        && request.resource.data.qs is list && request.resource.data.qs.size() <= 12 && request.resource.data.aFrom is list
+        && request.resource.data.keys().hasOnly(['id', 'fromUid', 'fromName', 'fromAv', 'toUid', 'toName', 'cls', 'qs', 'cfg', 'aFrom', 'okFrom', 'aTo', 'okTo', 'st', 't', 'exp', 'seenFrom'])
+        && grU(request.resource.data.toUid).get('acceptCh', false) == true
+        && grU(request.resource.data.toUid).get('cls', '') == request.resource.data.cls
+        && !duelBanned(request.auth.uid) && !duelBanned(request.resource.data.toUid) && !duelsOff(request.resource.data.cls);
+      allow update: if partC() && (
+           (resource.data.toUid == request.auth.uid && resource.data.st == 'pending' && request.resource.data.st in ['done', 'rejected']
+             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['aTo', 'okTo', 'st', 'tTo']))
+        || (resource.data.fromUid == request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['seenFrom'])));
+      allow delete: if isAdmin();
+    }
+  }
+}

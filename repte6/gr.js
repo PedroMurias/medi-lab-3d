@@ -63,8 +63,9 @@ window.GR = (function () {
       if (r && r.exists) { const d = r.data(); if (d.name) name = d.name; if (d.classId) cls = d.classId; }
       else { try { const s = await db.collection('students').doc(u.uid).get(); if (s.exists && s.data().classId) cls = s.data().classId; } catch (e) { /* */ } }
     }
-    if (cls) { try { const c = await db.collection('classes').doc(cls).get(); if (c.exists) clsName = c.data().name || c.data().course || cls; } catch (e) { /* */ } }
-    ACC = { uid: u.uid, email, name, cls, clsName, teacher, admin };
+    let noDuels = false;
+    if (cls) { try { const c = await db.collection('classes').doc(cls).get(); if (c.exists) { clsName = c.data().name || c.data().course || cls; noDuels = !!c.data().noDuels; } } catch (e) { /* */ } }
+    ACC = { uid: u.uid, email, name, cls, clsName, teacher, admin, noDuels };
     save(); emit(); return ACC;
   }
   async function logout() { try { await sdk(); await auth.signOut(); } catch (e) { /* */ } ACC = null; save(); emit(); }
@@ -88,15 +89,22 @@ window.GR = (function () {
   function points(st) { const base = 15 + 10 * (st.ok || 0) + 4 * (st.rosco || 0) + (st.total && st.ok === st.total ? 20 : 0); return Math.round(base * (st.lvl === 'dificil' ? 1.25 : 1)); }
 
   /* ---- registrar una partida: historial + totals de l'alumne ---- */
+  const today = () => new Date().toISOString().slice(0, 10);
+  const DUEL_CAP = 5; // només els 5 primers duels/reptes del dia sumen punts
   async function record(st) {
     if (!ACC || ACC.teacher) return null;
     await sdk();
-    const pts = points(st), wk = weekKey(), mk = monthKey(), now = Date.now();
-    const ref = db.collection('gr_users').doc(ACC.uid);
-    await ref.collection('games').add({ t: now, mode: st.mode, lvl: st.lvl, src: st.src || [], ok: st.ok || 0, total: st.total || 0, rosco: st.rosco == null ? null : st.rosco, gold: st.gold == null ? null : st.gold, streak: st.streak || 0, pts,
-      answers: (st.answers || []).slice(0, 60), roscoA: st.roscoA || null });
+    const isDuel = st.mode === 'duel' || st.mode === 'repte';
+    let pts = points(st) + (st.bonus || 0);
+    const wk = weekKey(), mk = monthKey(), now = Date.now();
+    const ref = db.collection('gr_users').doc(ACC.uid), gref = ref.collection('games').doc();
     await db.runTransaction(async tx => {
       const s = await tx.get(ref); const d = s.exists ? s.data() : {};
+      const dN = d.dDay === today() ? (d.dN || 0) : 0;
+      if (isDuel && dN >= DUEL_CAP) pts = 0;
+      tx.set(gref, { t: now, mode: st.mode, lvl: st.lvl, src: st.src || [], ok: st.ok || 0, total: st.total || 0, rosco: st.rosco == null ? null : st.rosco, gold: st.gold == null ? null : st.gold, streak: st.streak || 0, pts,
+        answers: (st.answers || []).slice(0, 60), roscoA: st.roscoA || null, vs: st.vs || null, res: st.res || null, capped: isDuel && dN >= DUEL_CAP });
+      const duelX = isDuel ? { dDay: today(), dN: dN + 1, dW: (d.dW || 0) + (st.res === 'W' ? 1 : 0), dD: (d.dD || 0) + (st.res === 'D' ? 1 : 0), dL: (d.dL || 0) + (st.res === 'L' ? 1 : 0) } : {};
       const topics = d.topics || {}, wrong = d.wrong || {};
       (st.perTopic || []).forEach(([k, ok, n]) => { const t = topics[k] || { ok: 0, n: 0 }; t.ok += ok; t.n += n; topics[k] = t; });
       (st.wrongQ || []).forEach(q => { const id = hash(q); wrong[id] = { q: q.slice(0, 120), n: ((wrong[id] || {}).n || 0) + 1 }; });
@@ -106,15 +114,71 @@ window.GR = (function () {
         wk, ptsW: (d.wk === wk ? (d.ptsW || 0) : 0) + pts, gamesW: (d.wk === wk ? (d.gamesW || 0) : 0) + 1,
         mk, ptsM: (d.mk === mk ? (d.ptsM || 0) : 0) + pts,
         bestRosco: Math.max(d.bestRosco || 0, st.rosco || 0), bestGold: Math.max(d.bestGold || 0, st.gold || 0),
-        topics, wrong: wrong2 }, { merge: true });
+        topics, wrong: wrong2, ...duelX }, { merge: true });
     });
     return pts;
   }
+  /* Resultat d'un repte que vaig enviar jo (la partida ja es va guardar quan el vaig jugar): només bonus i V/E/D */
+  async function duelBonus(res, bonus) {
+    if (!ACC || ACC.teacher) return 0; await sdk();
+    const ref = db.collection('gr_users').doc(ACC.uid), wk = weekKey(), mk = monthKey();
+    await db.runTransaction(async tx => { const s = await tx.get(ref); const d = s.exists ? s.data() : {};
+      tx.set(ref, { uid: ACC.uid, email: ACC.email, name: ACC.name, cls: ACC.cls || null, pts: (d.pts || 0) + bonus,
+        wk, ptsW: (d.wk === wk ? (d.ptsW || 0) : 0) + bonus, mk, ptsM: (d.mk === mk ? (d.ptsM || 0) : 0) + bonus,
+        dW: (d.dW || 0) + (res === 'W' ? 1 : 0), dD: (d.dD || 0) + (res === 'D' ? 1 : 0), dL: (d.dL || 0) + (res === 'L' ? 1 : 0) }, { merge: true }); });
+    return bonus;
+  }
+
+  /* ================= DUELS ================= */
+  const meStub = () => ({ uid: ACC.uid, email: ACC.email, name: ACC.name, cls: ACC.cls || null });
+  /* qui està connectat: es marca en obrir el joc i cada 2 minuts mentre la pestanya és visible */
+  async function presence(extra) { if (!ACC || ACC.teacher) return; try { await sdk(); await db.collection('gr_users').doc(ACC.uid).set({ ...meStub(), seen: Date.now(), ...(extra || {}) }, { merge: true }); } catch (e) { /* */ } }
+  const setAcceptCh = on => presence({ acceptCh: !!on });
+  async function classMates() { if (!ACC || !ACC.cls) return []; await sdk(); const q = await db.collection('gr_users').where('cls', '==', ACC.cls).get(); const a = []; q.forEach(d => a.push(d.data())); return a.filter(x => x.uid !== ACC.uid); }
+  const LET = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  async function duelCreate(data) {
+    await sdk();
+    for (let i = 0; i < 8; i++) {
+      const code = Array.from({ length: 4 }, () => LET[Math.floor(Math.random() * LET.length)]).join('');
+      const ref = db.collection('gr_duels').doc(code);
+      try { const ex = await ref.get(); if (ex.exists) continue; } catch (e) { /* */ }
+      await ref.set({ code, cls: ACC.cls || '', hostUid: ACC.uid, hostName: ACC.name, hostAv: data.av || '', guestUid: null, guestName: '', guestAv: '',
+        invUid: data.invUid || null, invName: data.invName || '', qs: data.qs, n: data.n, cfg: data.cfg, st: 'lobby', aH: [], aG: [], seenH: Date.now(), seenG: 0, goneUid: null, t: Date.now() });
+      return code;
+    }
+    throw new Error('No s\'ha pogut crear el duel. Torna-ho a provar.');
+  }
+  async function duelJoin(code, av) {
+    await sdk(); code = String(code || '').trim().toUpperCase();
+    const ref = db.collection('gr_duels').doc(code);
+    return db.runTransaction(async tx => {
+      const s = await tx.get(ref); if (!s.exists) throw new Error('No hi ha cap duel amb aquest codi.');
+      const d = s.data();
+      if (d.hostUid === ACC.uid) throw new Error('Aquest duel l\'has creat tu. Espera que s\'hi apunti el rival.');
+      if (d.st !== 'lobby' || d.guestUid) throw new Error('Aquest duel ja ha començat o s\'ha acabat.');
+      if (Date.now() - d.t > 2 * 3600e3) throw new Error('Aquest codi ha caducat.');
+      tx.update(ref, { guestUid: ACC.uid, guestName: ACC.name, guestAv: av || '', st: 'play', seenG: Date.now() });
+      return code;
+    });
+  }
+  async function duelWatch(code, cb) { await sdk(); return db.collection('gr_duels').doc(code).onSnapshot(s => cb(s.exists ? s.data() : null), () => cb(null)); }
+  async function duelSet(code, fields) { await sdk(); return db.collection('gr_duels').doc(code).update(fields); }
+  async function watchInvites(cb) { if (!ACC) return () => {}; await sdk(); return db.collection('gr_duels').where('invUid', '==', ACC.uid).where('st', '==', 'lobby').onSnapshot(q => { const a = []; q.forEach(d => a.push(d.data())); cb(a.filter(x => Date.now() - x.t < 15 * 60e3)); }, () => cb([])); }
+  /* ---- reptes (cadascú quan pot) ---- */
+  async function chalCreate(c) { await sdk(); const ref = db.collection('gr_chal').doc(); await ref.set({ ...c, id: ref.id, fromUid: ACC.uid, fromName: ACC.name, cls: ACC.cls || '', st: 'pending', aTo: null, okTo: null, t: Date.now(), exp: Date.now() + 3 * 864e5, seenFrom: false }); return ref.id; }
+  async function chalList() {
+    if (!ACC) return { sent: [], got: [] }; await sdk();
+    const [a, b] = await Promise.all([db.collection('gr_chal').where('fromUid', '==', ACC.uid).limit(40).get(), db.collection('gr_chal').where('toUid', '==', ACC.uid).limit(40).get()]);
+    const sent = [], got = []; a.forEach(d => sent.push(d.data())); b.forEach(d => got.push(d.data()));
+    const by = (x, y) => y.t - x.t; return { sent: sent.sort(by), got: got.sort(by) };
+  }
+  async function chalSet(id, fields) { await sdk(); return db.collection('gr_chal').doc(id).update(fields); }
+  async function setClassDuels(cid, on) { await sdk(); return db.collection('classes').doc(cid).update({ noDuels: !on }); }
 
   /* ---- lectures per al tauler ---- */
   async function classBoard(cls) {
     await sdk(); const q = await db.collection('gr_users').where('cls', '==', cls).get();
-    const rows = []; q.forEach(d => rows.push(d.data()));
+    const rows = []; q.forEach(d => { const x = d.data(); if (x.games) rows.push(x); });
     const wk = weekKey(), mk = monthKey();
     rows.forEach(r => { if (r.wk !== wk) { r.ptsW = 0; r.gamesW = 0; } if (r.mk !== mk) r.ptsM = 0; });
     return rows;
@@ -126,5 +190,6 @@ window.GR = (function () {
   async function studentGames(uid, limit = 40) { await sdk(); if (!ACC || !ACC.teacher) return []; const q = await db.collection('gr_users').doc(uid).collection('games').orderBy('t', 'desc').limit(limit).get(); const a = []; q.forEach(d => a.push({ id: d.id, ...d.data() })); return a; }
   async function teacherClasses() { await sdk(); if (!ACC || !ACC.teacher) return []; const out = []; const q = ACC.admin ? await db.collection('classes').get() : await db.collection('classes').where('teacher', '==', ACC.email).get(); q.forEach(d => out.push({ id: d.id, ...d.data() })); return out; }
 
-  return { get acc() { return ACC; }, get lastErr() { return lastErr; }, preload: () => sdk().catch(() => {}), login, loginGoogle, logout, resume, record, points, classBoard, myGames, me, student, studentGames, teacherClasses, weekKey, onChange: f => listeners.push(f), available: () => location.protocol === 'https:' && !/claude\.ai|claudeusercontent/.test(location.hostname) };
+  return { get acc() { return ACC; }, get lastErr() { return lastErr; }, preload: () => sdk().catch(() => {}), login, loginGoogle, logout, resume, record, points, duelBonus,
+    presence, setAcceptCh, classMates, duelCreate, duelJoin, duelWatch, duelSet, watchInvites, chalCreate, chalList, chalSet, setClassDuels, classBoard, myGames, me, student, studentGames, teacherClasses, weekKey, onChange: f => listeners.push(f), available: () => location.protocol === 'https:' && !/claude\.ai|claudeusercontent/.test(location.hostname) };
 })();

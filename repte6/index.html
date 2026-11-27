@@ -135,6 +135,18 @@
         html[data-theme="light"] #p1-feedback-bar.bg-rose-500\/10 { background: #FDE8E9 !important; border-color: #E5484D !important; }
         html[data-theme="light"] #p1-feedback-title { font-size: 1.05rem !important; }
         html[data-theme="light"] #p1-feedback-desc { color: #0E1B5B !important; font-size: .9rem !important; }
+        /* Duels: opcions blanques, lletra groga, verd/vermell en revelar */
+        .d-opt { display:flex; align-items:center; gap:.65rem; width:100%; padding:.85rem 1rem; border-radius:1rem; background:#fff; border:2px solid #C9D8F5; color:#0E1B5B; font-weight:700; font-size:1rem; box-shadow:0 3px 0 #C9D8F5; transition:transform .1s, border-color .15s; }
+        .d-opt:not([disabled]):hover { border-color:#2F6BFF; }
+        .d-opt:not([disabled]):active { transform:translateY(2px); box-shadow:0 1px 0 #C9D8F5; }
+        .d-let { width:1.9rem; height:1.9rem; border-radius:.6rem; background:#FFC93C; color:#0E1B5B; display:flex; align-items:center; justify-content:center; font-family:'Outfit',sans-serif; font-weight:900; flex-shrink:0; }
+        .d-ok { background:#E3F8EE !important; border-color:#1DB47A !important; box-shadow:0 3px 0 #1DB47A !important; }
+        .d-ok .d-let { background:#1DB47A; color:#fff; }
+        .d-ko { background:#FDE8E9 !important; border-color:#E5484D !important; box-shadow:0 3px 0 #E5484D !important; }
+        .d-ko .d-let { background:#E5484D; color:#fff; }
+        .d-dim { opacity:.5; }
+        .d-sel { border-color:#2F6BFF !important; background:#EEF3FF !important; }
+        .d-chip { font-size:.7rem; font-weight:800; padding:.15rem .45rem; border-radius:.5rem; background:rgba(14,27,91,.08); color:#0E1B5B; white-space:nowrap; }
         /* Pantalla final: caixes blanques i text fosc */
         html[data-theme="light"] :is(#screen-results, #screen-mode-results) .glass-panel { background: rgba(255,255,255,.9) !important; }
         html[data-theme="light"] :is(#res-review-container, #res-p1-review, #res-badges, #mr-review, #mr-badges, #mr-podium > div, #mr-stats > div, #screen-results .grid > div) { background: #FFFFFF !important; border: 2px solid #C9D8F5 !important; box-shadow: 0 4px 14px rgba(47,107,255,.08); }
@@ -537,7 +549,7 @@
                     <h3 class="font-display font-extrabold text-sm uppercase tracking-wider text-amber-300">2 · Mode de joc</h3>
                     <span id="mode-desc" class="hidden sm:block text-xs text-slate-400 max-w-md text-right"></span>
                 </div>
-                <div id="mode-selector" class="grid grid-cols-2 lg:grid-cols-4 gap-3"></div>
+                <div id="mode-selector" class="grid grid-cols-2 lg:grid-cols-5 gap-3"></div>
                 <p id="mode-desc-m" class="sm:hidden text-xs text-slate-400 mt-2"></p>
                 <div id="train-setup" class="hidden mt-3 flex items-center gap-2 flex-wrap">
                     <span class="text-xs font-bold text-slate-400">Preguntes:</span>
@@ -904,6 +916,8 @@
         </section>
 
     <!-- Classificació i progrés -->
+    <section id="screen-duel" class="hidden max-w-4xl w-full mx-auto"><div id="duel-body"></div></section>
+
     <section id="screen-board" class="hidden max-w-5xl w-full mx-auto">
         <div class="glass-panel rounded-3xl p-5 sm:p-8 relative overflow-hidden">
             <div class="flex items-center justify-between gap-3 flex-wrap mb-4">
@@ -1173,7 +1187,9 @@
             { id:'concurs', icon:'🎬', name:'Concurs', short:'Ràfega + Rosco', desc:'Ràfega de 10 preguntes i després el Gran Rosco de la A a la Z. Cada encert suma segons per al Rosco.' },
             { id:'cofres', icon:'💰', name:'Cofres', short:'Or i sort', desc:'12 preguntes. Cada encert obre un cofre del tresor: or, doble... o res! Guanya or i supera el teu rècord.' },
             { id:'entrena', icon:'🎯', name:'Entrenament', short:'Sense temps', desc:'Per practicar sense pressa: tu tries quantes preguntes, de què i de quin nivell. Sense temps ni punts, amb explicació a cada resposta i repàs de les fallades.' },
-            { id:'equips', icon:'👥', name:'Equips', short:'Pissarra digital', desc:'Per a la pissarra digital: de 2 a 4 equips responen per torns. 100 punts per encert i bonus per ratxa.' }
+            { id:'equips', icon:'👥', name:'Equips', short:'Pissarra digital', desc:'Per a la pissarra digital: de 2 a 4 equips responen per torns. 100 punts per encert i bonus per ratxa.' },
+            { id:'duel', icon:'⚔️', name:'Duel', short:'1 contra 1', desc:'Duel contra un company: en directe (tots dos alhora, amb un codi) o amb un repte que ell juga quan pot. Guanya qui encerta més; la velocitat no compta. Cal el compte de l\'escola.' },
+            { id:'repte', icon:'📨', name:'Repte', hidden:true }
         ];
         const LEVELS = [
             /* w: pes de cada nivell de pregunta (1 bàsica · 2 mitjana · 3 ampliació) · pref: nivell que es prefereix dels generadors · hard: activa les variants difícils dels generadors */
@@ -1187,9 +1203,10 @@
         const curLevel = () => LEVELS.find(l => l.id === selLevelId);
 
         function renderModeSelector() {
-            document.getElementById('mode-selector').innerHTML = MODES.map(m => `
-                <button type="button" data-game-mode="${m.id}" class="p-4 rounded-2xl border-2 flex flex-col items-center gap-1.5 text-center transition btn-arcade ${selModeId === m.id ? 'bg-amber-400/15 border-amber-400 text-white shadow-lg shadow-amber-500/20' : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-600'}">
-                    <span class="text-4xl sm:text-5xl">${m.icon}</span><span class="font-display font-black text-base sm:text-lg">${m.name}</span><span class="text-[11px] leading-snug ${selModeId === m.id ? 'text-slate-300' : 'text-slate-500'}">${m.short}</span></button>`).join('');
+            document.getElementById('mode-selector').innerHTML = MODES.filter(m => !m.hidden).map(m => `
+                <button type="button" data-game-mode="${m.id}" class="relative p-4 rounded-2xl border-2 flex flex-col items-center gap-1.5 text-center transition btn-arcade ${m.id === 'duel' ? 'col-span-2 lg:col-span-1' : ''} ${selModeId === m.id ? 'bg-amber-400/15 border-amber-400 text-white shadow-lg shadow-amber-500/20' : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-600'}">
+                    <span class="text-4xl sm:text-5xl">${m.icon}</span><span class="font-display font-black text-base sm:text-lg">${m.name}</span><span class="text-[11px] leading-snug ${selModeId === m.id ? 'text-slate-300' : 'text-slate-500'}">${m.short}</span>${m.id === 'duel' ? '<span id="duel-badge" class="hidden absolute -top-2 -right-2 min-w-[24px] h-6 px-1.5 rounded-full bg-rose-500 text-white text-xs font-black flex items-center justify-center shadow">0</span>' : ''}</button>`).join('');
+            if (window.Duel) Duel.badge();
             document.getElementById('mode-desc').textContent = MODES.find(m => m.id === selModeId).desc;
             document.getElementById('mode-desc-m').textContent = MODES.find(m => m.id === selModeId).desc;
             const ts = document.getElementById('teams-setup');
@@ -1483,7 +1500,7 @@
             catch (ex) { err.textContent = ex.message || 'No s\'ha pogut entrar amb Google.'; playSFX('wrong'); }
             b.disabled = false;
         }
-        function showWelcome() { const bb = document.getElementById('btn-back'); bb.classList.remove('hidden'); bb.classList.add('flex'); switchScreen('screen-welcome'); renderAccount(); renderModeSelector(); window.scrollTo(0, 0); }
+        function showWelcome() { const bb = document.getElementById('btn-back'); bb.classList.remove('hidden'); bb.classList.add('flex'); switchScreen('screen-welcome'); renderAccount(); renderModeSelector(); window.scrollTo(0, 0); if (window.Duel) Duel.refresh(); }
         function showLanding() {
             const bb = document.getElementById('btn-back'); bb.classList.add('hidden'); bb.classList.remove('flex');
             switchScreen('screen-login');
@@ -1537,7 +1554,8 @@
             const t = e.target.closest('[data-btab]'); if (t) { boardTab = t.dataset.btab; renderBoardTabs(); loadBoard(); return; }
             const r = e.target.closest('[data-brange]'); if (r) { boardRange = r.dataset.brange; loadBoard(); return; }
             const c = e.target.closest('[data-bcls]'); if (c) { boardCls = c.dataset.bcls; boardStu = null; loadBoard(); return; }
-            const st = e.target.closest('[data-bstu]'); if (st) { boardStu = st.dataset.bstu; loadBoard(); }
+            const st = e.target.closest('[data-bstu]'); if (st) { boardStu = st.dataset.bstu; loadBoard(); return; }
+            const du = e.target.closest('[data-bduels]'); if (du) { const on = du.dataset.bduels === 'on'; if (!confirm(on ? 'Activar els duels i reptes per a aquesta classe?' : 'Desactivar els duels i reptes per a aquesta classe? (També s\'aplica als desafiaments d\'Explora.)')) return; GR.setClassDuels(boardCls, on).then(loadBoard).catch(x => alert('No s\'ha pogut canviar: ' + (x.message || x))); }
         });
         let boardStu = null;
         const pct = (ok, n) => n ? Math.round(100 * ok / n) : 0;
@@ -1607,6 +1625,9 @@
                         <p class="text-xs text-slate-400 mt-1">${rk.next ? `${toNext} punts per ser <b>${rk.next[2]} ${rk.next[1]}</b>` : 'Has arribat al rang màxim!'}</p></div>
                     <div class="text-center">${ring(pct(m.ok, m.total), colP(pct(m.ok, m.total)), 84)}<p class="text-[10px] font-bold uppercase text-slate-400 mt-1">encerts</p></div></div>
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">${tile('🏆', 'Punts', m.pts || 0, (m.ptsW || 0) + ' aquesta setmana')}${tile('🎮', 'Partides', m.games || 0, last7 + ' els últims 7 dies')}${tile('🔤', 'Millor Rosco', (m.bestRosco || 0) + '<span class="text-sm text-slate-400">/26</span>')}${tile('🪙', 'Millor or', m.bestGold || 0, 'mode Cofres')}</div>
+                ${(m.dW || 0) + (m.dD || 0) + (m.dL || 0) ? (() => { const riv = {}; games.filter(g => g.vs).forEach(g => { const r = riv[g.vs] = riv[g.vs] || { n: 0, W: 0, D: 0, L: 0 }; r.n++; if (g.res) r[g.res]++; }); const top = Object.entries(riv).sort((a, b) => b[1].n - a[1].n).slice(0, 3);
+                    return `<div class="p-4 rounded-2xl border border-white/60 bg-white/80 mb-4 flex flex-col sm:flex-row sm:items-center gap-3"><div class="flex items-center gap-3"><span class="text-3xl">⚔️</span><div><p class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Duels</p><p class="font-display font-black text-xl text-white"><span class="text-emerald-500">${m.dW || 0}V</span> · <span class="text-slate-400">${m.dD || 0}E</span> · <span class="text-rose-500">${m.dL || 0}D</span></p></div></div>
+                    ${top.length ? `<div class="sm:ml-auto flex flex-wrap gap-1.5">${top.map(([n, r]) => `<span class="px-2.5 py-1 rounded-lg bg-slate-950/40 border border-white/10 text-xs text-slate-200"><b>${escHTML(n.split(' ')[0])}</b> ${r.W}-${r.D}-${r.L}</span>`).join('')}</div>` : ''}</div>`; })() : ''}
                 <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-4">
                   <div class="lg:col-span-3 p-4 rounded-2xl border border-white/60 bg-white/80 text-slate-200"><h4 class="font-display font-bold text-sm text-white mb-1">📈 Evolució (% d'encerts per partida)</h4>${lineChart(games)}</div>
                   <div class="lg:col-span-2 p-4 rounded-2xl border border-white/60 bg-white/80"><h4 class="font-display font-bold text-sm text-white mb-2">🗓️ Últimes 3 setmanes</h4>${activityDots(games)}<p class="text-[11px] text-slate-400 mt-2">Cada quadrat és un dia: com més fosc, més partides.</p>
@@ -1631,7 +1652,8 @@
             const week = GR.weekKey();
             lastSummary = ['Classe', 'Alumne/a', 'Partides', 'Punts', 'Punts setmana', 'Encerts', 'Total', '% encerts', 'Millor Rosco', 'Última activitat'].join(';') + '\n' + rows.map(r => [boardCls, r.name, r.games || 0, r.pts || 0, r.wk === week ? r.ptsW || 0 : 0, r.ok || 0, r.total || 0, pct(r.ok, r.total), r.bestRosco || 0, r.updated ? new Date(r.updated).toLocaleDateString('ca-ES') : ''].join(';')).join('\n');
             el.innerHTML = `<div class="flex gap-2 flex-wrap mb-4 items-center">${classes.map(c => `<button type="button" data-bcls="${c.id}" class="px-3 py-1.5 rounded-lg border text-xs font-bold ${boardCls === c.id ? 'bg-amber-400/20 border-amber-400 text-amber-100' : 'bg-slate-950/60 border-slate-700 text-slate-400'}">${escHTML(c.name || c.course || c.id)}</button>`).join('')}
-                <button type="button" onclick="copySummary()" class="ml-auto px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-xs font-bold text-white">📋 Copiar CSV</button></div>
+                ${(() => { const cc = classes.find(c => c.id === boardCls) || {}; return `<button type="button" data-bduels="${cc.noDuels ? 'on' : 'off'}" class="ml-auto px-3 py-1.5 rounded-lg border text-xs font-bold ${cc.noDuels ? 'bg-rose-500/10 border-rose-400/40 text-rose-300' : 'bg-emerald-500/10 border-emerald-400/40 text-emerald-300'}">⚔️ Duels ${cc.noDuels ? 'desactivats' : 'activats'}</button>`; })()}
+                <button type="button" onclick="copySummary()" class="px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-xs font-bold text-white">📋 Copiar CSV</button></div>
                 <p id="mr-copied" class="hidden text-xs text-emerald-300 font-bold mb-2"></p>
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">${tile('🧑‍🎓', 'Alumnes amb partides', rows.length)}${tile('🔥', 'Actius aquesta setmana', rows.filter(r => r.wk === week && r.gamesW).length, 'de ' + rows.length)}${tile('🎮', 'Partides totals', rows.reduce((a, r) => a + (r.games || 0), 0), rows.reduce((a, r) => a + (r.wk === week ? r.gamesW || 0 : 0), 0) + ' aquesta setmana')}${tile('🎯', 'Encerts de la classe', pct(rows.reduce((a, r) => a + (r.ok || 0), 0), rows.reduce((a, r) => a + (r.total || 0), 0)) + '%')}</div>
                 <p class="text-xs text-slate-400 mb-3">Toca un alumne/a per veure la seva evolució i totes les respostes de cada partida.</p>
@@ -1653,12 +1675,12 @@
             const chart = lineChart(games);
             const topics = Object.entries(m.topics || {}).sort((a, b) => b[1].n - a[1].n);
             const worst = Object.values(m.wrong || {}).sort((a, b) => b.n - a.n).slice(0, 8);
-            const modeName = id => (MODES.find(x => x.id === id) || {}).name || id;
+            const modeName = id => (MODES.find(x => x.id === id) || {}).name || id; const RESI = { W: '🏆', D: '🤝', L: '❌' };
             const modeIcon = id => (MODES.find(x => x.id === id) || {}).icon || '🎮';
             const ansRow = a => `<div class="flex items-start gap-2 px-2.5 py-1.5 rounded-lg ${a.c ? 'bg-emerald-500/10' : 'bg-rose-500/10'} text-xs"><span class="shrink-0">${a.c ? '✅' : '❌'}</span><div class="flex-1 min-w-0"><p class="text-slate-200 leading-snug">${escHTML(a.q)}</p>${a.c ? `<p class="text-[11px] text-emerald-300">${escHTML(a.ok)}</p>` : `<p class="text-[11px] text-rose-300">Va respondre: <b>${a.a ? escHTML(a.a) : 'sense resposta'}</b> · Correcta: <b class="text-emerald-300">${escHTML(a.ok)}</b></p>`}</div><span class="text-[10px] text-slate-500 shrink-0 hidden sm:inline">${escHTML(a.cat || '')}</span></div>`;
             const roscoRow = r => `<span title="${escHTML(r.clue)}&#10;Resposta: ${escHTML(r.ok)}${r.a ? '&#10;Va dir: ' + escHTML(r.a) : ''}" class="inline-flex items-center justify-center w-7 h-7 rounded-lg font-display font-black text-xs ${r.st === 'correct' ? 'bg-emerald-500 text-white' : r.st === 'wrong' ? 'bg-rose-500 text-white' : 'bg-slate-700 text-slate-200'}">${r.l}</span>`;
             const gameCard = g => `<details class="rounded-xl bg-slate-950/50 border border-white/5 overflow-hidden"><summary class="flex items-center gap-3 px-3 py-2 text-xs cursor-pointer list-none">
-                    <span class="text-slate-500 w-12">${fmtDate(g.t)}</span><span class="flex-1 text-slate-200">${modeIcon(g.mode)} ${escHTML(modeName(g.mode))} · nivell ${escHTML(g.lvl || '')} · <b>${g.ok}/${g.total}</b> (${pct(g.ok, g.total)}%)${g.rosco != null ? ' · Rosco ' + g.rosco + '/26' : ''}${g.gold != null ? ' · ' + g.gold + ' or' : ''}</span><span class="text-amber-300 font-bold">+${g.pts}</span><span class="text-slate-500">▾</span></summary>
+                    <span class="text-slate-500 w-12">${fmtDate(g.t)}</span><span class="flex-1 text-slate-200">${modeIcon(g.mode)} ${escHTML(modeName(g.mode))}${g.vs ? ' vs ' + escHTML(g.vs) + (g.res ? ' ' + RESI[g.res] : '') : ''} · nivell ${escHTML(g.lvl || '')} · <b>${g.ok}/${g.total}</b> (${pct(g.ok, g.total)}%)${g.rosco != null ? ' · Rosco ' + g.rosco + '/26' : ''}${g.gold != null ? ' · ' + g.gold + ' or' : ''}</span><span class="text-amber-300 font-bold">+${g.pts}</span><span class="text-slate-500">▾</span></summary>
                     <div class="px-3 pb-3 space-y-1">${(g.answers || []).length ? g.answers.map(ansRow).join('') : '<p class="text-[11px] text-slate-500 py-1">Aquesta partida es va guardar abans que es registressin les respostes una per una.</p>'}
                     ${g.roscoA && g.roscoA.length ? `<p class="text-[11px] font-bold text-slate-400 pt-2">Rosco (passa el ratolí per veure la pista i la resposta)</p><div class="flex flex-wrap gap-1">${g.roscoA.map(roscoRow).join('')}</div>
                       ${g.roscoA.filter(r => r.st === 'wrong').length ? `<div class="space-y-1 pt-1">${g.roscoA.filter(r => r.st === 'wrong').map(r => `<p class="text-[11px] text-rose-300"><b>${r.l}</b> · ${escHTML(r.clue)} → va dir <b>${escHTML(r.a || '–')}</b>, era <b class="text-emerald-300">${escHTML(r.ok)}</b></p>`).join('')}</div>` : ''}` : ''}</div></details>`;
@@ -1800,6 +1822,7 @@
             }
             document.getElementById('topic-error').classList.add('hidden');
             game.playerName = nameVal;
+            if (selModeId === 'duel') { ensureAudio(); playSFX('correct'); Duel.open(); return; }
             ensureAudio();
             playSFX('correct');
 
@@ -2386,7 +2409,7 @@
            9. UTILIDADES DE NAVEGACIÓN Y ATADOS DE TECLADO
            ========================================================================= */
         function switchScreen(screenId) {
-            ['screen-login', 'screen-welcome', 'screen-phase1', 'screen-transition', 'screen-phase2', 'screen-results', 'screen-mode-results', 'screen-board'].forEach(id => {
+            ['screen-login', 'screen-welcome', 'screen-phase1', 'screen-transition', 'screen-phase2', 'screen-results', 'screen-mode-results', 'screen-board', 'screen-duel'].forEach(id => {
                 const screen = document.getElementById(id);
                 screen.classList.add('hidden');
                 screen.classList.remove('screen-enter');
@@ -2411,7 +2434,7 @@
             }
         }
 
-        function goHome() { playSFX('click'); if (!document.getElementById('screen-welcome').classList.contains('hidden')) { showLanding(); return; } resetFullApp(); }
+        function goHome() { if (window.Duel) Duel.leave(); playSFX('click'); if (!document.getElementById('screen-welcome').classList.contains('hidden')) { showLanding(); return; } resetFullApp(); }
 
         function openQuitModal() {
             document.getElementById('modal-quit').classList.remove('hidden');
@@ -2512,5 +2535,6 @@
             showLanding();
         };
     </script>
+    <script src="duel.js"></script>
 </body>
 </html>
