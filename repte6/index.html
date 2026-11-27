@@ -551,7 +551,7 @@
                     <h3 class="font-display font-extrabold text-sm uppercase tracking-wider text-amber-300">2 · Mode de joc</h3>
                     <span id="mode-desc" class="hidden sm:block text-xs text-slate-400 max-w-md text-right"></span>
                 </div>
-                <div id="mode-selector" class="grid grid-cols-2 lg:grid-cols-5 gap-3"></div>
+                <div id="mode-selector" class="grid grid-cols-2 lg:grid-cols-3 gap-3"></div>
                 <p id="mode-desc-m" class="sm:hidden text-xs text-slate-400 mt-2"></p>
                 <div id="train-setup" class="hidden mt-3 flex items-center gap-2 flex-wrap">
                     <span class="text-xs font-bold text-slate-400">Preguntes:</span>
@@ -927,6 +927,7 @@
     </div>
 
     <section id="screen-duel" class="hidden max-w-4xl w-full mx-auto"><div id="duel-body"></div></section>
+    <section id="screen-mini" class="hidden max-w-4xl w-full mx-auto"><div id="mini-body"></div></section>
 
     <section id="screen-board" class="hidden max-w-5xl w-full mx-auto">
         <div class="glass-panel rounded-3xl p-5 sm:p-8 relative overflow-hidden">
@@ -1199,6 +1200,7 @@
             { id:'entrena', icon:'🎯', name:'Entrenament', short:'Sense temps', desc:'Per practicar sense pressa: tu tries quantes preguntes, de què i de quin nivell. Sense temps ni punts, amb explicació a cada resposta i repàs de les fallades.' },
             { id:'equips', icon:'👥', name:'Equips', short:'Pissarra digital', desc:'Per a la pissarra digital: de 2 a 4 equips responen per torns. 100 punts per encert i bonus per ratxa.' },
             { id:'duel', icon:'⚔️', name:'Duel', short:'1 contra 1', desc:'Duel contra un company: en directe (tots dos alhora, amb un codi) o amb un repte que ell juga quan pot. Guanya qui encerta més; la velocitat no compta. Cal el compte de l\'escola.' },
+            { id:'mini', icon:'🧩', name:'Minijocs', short:'6 jocs curts', desc:'Sis minijocs curts amb el tema que triïs: Parelles, Penjat, Vertader o fals, Lletres desordenades, Ordena i Classifica. Només compten els encerts.' },
             { id:'repte', icon:'📨', name:'Repte', hidden:true }
         ];
         const LEVELS = [
@@ -1214,7 +1216,7 @@
 
         function renderModeSelector() {
             document.getElementById('mode-selector').innerHTML = MODES.filter(m => !m.hidden).map(m => `
-                <button type="button" data-game-mode="${m.id}" class="relative p-4 rounded-2xl border-2 flex flex-col items-center gap-1.5 text-center transition btn-arcade ${m.id === 'duel' ? 'col-span-2 lg:col-span-1' : ''} ${selModeId === m.id ? 'bg-amber-400/15 border-amber-400 text-white shadow-lg shadow-amber-500/20' : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-600'}">
+                <button type="button" data-game-mode="${m.id}" class="relative p-4 rounded-2xl border-2 flex flex-col items-center gap-1.5 text-center transition btn-arcade ${selModeId === m.id ? 'bg-amber-400/15 border-amber-400 text-white shadow-lg shadow-amber-500/20' : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-600'}">
                     <span class="text-4xl sm:text-5xl">${m.icon}</span><span class="font-display font-black text-base sm:text-lg">${m.name}</span><span class="text-[11px] leading-snug ${selModeId === m.id ? 'text-slate-300' : 'text-slate-500'}">${m.short}</span>${m.id === 'duel' ? '<span id="duel-badge" class="hidden absolute -top-2 -right-2 min-w-[24px] h-6 px-1.5 rounded-full bg-rose-500 text-white text-xs font-black flex items-center justify-center shadow">0</span>' : ''}</button>`).join('');
             if (window.Duel) Duel.badge();
             document.getElementById('mode-desc').textContent = MODES.find(m => m.id === selModeId).desc;
@@ -1272,7 +1274,8 @@
             { id:'or500', icon:'🪙', name:'Caçatresors', desc:'500 monedes d\'or en una partida de Cofres.' },
             { id:'poliglot', icon:'🌍', name:'Totes les matèries', desc:'Una partida amb 3 assignatures o més.' },
             { id:'repas', icon:'🔁', name:'Qui la segueix...', desc:'Has repassat les preguntes fallades.' },
-            { id:'veterana', icon:'🏅', name:'Veterà/ana', desc:'5 partides jugades.' }
+            { id:'veterana', icon:'🏅', name:'Veterà/ana', desc:'5 partides jugades.' },
+            { id:'mini6', icon:'🧩', name:'Tot terreny', desc:'Has jugat als 6 minijocs.' }
         ];
         const badgeKey = () => 'egr6_' + (game.playerName || '').trim().toLowerCase();
         function loadProfile() { try { return JSON.parse(localStorage.getItem(badgeKey())) || { games:0, badges:[], bestGold:0, bestRosco:0 }; } catch (e) { return { games:0, badges:[], bestGold:0, bestRosco:0 }; } }
@@ -1691,7 +1694,7 @@
             const ansRow = a => `<div class="flex items-start gap-2 px-2.5 py-1.5 rounded-lg ${a.c ? 'bg-emerald-500/10' : 'bg-rose-500/10'} text-xs"><span class="shrink-0">${a.c ? '✅' : '❌'}</span><div class="flex-1 min-w-0"><p class="text-slate-200 leading-snug">${escHTML(a.q)}</p>${a.c ? `<p class="text-[11px] text-emerald-300">${escHTML(a.ok)}</p>` : `<p class="text-[11px] text-rose-300">Va respondre: <b>${a.a ? escHTML(a.a) : 'sense resposta'}</b> · Correcta: <b class="text-emerald-300">${escHTML(a.ok)}</b></p>`}</div><span class="text-[10px] text-slate-500 shrink-0 hidden sm:inline">${escHTML(a.cat || '')}</span></div>`;
             const roscoRow = r => `<span title="${escHTML(r.clue)}&#10;Resposta: ${escHTML(r.ok)}${r.a ? '&#10;Va dir: ' + escHTML(r.a) : ''}" class="inline-flex items-center justify-center w-7 h-7 rounded-lg font-display font-black text-xs ${r.st === 'correct' ? 'bg-emerald-500 text-white' : r.st === 'wrong' ? 'bg-rose-500 text-white' : 'bg-slate-700 text-slate-200'}">${r.l}</span>`;
             const gameCard = g => `<details class="rounded-xl bg-slate-950/50 border border-white/5 overflow-hidden"><summary class="flex items-center gap-3 px-3 py-2 text-xs cursor-pointer list-none">
-                    <span class="text-slate-500 w-12">${fmtDate(g.t)}</span><span class="flex-1 text-slate-200">${modeIcon(g.mode)} ${escHTML(modeName(g.mode))}${g.vs ? ' vs ' + escHTML(g.vs) + (g.res ? ' ' + RESI[g.res] : '') : ''} · nivell ${escHTML(g.lvl || '')} · <b>${g.ok}/${g.total}</b> (${pct(g.ok, g.total)}%)${g.rosco != null ? ' · Rosco ' + g.rosco + '/26' : ''}${g.gold != null ? ' · ' + g.gold + ' or' : ''}</span><span class="text-amber-300 font-bold">+${g.pts}</span><span class="text-slate-500">▾</span></summary>
+                    <span class="text-slate-500 w-12">${fmtDate(g.t)}</span><span class="flex-1 text-slate-200">${modeIcon(g.mode)} ${escHTML(modeName(g.mode))}${g.mg ? ' · ' + escHTML(g.mg) : ''}${g.vs ? ' vs ' + escHTML(g.vs) + (g.res ? ' ' + RESI[g.res] : '') : ''} · nivell ${escHTML(g.lvl || '')} · <b>${g.ok}/${g.total}</b> (${pct(g.ok, g.total)}%)${g.rosco != null ? ' · Rosco ' + g.rosco + '/26' : ''}${g.gold != null ? ' · ' + g.gold + ' or' : ''}</span><span class="text-amber-300 font-bold">+${g.pts}</span><span class="text-slate-500">▾</span></summary>
                     <div class="px-3 pb-3 space-y-1">${(g.answers || []).length ? g.answers.map(ansRow).join('') : '<p class="text-[11px] text-slate-500 py-1">Aquesta partida es va guardar abans que es registressin les respostes una per una.</p>'}
                     ${g.roscoA && g.roscoA.length ? `<p class="text-[11px] font-bold text-slate-400 pt-2">Rosco (passa el ratolí per veure la pista i la resposta)</p><div class="flex flex-wrap gap-1">${g.roscoA.map(roscoRow).join('')}</div>
                       ${g.roscoA.filter(r => r.st === 'wrong').length ? `<div class="space-y-1 pt-1">${g.roscoA.filter(r => r.st === 'wrong').map(r => `<p class="text-[11px] text-rose-300"><b>${r.l}</b> · ${escHTML(r.clue)} → va dir <b>${escHTML(r.a || '–')}</b>, era <b class="text-emerald-300">${escHTML(r.ok)}</b></p>`).join('')}</div>` : ''}` : ''}</div></details>`;
@@ -1834,6 +1837,7 @@
             document.getElementById('topic-error').classList.add('hidden');
             game.playerName = nameVal;
             if (selModeId === 'duel') { ensureAudio(); playSFX('correct'); Duel.open(); return; }
+            if (selModeId === 'mini') { ensureAudio(); playSFX('correct'); Mini.open(); return; }
             ensureAudio();
             playSFX('correct');
 
@@ -2420,7 +2424,7 @@
            9. UTILIDADES DE NAVEGACIÓN Y ATADOS DE TECLADO
            ========================================================================= */
         function switchScreen(screenId) {
-            ['screen-login', 'screen-welcome', 'screen-phase1', 'screen-transition', 'screen-phase2', 'screen-results', 'screen-mode-results', 'screen-board', 'screen-duel'].forEach(id => {
+            ['screen-login', 'screen-welcome', 'screen-phase1', 'screen-transition', 'screen-phase2', 'screen-results', 'screen-mode-results', 'screen-board', 'screen-duel', 'screen-mini'].forEach(id => {
                 const screen = document.getElementById(id);
                 screen.classList.add('hidden');
                 screen.classList.remove('screen-enter');
@@ -2445,7 +2449,7 @@
             }
         }
 
-        function goHome() { if (window.Duel) Duel.leave(); playSFX('click'); if (!document.getElementById('screen-welcome').classList.contains('hidden')) { showLanding(); return; } resetFullApp(); }
+        function goHome() { if (window.Duel) Duel.leave(); if (window.Mini) Mini.leave(); playSFX('click'); if (!document.getElementById('screen-welcome').classList.contains('hidden')) { showLanding(); return; } resetFullApp(); }
 
         function openQuitModal() {
             document.getElementById('modal-quit').classList.remove('hidden');
@@ -2548,5 +2552,7 @@
     </script>
     <script src="duel.js"></script>
     <script src="notif.js"></script>
+    <script src="minidata.js"></script>
+    <script src="mini.js"></script>
 </body>
 </html>

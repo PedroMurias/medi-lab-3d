@@ -86,7 +86,13 @@ window.GR = (function () {
 
   /* ---- punts: per encerts, mai per velocitat ni per or. +15 per jugar. ---- */
   /* Nivell difícil: +25 % (les preguntes són d'ampliació). Fàcil i normal: igual. */
-  function points(st) { const base = 15 + 10 * (st.ok || 0) + 4 * (st.rosco || 0) + (st.total && st.ok === st.total ? 20 : 0); return Math.round(base * (st.lvl === 'dificil' ? 1.25 : 1)); }
+  /* Minijocs: tenen llargades diferents, així que puntuen pel percentatge d'encerts (com una Ràfega de 10). A Vertader o fals es descompta l'atzar. */
+  function points(st) {
+    let base;
+    if (st.mode === 'mini') { const p = st.adj != null ? st.adj : (st.total ? st.ok / st.total : 0); base = 15 + Math.round(100 * p) + (st.total && st.ok === st.total ? 20 : 0); }
+    else base = 15 + 10 * (st.ok || 0) + 4 * (st.rosco || 0) + (st.total && st.ok === st.total ? 20 : 0);
+    return Math.round(base * (st.lvl === 'dificil' ? 1.25 : 1));
+  }
 
   /* ---- registrar una partida: historial + totals de l'alumne ---- */
   const today = () => new Date().toISOString().slice(0, 10);
@@ -103,7 +109,7 @@ window.GR = (function () {
       const dN = d.dDay === today() ? (d.dN || 0) : 0;
       if (isDuel && dN >= DUEL_CAP) pts = 0;
       tx.set(gref, { t: now, mode: st.mode, lvl: st.lvl, src: st.src || [], ok: st.ok || 0, total: st.total || 0, rosco: st.rosco == null ? null : st.rosco, gold: st.gold == null ? null : st.gold, streak: st.streak || 0, pts,
-        answers: (st.answers || []).slice(0, 60), roscoA: st.roscoA || null, vs: st.vs || null, res: st.res || null, capped: isDuel && dN >= DUEL_CAP });
+        answers: (st.answers || []).slice(0, 60), roscoA: st.roscoA || null, vs: st.vs || null, mg: st.mg || null, res: st.res || null, capped: isDuel && dN >= DUEL_CAP });
       const duelX = isDuel ? { dDay: today(), dN: dN + 1, dW: (d.dW || 0) + (st.res === 'W' ? 1 : 0), dD: (d.dD || 0) + (st.res === 'D' ? 1 : 0), dL: (d.dL || 0) + (st.res === 'L' ? 1 : 0) } : {};
       const topics = d.topics || {}, wrong = d.wrong || {};
       (st.perTopic || []).forEach(([k, ok, n]) => { const t = topics[k] || { ok: 0, n: 0 }; t.ok += ok; t.n += n; topics[k] = t; });
