@@ -207,7 +207,7 @@ window.Duel = (function () {
       recorded = true;
       const qs = D.qs.slice(0, a.length).map(unpack);
       const st = statsFrom(qs, a, 'duel', D.cfg, res, opName());
-      try { earned = await GR.record(st); } catch (e) { earned = null; }
+      try { earned = await GR.record(st); if (window.Notif) Notif.check(true); } catch (e) { earned = null; }
       if (typeof awardBadges === 'function') { try { awardBadges({ ...st, gold: null, rosco: null }); } catch (e) { /* */ } }
     }
     endScreen({ title: opLeft ? `${first(opName())} ha abandonat` : RES_TXT[res], res, sm, so, myN: first(myName()), opN: first(opName()), opAvS: opAv(), qs: D.qs.map(unpack), a, b, n: Math.max(a.length, b.length), again: 'rematch', note: opLeft ? 'Guanyes per abandonament.' : (D.n < Math.max(a.length, b.length) ? 'Desempat a la mort sobtada.' : '') });
@@ -293,7 +293,7 @@ window.Duel = (function () {
     const mine = x.fromUid === acc().uid, qs = x.qs.map(unpack);
     const sm = mine ? x.okFrom : x.okTo, so = mine ? x.okTo : x.okFrom, res = resOf(sm, so);
     earned = null; view = 'see';
-    if (mine && !x.seenFrom) { x.seenFrom = true; try { await GR.chalSet(x.id, { seenFrom: true }); earned = await GR.duelBonus(res, BONUS[res]); } catch (e) { /* */ } }
+    if (mine && !x.seenFrom) { x.seenFrom = true; try { await GR.chalSet(x.id, { seenFrom: true }); earned = await GR.duelBonus(res, BONUS[res]); } catch (e) { /* */ } badge(); }
     endScreen({ title: RES_TXT[res], res, sm, so, myN: first(myName()), opN: first(mine ? x.toName : x.fromName), opAvS: mine ? '🙂' : x.fromAv, qs, a: mine ? x.aFrom : x.aTo, b: mine ? x.aTo : x.aFrom, n: qs.length, again: null, bonusOnly: true });
   }
   function alertMsg(m) { const e = $('duel-err'); if (e) e.textContent = m; else alert(m); }
@@ -304,6 +304,7 @@ window.Duel = (function () {
     try { unsubInv = await GR.watchInvites(list => { const had = invites.length; invites = list; if (list.length > had) playSFX('correct'); if (view === 'hub' && !$('screen-duel').classList.contains('hidden')) renderHub(false); badge(); }); } catch (e) { /* */ }
   }
   function badge() {
+    if (window.Notif) Notif.render();
     const b = $('duel-badge'); if (!b) return;
     const now = Date.now();
     const n = invites.length + CH.got.filter(x => x.st === 'pending' && x.exp > now).length + CH.sent.filter(x => x.st === 'done' && !x.seenFrom).length;
@@ -340,5 +341,5 @@ window.Duel = (function () {
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && acc()) GR.presence && GR.presence(); });
   setInterval(() => { if (document.visibilityState === 'visible' && acc() && !acc().teacher && GR.available()) GR.presence(); }, 120000);
 
-  return { open, leave, refresh, badge, get view() { return view; }, _pack: pack, _unpack: unpack };
+  return { open, leave, refresh, badge, state: () => ({ invites, got: CH.got, sent: CH.sent }), get view() { return view; }, _pack: pack, _unpack: unpack };
 })();

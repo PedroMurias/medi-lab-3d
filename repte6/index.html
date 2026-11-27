@@ -432,6 +432,8 @@
                     Reiniciar
                 </button>
 
+                <!-- Avisos (amb compte) -->
+                <button id="btn-notif" onclick="Notif.open()" class="hidden relative w-10 h-10 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 items-center justify-center text-xl transition" title="Avisos" aria-label="Avisos">🔔<span id="notif-count" class="hidden absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-rose-500 text-white text-[11px] font-black flex items-center justify-center shadow">0</span></button>
                 <!-- Classificació (amb compte) -->
                 <button id="btn-board" onclick="openBoard()" class="hidden px-3 py-2 rounded-xl bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/40 text-xs font-bold text-amber-200 transition items-center gap-1.5" title="Classificació de la classe">🏆 <span class="hidden sm:inline">Classificació</span></button>
                 <!-- Instal·lar com a app -->
@@ -916,6 +918,14 @@
         </section>
 
     <!-- Classificació i progrés -->
+    <div id="notif-panel" class="hidden fixed inset-0 z-50" role="dialog" aria-label="Avisos">
+        <div class="absolute inset-0 bg-slate-950/40" onclick="Notif.close()"></div>
+        <div class="absolute right-2 left-2 sm:left-auto top-16 sm:w-[400px] max-h-[75vh] overflow-y-auto glass-panel rounded-3xl p-4 shadow-2xl" style="background:rgba(255,255,255,.97)">
+            <div class="flex items-center justify-between mb-3"><h3 class="font-display font-black text-lg text-white">🔔 Avisos</h3><button type="button" onclick="Notif.close()" class="w-8 h-8 rounded-lg bg-white/10 border border-white/20 text-white font-bold" aria-label="Tancar">✕</button></div>
+            <div id="notif-list" class="space-y-2"></div>
+        </div>
+    </div>
+
     <section id="screen-duel" class="hidden max-w-4xl w-full mx-auto"><div id="duel-body"></div></section>
 
     <section id="screen-board" class="hidden max-w-5xl w-full mx-auto">
@@ -1448,6 +1458,7 @@
         function renderAccount() {
             const acc = window.GR && GR.acc, box = document.getElementById('acc-box'), input = document.getElementById('input-player-name');
             const bBoard = document.getElementById('btn-board');
+            if (window.Notif) setTimeout(Notif.render, 0);
             const nameRow = input.closest('.flex');
             if (acc) {
                 nameRow.classList.add('hidden');
@@ -1500,7 +1511,7 @@
             catch (ex) { err.textContent = ex.message || 'No s\'ha pogut entrar amb Google.'; playSFX('wrong'); }
             b.disabled = false;
         }
-        function showWelcome() { const bb = document.getElementById('btn-back'); bb.classList.remove('hidden'); bb.classList.add('flex'); switchScreen('screen-welcome'); renderAccount(); renderModeSelector(); window.scrollTo(0, 0); if (window.Duel) Duel.refresh(); }
+        function showWelcome() { const bb = document.getElementById('btn-back'); bb.classList.remove('hidden'); bb.classList.add('flex'); switchScreen('screen-welcome'); renderAccount(); renderModeSelector(); window.scrollTo(0, 0); if (window.Duel) Duel.refresh(); if (window.Notif) Notif.onLogin(); }
         function showLanding() {
             const bb = document.getElementById('btn-back'); bb.classList.add('hidden'); bb.classList.remove('flex');
             switchScreen('screen-login');
@@ -1534,7 +1545,7 @@
             lastPts = null; const el = document.getElementById(noteId); if (!el) return;
             if (!window.GR || !GR.acc || GR.acc.teacher || game.mode === 'equips') { el.classList.add('hidden'); return; }
             el.classList.remove('hidden'); el.textContent = 'Guardant la partida…';
-            try { lastPts = await GR.record(gameStats()); el.innerHTML = `🏆 <b>+${lastPts} punts</b> per a la classificació de la classe · <button type="button" onclick="openBoard()" class="underline">veure-la</button>`; }
+            try { lastPts = await GR.record(gameStats()); if (window.Notif) Notif.check(true); el.innerHTML = `🏆 <b>+${lastPts} punts</b> per a la classificació de la classe · <button type="button" onclick="openBoard()" class="underline">veure-la</button>`; }
             catch (e) { el.textContent = 'No s\'ha pogut guardar la partida (sense connexió?). Els punts no s\'han perdut si tornes a jugar amb internet.'; }
         }
 
@@ -2536,5 +2547,6 @@
         };
     </script>
     <script src="duel.js"></script>
+    <script src="notif.js"></script>
 </body>
 </html>
