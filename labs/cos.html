@@ -2264,7 +2264,11 @@ window.__app={sel:(id)=>select(id,true),R:()=>renderer,S:()=>scene,M:()=>motion,
 
 
 
-<!--VIDEO--><script>window.VCLIPS={"intro": {"src": "../clips/cos.mp4", "poster": "../clips/cos.jpg", "unit": "Medi·Lab 3D · Unitat 1", "title": "🫀 El cos humà", "sub": "Una màquina perfecta que treballa sense parar"}, "cards": {"moviment": [{"src": "../clips/cos_moviment.mp4", "poster": "../clips/cos_moviment.jpg", "title": "La cama en moviment", "cap": "Ossos i músculs quan correm", "dur": 5, "q": {"t": "Què fa moure els ossos de la cama?", "o": ["Els músculs, que s'encongeixen i s'estiren", "Els ossos es mouen sols", "La pell"], "ok": 0, "why": "Els músculs estan units als ossos. Quan s'encongeixen, estiren l'os i el fan moure; treballen per parelles."}}]}};</script><script>/* Medi·Lab 3D · vídeos: intro d'entrada + targetes «Mira-ho de veritat» amb pregunta.
+
+
+
+
+<!--VIDEO--><script>window.VCLIPS={"intro": {"src": "../clips/cos.mp4", "poster": "../clips/cos.jpg", "unit": "Medi·Lab 3D · Unitat 1", "title": "🫀 El cos humà", "sub": "Una màquina perfecta que treballa sense parar"}, "cards": {"moviment": [{"src": "../clips/cos_moviment.mp4", "poster": "../clips/cos_moviment.jpg", "title": "La cama en moviment", "cap": "Ossos i músculs quan correm", "dur": 5, "q": {"t": "Què fa moure els ossos de la cama?", "o": ["Els músculs, que s'encongeixen i s'estiren", "Els ossos es mouen sols", "La pell"], "ok": 0, "why": "Els músculs estan units als ossos. Quan s'encongeixen, estiren l'os i el fan moure; treballen per parelles."}}], "accio": [{"src": "../clips/cos_lesions.mp4", "poster": "../clips/cos_lesions.jpg", "title": "Una torçada de turmell", "cap": "Què fem després d'una torçada?", "dur": 5, "q": {"t": "Què cal fer després d'una torçada?", "o": ["Gel, repòs i el peu enlairat", "Continuar jugant", "Moure molt el turmell"], "ok": 0, "why": "El gel baixa la inflamació, el repòs evita fer-se més mal i aixecar el peu ajuda que no s'infli."}}], "nervios": [{"src": "../clips/cos_nervis.mp4", "poster": "../clips/cos_nervis.jpg", "title": "Un acte reflex", "cap": "La mà toca una cosa calenta", "dur": 5, "q": {"t": "Com es diu aquesta resposta tan ràpida?", "o": ["Un acte reflex", "Un acte voluntari", "Un moviment de la sang"], "ok": 0, "why": "El senyal va pels nervis fins a la medul·la espinal i torna de seguida al braç, abans que el cervell ho pensi: és un acte reflex."}}]}};</script><script>/* Medi·Lab 3D · vídeos: intro d'entrada + targetes «Mira-ho de veritat» amb pregunta.
    Config a window.VCLIPS = { intro:{src,poster,unit,title,sub}, cards:{ <mode>:[{src,poster,title,cap,q:{t,o:[...],ok:index}}] } }
    Els vídeos són fitxers a part (../clips/) i només es descarreguen quan cal. */
 (function(){
@@ -2382,7 +2386,7 @@ function openClip(c){
  v.addEventListener('ended',ask); v.addEventListener('timeupdate',()=>{ if(v.duration&&v.currentTime>v.duration-1.2) ask(); });
 }
 function initCards(){
- if(!C.cards) return; const pb=$('#panel .pbody'); if(!pb){ setTimeout(initCards,500); return; }
+ if(!C.cards) return; const pb=$('#panel .pbody'); if(!pb){ if(!$('#panel')&&$('#modes')){ fab(); return; } setTimeout(initCards,500); return; }
  /* els vídeos amb pregunta compten com a descobriments */
  const addItems=()=>{ if(!window.UX||!UX.COL||!UX.COL.items||!UX.COL.items.length){ setTimeout(addItems,600); return; }
   Object.values(C.cards).flat().forEach(c=>{ if(c.q){ const k='🎬 '+c.title; if(!UX.COL.items.find(x=>x.k===k)) UX.COL.items.push({k,n:c.title,ic:'🎬'}); } }); };
@@ -2391,6 +2395,11 @@ function initCards(){
  const nav=$('#modes'); if(nav) nav.addEventListener('click',()=>setTimeout(decorate,60));
  decorate();
 }
+/* labs sense panell lateral: botó flotant «Mira-ho de veritat» segons el mode */
+function fab(){ const css2=document.createElement('style'); css2.textContent='#vFab{position:fixed;right:14px;top:150px;z-index:60;display:none;align-items:center;gap:10px;padding:8px 14px 8px 8px;border-radius:16px;border:1px solid rgba(0,229,255,.55);background:rgba(6,14,28,.88);color:#e6f1ff;font:600 14px Inter,system-ui,sans-serif;cursor:pointer;backdrop-filter:blur(6px);box-shadow:0 6px 24px rgba(0,0,0,.4)}#vFab img{width:84px;height:48px;object-fit:cover;border-radius:10px}#vFab small{display:block;font-size:11px;letter-spacing:1.5px;color:#7fe9ff}#vFab:hover{border-color:#00e5ff}@media(max-width:640px){#vFab{top:auto;bottom:150px;right:8px}#vFab img{width:56px;height:34px}}'; document.head.appendChild(css2);
+ const b=document.createElement('button'); b.id='vFab'; b.type='button'; document.body.appendChild(b);
+ const upd=()=>{ const L=C.cards[curMode()]; if(!L||!L.length){ b.style.display='none'; return; } const c=L[0]; b.innerHTML=`${c.poster?`<img src="${c.poster}" alt="">`:''}<span><small>🎬 MIRA-HO DE VERITAT</small>${store('vseen_'+c.title)?'✔ ':''}${c.title}</span>`; b.onclick=()=>openClip(c); b.style.display='flex'; };
+ $('#modes').addEventListener('click',()=>setTimeout(upd,80)); new MutationObserver(upd).observe($('#modes'),{attributes:true,subtree:true,attributeFilter:['class']}); upd(); }
 /* objectes amb vídeo real: el botó «càmera lenta» obre el vídeo de veritat */
 function hookObjects(){
  if(!C.cards) return; const byName={}; Object.values(C.cards).flat().forEach(c=>{ byName[c.title]=c; });

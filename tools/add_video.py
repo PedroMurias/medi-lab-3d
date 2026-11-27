@@ -33,7 +33,11 @@ FORMES = [
 CFG = {
  'cos': {'intro': {'src':'../clips/cos.mp4','poster':'../clips/cos.jpg','unit':'Medi·Lab 3D · Unitat 1','title':'🫀 El cos humà','sub':'Una màquina perfecta que treballa sense parar'},
    'cards': {'moviment': [{'src':'../clips/cos_moviment.mp4','poster':'../clips/cos_moviment.jpg','title':'La cama en moviment','cap':'Ossos i músculs quan correm','dur':5,
-      'q':q('Què fa moure els ossos de la cama?',["Els músculs, que s'encongeixen i s'estiren",'Els ossos es mouen sols','La pell'],0,"Els músculs estan units als ossos. Quan s'encongeixen, estiren l'os i el fan moure; treballen per parelles.")}]}},
+      'q':q('Què fa moure els ossos de la cama?',["Els músculs, que s'encongeixen i s'estiren",'Els ossos es mouen sols','La pell'],0,"Els músculs estan units als ossos. Quan s'encongeixen, estiren l'os i el fan moure; treballen per parelles.")}],
+     'accio': [{'src':'../clips/cos_lesions.mp4','poster':'../clips/cos_lesions.jpg','title':'Una torçada de turmell','cap':'Què fem després d\'una torçada?','dur':5,
+      'q':q("Què cal fer després d'una torçada?",['Gel, repòs i el peu enlairat','Continuar jugant','Moure molt el turmell'],0,"El gel baixa la inflamació, el repòs evita fer-se més mal i aixecar el peu ajuda que no s'infli.")}],
+     'nervios': [{'src':'../clips/cos_nervis.mp4','poster':'../clips/cos_nervis.jpg','title':'Un acte reflex','cap':'La mà toca una cosa calenta','dur':5,
+      'q':q('Com es diu aquesta resposta tan ràpida?',['Un acte reflex','Un acte voluntari','Un moviment de la sang'],0,"El senyal va pels nervis fins a la medul·la espinal i torna de seguida al braç, abans que el cervell ho pensi: és un acte reflex.")}]}},
  'adolescencia': {'intro': {'src':'../clips/adolescencia.mp4','poster':'../clips/adolescencia.jpg','unit':'Medi·Lab 3D · Unitat 2','title':"🌱 L'adolescència",'sub':'Créixer, canviar i fer-se gran'}},
  'ciutadania': {'intro': {'src':'../clips/ciutadania.mp4','poster':'../clips/ciutadania.jpg','unit':'Medi·Lab 3D','title':'🌍 Ciutadania i món','sub':'Vivim junts: al poble, al país i al món'}},
  'ecosistemes': {'intro': {'src':'../clips/ecosistemes.mp4','poster':'../clips/ecosistemes.jpg','unit':'Medi·Lab 3D · Unitat 3','title':'🌳 Els ecosistemes','sub':'Del bosc a la bassa i al fons del mar'}},
